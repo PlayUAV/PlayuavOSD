@@ -29,9 +29,13 @@ Usage
 
 GUI configuration tool.
 Config tool: http://www.playuav.com/download/playuavosd/OSDTool.zip
+
 Manual: http://www.playuav.com/download/playuavosd/playuavosd_en.pdf
+
 The video is worth thousands of words. 
+
 Configuration video: http://youtu.be/J1JjweJYKMc
+
 Flying video(just for testing): http://youtu.be/nbF5R-X6scU
 
 
