@@ -33,7 +33,7 @@ namespace OSD
         byte[] paramdefault = new byte[1024];
 
         PlayuavOSD self;
-        string currentVersion = "1.0.0.2";
+        string currentVersion = "1.0.0.3";
 
         // Changes made to the params between writing to the copter
         readonly Hashtable _changes = new Hashtable();
@@ -1761,11 +1761,11 @@ namespace OSD
 
         private void gettingStartedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string strURL = "http://www.playuav.com/download/Playuavosd/playuavosd.pdf";
-            //if (PlayuavOSD.langid == PlayuavOSD.LanguageEnum.LANG_EN)
-            //{
-            //       strURL = "http://www.playuav.com/download/Playuavosd/playuavosd_en.pdf";
-            //}
+            string strURL = "http://www.playuav.com/download/Playuavosd/playuavosd_en.pdf";
+            if (PlayuavOSD.langid == PlayuavOSD.LanguageEnum.LANG_ZH)
+            {
+                strURL = "http://www.playuav.com/download/Playuavosd/playuavosd_zh.pdf";
+            }
 
             try
             {
