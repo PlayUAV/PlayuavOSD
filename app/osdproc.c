@@ -86,18 +86,8 @@ void do_converts(void)
 
 bool bShownAtPanle(uint16_t itemPanel)
 {
-	uint16_t i = 0;
-	for (i = 1; i < 10; i++)
-	{
-		int b = itemPanel & (int)(pow(2, i-1));
-
-		if ((b != 0) && (b == (int)(pow(2,current_panel-1))))
-		{
-			return true;
-		}
-	}
-	
-	return false;
+	//issue #1 - fixed
+	return ((itemPanel & (1<<(current_panel-1))) != 0);
 }
 
 void vTaskOSD(void *pvParameters)

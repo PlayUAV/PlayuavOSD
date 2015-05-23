@@ -1852,18 +1852,8 @@ namespace OSD
 
         bool bShownAtPanle(short itemPanel, short curPanle)
         {
-            short i = 0;
-            for (i = 1; i < 10; i++)
-            {
-                int b = itemPanel & (int)(Math.Pow(2, i - 1));
-
-                if ((b != 0) && (b == (int)(Math.Pow(2, curPanle - 1))))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            //issue #1 - fixed
+            return ((itemPanel & (1 << (curPanle - 1))) != 0);
         }
 
         private void glControl1_Resize(object sender, EventArgs e)
