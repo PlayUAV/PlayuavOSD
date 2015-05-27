@@ -1,0 +1,9 @@
+Major:
+ - (SW)Change the compile tool from MDK to the more common GCC.
+ - (SW)Code Cleaning for both firmware and config tool. 
+
+
+Minor:
+ - (SW)Support more FCs and protocols.
+ - (SW)Go deep into 3D, including an elegant mode, higher resolution, and configuration for 3D display.
+ - (HW)Do we have to use the STM32F405 chip? Can any cheaper chip do the job? Need to be tested.
