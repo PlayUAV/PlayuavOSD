@@ -52,62 +52,62 @@ void Transform_OBJECT4DV1(OBJECT4DV1_PTR obj, // object to transform
                           MATRIX4X4_PTR mt,   // transformation matrix
                           int coord_select)   // selects coords to transform
 {
-// this function simply transforms all of the vertices in the local or trans
-// array by the sent matrix
+	// this function simply transforms all of the vertices in the local or trans
+	// array by the sent matrix
 
-// what coordinates should be transformed?
-switch(coord_select)
-      {
-      case TRANSFORM_LOCAL_ONLY:
-      {
-		  // transform each local/model vertex of the object mesh in place
-		  for (int vertex=0; vertex < obj->num_vertices; vertex++)
-          {
-			  POINT4D presult; // hold result of each transformation
+	// what coordinates should be transformed?
+	switch(coord_select)
+	{
+		case TRANSFORM_LOCAL_ONLY:
+			{
+				// transform each local/model vertex of the object mesh in place
+				for (int vertex=0; vertex < obj->num_vertices; vertex++)
+				{
+					POINT4D presult; // hold result of each transformation
 
-			  // transform point
-			  Mat_Mul_VECTOR4D_4X4(&obj->vlist_local[vertex], mt, &presult);
+					// transform point
+					Mat_Mul_VECTOR4D_4X4(&obj->vlist_local[vertex], mt, &presult);
 
-			  // store result back
-			  VECTOR4D_COPY(&obj->vlist_local[vertex], &presult); 
-          } // end for index
-      } break;
- 
-      case TRANSFORM_TRANS_ONLY:
-      {
-		  // transform each "transformed" vertex of the object mesh in place
-		  // remember, the idea of the vlist_trans[] array is to accumulate
-		  // transformations
-		  for (int vertex=0; vertex < obj->num_vertices; vertex++)
-          {
-			  POINT4D presult; // hold result of each transformation
+					// store result back
+					VECTOR4D_COPY(&obj->vlist_local[vertex], &presult); 
+				} // end for index
+			} break;
 
-			  // transform point
-			  Mat_Mul_VECTOR4D_4X4(&obj->vlist_trans[vertex], mt, &presult);
+		case TRANSFORM_TRANS_ONLY:
+			{
+				// transform each "transformed" vertex of the object mesh in place
+				// remember, the idea of the vlist_trans[] array is to accumulate
+				// transformations
+				for (int vertex=0; vertex < obj->num_vertices; vertex++)
+				{
+					POINT4D presult; // hold result of each transformation
 
-			  // store result back
-			  VECTOR4D_COPY(&obj->vlist_trans[vertex], &presult); 
-          } // end for index
+					// transform point
+					Mat_Mul_VECTOR4D_4X4(&obj->vlist_trans[vertex], mt, &presult);
 
-      } break;
+					// store result back
+					VECTOR4D_COPY(&obj->vlist_trans[vertex], &presult); 
+				} // end for index
 
-      case TRANSFORM_LOCAL_TO_TRANS:
-      {
-		  // transform each local/model vertex of the object mesh and store result
-		  // in "transformed" vertex list
-		  for (int vertex=0; vertex < obj->num_vertices; vertex++)
-          {
-			  POINT4D presult; // hold result of each transformation
+			} break;
 
-			  // transform point
-			  Mat_Mul_VECTOR4D_4X4(&obj->vlist_local[vertex], mt, &obj->vlist_trans[vertex]);
+		case TRANSFORM_LOCAL_TO_TRANS:
+			{
+				// transform each local/model vertex of the object mesh and store result
+				// in "transformed" vertex list
+				for (int vertex=0; vertex < obj->num_vertices; vertex++)
+				{
+					POINT4D presult; // hold result of each transformation
 
-          } // end for index
-      } break;
+					// transform point
+					Mat_Mul_VECTOR4D_4X4(&obj->vlist_local[vertex], mt, &obj->vlist_trans[vertex]);
 
-      default: break;
+				} // end for index
+			} break;
 
-} // end switch
+			default: break;
+
+	} // end switch
 
 } // end Transform_OBJECT4DV1
 
@@ -398,26 +398,26 @@ void Transform_To_Screen_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam)
 
 	// transfer obj world -> camera -> perspective -> screen
 	for (int32_t vertex = 0; vertex < obj->num_vertices; vertex++)
-    {
+	{
 		POINT4D presult; // hold result of each transformation
-		
+
 		//world to camera
 		Mat_Mul_VECTOR4D_4X4(&obj->vlist_trans[vertex], &cam->mcam, &presult);
 		VECTOR4D_COPY(&obj->vlist_trans[vertex], &presult); 
-		
+
 		//camera to perspective and screen
 		float32_t z = obj->vlist_trans[vertex].z;
 		// transform the vertex by the view parameters in the camera
 		obj->vlist_trans[vertex].x = cam->view_dist*obj->vlist_trans[vertex].x/z;
 		obj->vlist_trans[vertex].y = cam->view_dist*obj->vlist_trans[vertex].y*cam->aspect_ratio/z;
 		// z = z, so no change
-		
+
 		// transform the vertex by the view parameters in the camera
 		obj->vlist_trans[vertex].x = alpha + alpha*obj->vlist_trans[vertex].x;
 		obj->vlist_trans[vertex].y = beta  - beta *obj->vlist_trans[vertex].y;
-		
-    } // end for vertex
-	
+
+	} // end for vertex
+
 
 
 } // end Remove_Backfaces_OBJECT4DV1

@@ -54,24 +54,12 @@ float convert_distance;
 const char * dist_unit = METRIC_DIST;
 const char * spd_unit = METRIC_SPEED;
 
-
-//typedef enum { 
-//	WARN_NO = 0, 
-//	FIX_2D = 2, 
-//	FIX_3D = 3, 
-//	FIX_DGPS = 4 
-//} WarnType_t;  // GPS fix type
-
-//////////////////////////////////////
-//#define SHOW_UAV_3D		0
-//#define SIMULATE_VALUE
-
 void do_converts(void)
 {
 	if (eeprom_buffer.params.Units_mode == 1)
 	{
-		convert_distance = 2.23f;
-		convert_speed = 3.28f;
+		convert_distance = 2.23694f;
+		convert_speed = 3.28084f;
 		dist_unit = IMPERIAL_DIST;
 		spd_unit = IMPERIAL_SPEED;
 	}
@@ -92,49 +80,19 @@ bool bShownAtPanle(uint16_t itemPanel)
 
 void vTaskOSD(void *pvParameters)
 {	
-	//vTaskDelay(1000/portTICK_RATE_MS);
+	uav3D_init();
+	uav2D_init();
 
-	
-//	if(eeprom_buffer.params.Atti_mode == 1)
-		uav3D_init();
-//	else
-		uav2D_init();
-
-	
 	osdCoreInit();
-	
-	test_alt = -50;
-	test_speed = 0;
-//	osdVideoSetLevels(35,110,20,110);
-//	osdVideoSetXOffset(-100);
-//	osdVideoSetYOffset(0);
 	
 	for(;;)
 	{
 		xSemaphoreTake(onScreenDisplaySemaphore, portMAX_DELAY);
-//		STM_EVAL_LEDToggle(LED_BLUE);
 		
 		clearGraphics();
 		
-#ifdef SIMULATE_VALUE
-		cal_vars();
-#endif		
-		
 		RenderScreen();
-		//vTaskDelay(5);
 	}
-}
-
-void cal_vars(void)
-{
-	test_alt++;
-	test_speed++;
-	test_throttle++;
-	if(test_alt > 50) test_alt = -50;
-	if(test_speed > 100) test_speed = 0;
-	if(test_throttle > 100) test_throttle = 0;
-	//test_throttle = (int32_t)(rand()%100);
-	
 }
 
 void RenderScreen(void)
@@ -192,12 +150,8 @@ void RenderScreen(void)
 					 SIZE_TO_FONT[eeprom_buffer.params.BattConsumed_fontsize]);
 	}
 	
-	//warnning - TODO
 	
 	//altitude
-#ifdef SIMULATE_VALUE
-	hud_draw_vertical_scale(test_alt, 100, 1,350, GRAPHICS_Y_MIDDLE, 120, 10, 20, 5, 8, 11, 10000, 0);
-#else
 	if(eeprom_buffer.params.Alt_Scale_en  && bShownAtPanle(eeprom_buffer.params.Alt_Scale_panle))
 	{
 		hud_draw_vertical_scale(osd_alt * convert_distance, 100, eeprom_buffer.params.Alt_Scale_align,eeprom_buffer.params.Alt_Scale_posX, GRAPHICS_Y_MIDDLE, 120, 10, 20, 5, 8, 11, 10000, 0);
@@ -213,12 +167,8 @@ void RenderScreen(void)
 					 0, 0, TEXT_VA_TOP, eeprom_buffer.params.TALT_align, 0, 
 					 SIZE_TO_FONT[eeprom_buffer.params.TALT_fontsize]);
 	}
-#endif
 	
 	//speed
-#ifdef SIMULATE_VALUE
-	hud_draw_vertical_scale(test_speed, 50, -1,  10, GRAPHICS_Y_MIDDLE, 120, 10, 20, 5, 8, 11, 100, 0);
-#else
 	if(eeprom_buffer.params.Speed_scale_en && bShownAtPanle(eeprom_buffer.params.Speed_scale_panel))
 	{
 		hud_draw_vertical_scale(osd_groundspeed * convert_speed, 50, eeprom_buffer.params.Speed_scale_align,  eeprom_buffer.params.Speed_scale_posX, GRAPHICS_Y_MIDDLE, 120, 10, 20, 5, 8, 11, 100, 0);
@@ -232,7 +182,6 @@ void RenderScreen(void)
 					 0, 0, TEXT_VA_TOP, eeprom_buffer.params.TSPD_align, 0, 
 					 SIZE_TO_FONT[eeprom_buffer.params.TSPD_fontsize]);
 	}
-#endif
 
 	//uav attitude
 	if(eeprom_buffer.params.Atti_3D_en && bShownAtPanle(eeprom_buffer.params.Atti_3D_panel))
@@ -324,9 +273,22 @@ void RenderScreen(void)
 	}
 	
 	// time
+	if(!last_motor_armed && motor_armed){
+		armed_start_time = GetSystimeMS();
+	}
+	if(!motor_armed) armed_start_time = 0;
 	if(eeprom_buffer.params.Time_en && bShownAtPanle(eeprom_buffer.params.Time_panel))
 	{
 		time_now = GetSystimeMS() - sys_start_time;
+		
+		if(eeprom_buffer.params.Time_type == 1){
+			time_now = heatbeat_start_time ? (GetSystimeMS() - heatbeat_start_time) : 0;
+		}
+		else if(eeprom_buffer.params.Time_type == 2){
+			
+			time_now = armed_start_time ? (GetSystimeMS() - armed_start_time) : 0;
+		}
+		
 		tmp_int16 = (time_now / 3600000); // hours
 		if (tmp_int16 == 0) {
 			tmp_int1 = time_now / 60000; // minutes
@@ -342,13 +304,6 @@ void RenderScreen(void)
 	
 	//draw Compass, homedir, homedist, waypointdir, waypointdist
 	hud_draw_CWH();
-	//compass
-	//hud_draw_linear_compass(osd_heading, osd_home_bearing, 120, 180, GRAPHICS_X_MIDDLE, 15, 15, 30, 5, 8, 0);
-	
-	//Pitch
-	//sprintf(tmp_str, "%s %4i", "pitch", osd_pitch);
-	//write_string(tmp_str, 10, 10, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[1]);
-	hud_draw_warnning();
 	
 	int x = 5;
 	int y = 220;
@@ -359,7 +314,6 @@ void RenderScreen(void)
 		x = eeprom_buffer.params.ClimbRate_posX;
 		y = eeprom_buffer.params.ClimbRate_posY;
 		sprintf(tmp_str, "%0.2f", (double)fabs(osd_climb));
-		//write_string(tmp_str, x+5, y, 0, 0, TEXT_VA_MIDDLE, eeprom_buffer.params.ClimbRate_align, 0, SIZE_TO_FONT[eeprom_buffer.params.ClimbRate_fontsize]);
 		write_string(tmp_str, x+5, y, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_LEFT, 0, SIZE_TO_FONT[eeprom_buffer.params.ClimbRate_fontsize]);
 		if(eeprom_buffer.params.ClimbRate_fontsize != 0)
 			arrlen += 2;
@@ -378,8 +332,6 @@ void RenderScreen(void)
 			write_line_outlined(x+3, y+arrlen-3, x, y+arrlen, 2, 2, 0, 1);
 		}
 	}
-	
-	
 	
 	//RSSI
 	if(eeprom_buffer.params.RSSI_en && bShownAtPanle(eeprom_buffer.params.RSSI_panel))
@@ -408,256 +360,16 @@ void RenderScreen(void)
 		sprintf(tmp_str, "P:%d", (int)current_panel);
 		write_string(tmp_str, GRAPHICS_X_MIDDLE, 210, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[1]);
 	}
+	
+	if(eeprom_buffer.params.Wind_en && bShownAtPanle(eeprom_buffer.params.Wind_panel))
+	{
+		hud_draw_wind();
+	}
+	
+	//warnning - should be displayed lastly in case not be covered by others
+	hud_draw_warnning();
 }
 
-void hud_draw_warnning(void)
-{
-	
-	write_string(warn_str, eeprom_buffer.params.Alarm_posX, eeprom_buffer.params.Alarm_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.Alarm_align, 0, SIZE_TO_FONT[eeprom_buffer.params.Alarm_fontsize]);
-	
-	if((GetSystimeMS() - last_warn_time) < 1000)
-	{
-		return;
-	}
-	
-	
-	bool haswarn = false;
-	const static int warn_cnt = 6;
-	uint8_t warning[]={0, 0, 0, 0, 0, 0}; 
-	
-	if( eeprom_buffer.params.Alarm_GPS_status_en && 
-		(osd_fix_type < GPS_OK_FIX_3D)) //no GPS fix!
-	{
-		haswarn = true;
-		warning[0] = 1;
-	}
-	
-	if( eeprom_buffer.params.Alarm_low_batt_en && 
-		(osd_battery_remaining_A < eeprom_buffer.params.Alarm_low_batt)) //low batt
-	{
-		haswarn = true;
-		warning[1] = 1;
-	}
-	
-	if( eeprom_buffer.params.Alarm_low_speed_en && 
-		(osd_groundspeed < eeprom_buffer.params.Alarm_low_speed)) //under speed
-	{
-		haswarn = true;
-		warning[2] = 1;
-	}
-	
-	if( eeprom_buffer.params.Alarm_over_speed_en && 
-		(osd_groundspeed > eeprom_buffer.params.Alarm_over_speed)) //over speed
-	{
-		haswarn = true;
-		warning[3] = 1;
-	}
-	
-	if( eeprom_buffer.params.Alarm_low_alt_en && 
-		(osd_alt < eeprom_buffer.params.Alarm_low_alt)) //under altitude
-	{
-		haswarn = true;
-		warning[4] = 1;
-	}
-	
-	if( eeprom_buffer.params.Alarm_over_alt_en && 
-		(osd_alt > eeprom_buffer.params.Alarm_over_alt)) //over altitude
-	{
-		haswarn = true;
-		warning[5] = 1;
-	}
-	
-	if(haswarn ){
-		last_warn_time = GetSystimeMS();
-		if(last_warn_type > (warn_cnt - 1)) last_warn_type = 0;
-		
-		if((last_warn_type == 0) && (warning[0] == 1)){
-			warn_str = "NO GPS FIX";
-			last_warn_type++;
-			return;
-		}
-		
-		if((last_warn_type == 1) && (warning[1] == 1)){
-			warn_str = "LOW BATTERY";
-			last_warn_type++;
-			return;
-		}
-		
-		if((last_warn_type == 2) && (warning[2] == 1)){
-			warn_str = "SPEED LOW";
-			last_warn_type++;
-			return;
-		}
-		if((last_warn_type == 3) && (warning[3] == 1)){
-			warn_str = "OVER SPEED";
-			last_warn_type++;
-			return;
-		}
-		if((last_warn_type == 4) && (warning[4] == 1)){
-			warn_str = "LOW ALT";
-			last_warn_type++;
-			return;
-		}
-		if((last_warn_type == 5) && (warning[5] == 1)){
-			warn_str = "HIGH ALT";
-			last_warn_type++;
-			return;
-		}
-		last_warn_type++;
-	}
-	else{
-		warn_str = "";
-	}
-	
-	
-}
-
-void hud_draw_CWH(void)
-{
-	char tmp_str[100] = { 0 };
-	float dstlon, dstlat, dstsqrt;
-
-	if(osd_got_home == 0 && osd_fix_type > 1){
-		osd_home_lat = osd_lat;
-		osd_home_lon = osd_lon;
-		osd_got_home = 1;
-	}
-	else if(osd_got_home == 1){
-		// shrinking factor for longitude going to poles direction
-		float rads = fabs(osd_home_lat) * D2R;
-		double scaleLongDown = Fast_Cos(rads);
-		double scaleLongUp   = 1.0f/Fast_Cos(rads);
-		
-		//DST to Home
-		dstlat = fabs(osd_home_lat - osd_lat) * 111319.5;
-		dstlon = fabs(osd_home_lon - osd_lon) * 111319.5 * scaleLongDown;
-		dstsqrt = dstlat*dstlat + dstlon*dstlon;
-		osd_home_distance = sqrt(dstsqrt) / 10000000.0f;
-
-		//DIR to Home
-		dstlon = (osd_home_lon - osd_lon); //OffSet_X
-		dstlat = (osd_home_lat - osd_lat) * scaleLongUp; //OffSet Y
-		osd_home_bearing = 90 + (atan2(dstlat, -dstlon) * R2D); //absolut home direction
-		osd_home_bearing = (osd_home_bearing+360)%360;
-	}
-	
-	//distance
-	if(eeprom_buffer.params.CWH_home_dist_en && bShownAtPanle(eeprom_buffer.params.CWH_home_dist_panel))
-	{	
-		float tmp = osd_home_distance * convert_distance;
-		sprintf(tmp_str, "%s%d%s", " H:", (int)tmp, dist_unit);
-		write_string(tmp_str, eeprom_buffer.params.CWH_home_dist_posX, eeprom_buffer.params.CWH_home_dist_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.CWH_home_dist_align, 0, SIZE_TO_FONT[eeprom_buffer.params.CWH_home_dist_fontsize]);
-	}
-	if((wp_number != 0) &&(eeprom_buffer.params.CWH_wp_dist_en) && bShownAtPanle(eeprom_buffer.params.CWH_wp_dist_panel))
-	{	
-		float tmp = wp_dist * convert_distance;
-		sprintf(tmp_str, "%s%d%s", "WP:", (int)tmp, dist_unit);
-		write_string(tmp_str, eeprom_buffer.params.CWH_wp_dist_posX, eeprom_buffer.params.CWH_wp_dist_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.CWH_wp_dist_align, 0, SIZE_TO_FONT[eeprom_buffer.params.CWH_wp_dist_fontsize]);
-	}
-	
-	//direction
-	if(eeprom_buffer.params.CWH_Nmode_en && bShownAtPanle(eeprom_buffer.params.CWH_Nmode_panel))
-	{		
-		//Animation mode
-		hud_draw_head_wp_home();
-	}
-		
-	//Tradition mode
-	if(eeprom_buffer.params.CWH_Tmode_en && bShownAtPanle(eeprom_buffer.params.CWH_Tmode_panel))
-	{
-		//hud_draw_linear_compass(osd_heading, 0, 120, 180, GRAPHICS_X_MIDDLE, eeprom_buffer.params.CWH_Tmode_posY, 15, 30, 5, 8, 0);
-		hud_draw_linear_compass(osd_heading, 0, 120, 180, GRAPHICS_X_MIDDLE, eeprom_buffer.params.CWH_Tmode_posY, 15, 30, 5, 8, 0);
-	}
-
-}
-
-void DJI_test(void)
-{
-	char tmp_str[100] = { 0 };
-	
-	int16_t tmp_int16;
-	int tmp_int1, tmp_int2;
-	
-	sprintf(tmp_str, "%0.1fV", (float)osd_vbat_A);
-	write_string(tmp_str, 20, 50, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[1]);
-	sprintf(tmp_str, "%i", osd_battery_remaining_A);
-	write_string(tmp_str, 90, 50, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
-	
-	sprintf(tmp_str, "P %d", (int32_t)osd_pitch);
-	write_string(tmp_str, GRAPHICS_X_MIDDLE-50, 50, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[1]);
-	sprintf(tmp_str, "R %d", (int32_t)osd_roll);
-	write_string(tmp_str, GRAPHICS_X_MIDDLE-50, 65, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[1]);
-	
-	sprintf(tmp_str, "hV %0.1f", (double)osd_groundspeed);
-	write_string(tmp_str, GRAPHICS_X_MIDDLE+10, 50, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[1]);
-	
-	sprintf(tmp_str, "GPS %d", osd_satellites_visible);
-	write_string(tmp_str, GRAPHICS_X_MIDDLE+150, 50, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
-	sprintf(tmp_str, "%0.5f lat", (double)(osd_lat / 10000000.0));
-	write_string(tmp_str, GRAPHICS_X_MIDDLE+170, 65, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
-	sprintf(tmp_str, "%0.5f lon", (double)(osd_lon / 10000000.0));
-	write_string(tmp_str, GRAPHICS_X_MIDDLE+170, 80, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
-	sprintf(tmp_str, "%0.1f hdop", (double)(osd_hdop));
-	write_string(tmp_str, GRAPHICS_X_MIDDLE+170, 95, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
-	
-	sprintf(tmp_str, "D %d", (int32_t)osd_home_distance);
-	write_string(tmp_str, 20, GRAPHICS_Y_MIDDLE-30, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[1]);
-	
-	sprintf(tmp_str, "H %d", (int32_t)osd_alt);
-	write_string(tmp_str, 20, GRAPHICS_Y_MIDDLE-15, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[1]);
-	
-	char* mode_str = "unknown";
-	if(osd_mode == 0) mode_str = "MANUAL";
-	else if(osd_mode == 1) mode_str = "GPS";
-	else if(osd_mode == 2) mode_str = "FAILSAFE";
-	else if(osd_mode == 3) mode_str = "ATTI";
-
-	write_string(mode_str, 20, GRAPHICS_Y_MIDDLE+15, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-	
-	sprintf(tmp_str, "%0.5f Hlat", (double)(osd_home_lat / 10000000.0));
-	write_string(tmp_str, GRAPHICS_X_MIDDLE+10, GRAPHICS_Y_MIDDLE+15, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
-	sprintf(tmp_str, "%0.5f Hlon", (double)(osd_home_lon / 10000000.0));
-	write_string(tmp_str, GRAPHICS_X_MIDDLE+170, GRAPHICS_Y_MIDDLE+15, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
-	
-	sprintf(tmp_str, "vV %0.1f", (double)osd_downVelocity);
-	write_string(tmp_str, GRAPHICS_X_MIDDLE+150, GRAPHICS_Y_MIDDLE-15, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
-
-	hud_draw_linear_compass(osd_heading, osd_home_bearing, 120, 180, GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE+80, 15, 30, 5, 8, 0);
-}
-
-void hud_draw_throttle(void)
-{
-	char tmp_str[10] = { 0 };
-	int16_t pos_th_y;
-	int posX, posY;
-	posX = eeprom_buffer.params.Throt_posX;
-	posY = eeprom_buffer.params.Throt_posY;
-#ifdef SIMULATE_VALUE
-		osd_throttle = test_throttle;
-#endif
-	
-	pos_th_y = (int16_t)(0.5*osd_throttle);
-	sprintf(tmp_str, "%d", (int32_t)osd_throttle);
-	//write_string(tmp_str, 25, 210, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
-	write_string(tmp_str, posX, posY, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[0]);
-	
-//	if(eeprom_buffer.params.Throt_scale_en){
-//		write_filled_rectangle_lm(posX-25, posY+10, pos_th_x, 5, 1, 1);
-//		write_hline_lm(pos_th_x, posX+25, posY+10, 1, 1);
-//		write_hline_lm(pos_th_x, posX+25, posY+14, 1, 1);
-//		write_vline_lm(posX+25, posY+10, posY+14, 1, 1);
-//		write_vline_lm(posX-25, posY+10, posY+14, 1, 1);
-//	}
-	
-	if(eeprom_buffer.params.Throt_scale_en){
-		write_filled_rectangle_lm(posX+3, posY+25-pos_th_y, 5, pos_th_y, 1, 1);
-		write_hline_lm(posX+3, posX+7, posY-25, 1, 1);
-		write_hline_lm(posX+3, posX+7, posY+25-pos_th_y, 1, 1);
-		write_vline_lm(posX+3, posY-25, posY+25-pos_th_y, 1, 1);
-		write_vline_lm(posX+7, posY-25, posY+25-pos_th_y, 1, 1);
-	}
-}
-	
 void draw_flight_mode(int x, int y, int xs, int ys, int va, int ha, int flags, int font)
 {
 	char* mode_str = "unknown";
@@ -698,7 +410,221 @@ void draw_flight_mode(int x, int y, int xs, int ys, int va, int ha, int flags, i
 	write_string(mode_str, x, y, xs, ys, va, ha, flags, font);
 }
 
+void hud_draw_uav3d(void)
+{
+	static MATRIX4X4 mrot; // general rotation matrix
+	
+	static int32_t roll = 0;
+	static int32_t pitch=0;
+	static int32_t yaw=0;
+	
+	write_string("N", GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE-40, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
+	write_string("E", GRAPHICS_X_MIDDLE+40, GRAPHICS_Y_MIDDLE, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
+	//need to adjust viewport base on the video mode
+	Adjust_Viewport_CAM4DV1(&cam, GRAPHICS_RIGHT, GRAPHICS_BOTTOM);
+	
+	roll = ((int32_t)osd_roll + 360) %360;	
+	roll = fabs(roll-360);
+	
+	pitch = ((int32_t)osd_pitch + 360) %360;
+	pitch = fabs(pitch-360);
+	
+	yaw = fabs(osd_heading-360);
 
+	Reset_OBJECT4DV1(&uav3D);
+	
+	// generate rotation matrix around
+	Build_XYZ_Rotation_MATRIX4X4(pitch, roll, yaw, &mrot);	
+	
+	// rotate and transfer to world coord
+	Transform_To_World_OBJECT4DV1(&uav3D, &mrot);
+
+	// generate camera matrix
+	Build_CAM4DV1_Matrix_Euler(&cam);
+
+	// transfer obj world -> camera -> perspective -> screen
+	// then perform backfaces remove
+	Transform_To_Screen_OBJECT4DV1(&uav3D, &cam);
+	
+	//draw object wire
+	for (int poly=0; poly < uav3D.num_polys; poly++)
+    {
+		// render this polygon if and only if it's not clipped, not culled,
+		// active, and visible, note however the concecpt of "backface" is 
+		// irrelevant in a wire frame engine though
+		if (!(uav3D.plist[poly].state & POLY4DV1_STATE_ACTIVE) ||
+			 (uav3D.plist[poly].state & POLY4DV1_STATE_CLIPPED ) ||
+			 (uav3D.plist[poly].state & POLY4DV1_STATE_BACKFACE) )
+		   continue; // move onto next poly
+		
+		// extract vertex indices into master list, rember the polygons are 
+		// NOT self contained, but based on the vertex list stored in the object
+		// itself
+		int vindex_0 = uav3D.plist[poly].vert[0];
+		int vindex_1 = uav3D.plist[poly].vert[1];
+		int vindex_2 = uav3D.plist[poly].vert[2];
+		
+		// draw the lines now								
+		write_line_outlined(uav3D.vlist_trans[ vindex_0 ].x, uav3D.vlist_trans[ vindex_0 ].y, 
+							uav3D.vlist_trans[ vindex_1 ].x, uav3D.vlist_trans[ vindex_1 ].y, 
+							2, 2, 0, 1);
+		
+		write_line_outlined(uav3D.vlist_trans[ vindex_1 ].x, uav3D.vlist_trans[ vindex_1 ].y, 
+							uav3D.vlist_trans[ vindex_2 ].x, uav3D.vlist_trans[ vindex_2 ].y, 
+							2, 2, 0, 1);
+		
+		write_line_outlined(uav3D.vlist_trans[ vindex_2 ].x, uav3D.vlist_trans[ vindex_2 ].y, 
+							uav3D.vlist_trans[ vindex_0 ].x, uav3D.vlist_trans[ vindex_0 ].y, 
+							2, 2, 0, 1);
+
+    } // end for poly
+}
+
+void hud_draw_uav2d()
+{
+	int index = 0;
+	
+	Reset_Polygon2D(&uav2D);
+	Transform_Polygon2D(&uav2D, -osd_roll, 0, osd_pitch);
+	
+	// loop thru and draw a line from vertices 1 to n
+	VECTOR4D v;
+	for (index=0; index < uav2D.num_verts-1; )
+	{
+		VECTOR4D_INITXYZW(&v, 	uav2D.vlist_trans[index].x+uav2D.x0, uav2D.vlist_trans[index].y+uav2D.y0, 
+								uav2D.vlist_trans[index+1].x+uav2D.x0, uav2D.vlist_trans[index+1].y+uav2D.y0);
+		if(Clip_Line(&v))
+		{
+			write_line_outlined(v.x, v.y, v.z, v.w, 2, 2, 0, 1);
+		}
+		index += 2;
+	} // end for
+	
+	//rotate roll scale and display, we only cal x
+	Reset_Polygon2D(&rollscale2D);
+	Rotate_Polygon2D(&rollscale2D, -osd_roll);
+	for (index=0; index < rollscale2D.num_verts-1; index++)
+	{
+		// draw line from ith to ith+1 vertex
+		write_line_outlined(rollscale2D.vlist_trans[index].x + rollscale2D.x0, rollscale2D.vlist_trans[index].y + rollscale2D.y0,
+							rollscale2D.vlist_trans[index+1].x + rollscale2D.x0, rollscale2D.vlist_trans[index+1].y + rollscale2D.y0,
+							2, 2, 0, 1);
+	} // end for
+	
+	int x = GRAPHICS_X_MIDDLE,
+		y = GRAPHICS_Y_MIDDLE;
+	char tmp_str[10] = {0};
+	//draw uav
+	write_line_outlined(GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE,GRAPHICS_X_MIDDLE-9,GRAPHICS_Y_MIDDLE+5, 2, 2, 0, 1);
+	write_line_outlined(GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE,GRAPHICS_X_MIDDLE+9,GRAPHICS_Y_MIDDLE+5, 2, 2, 0, 1);
+	write_line_outlined(GRAPHICS_X_MIDDLE-25, GRAPHICS_Y_MIDDLE,GRAPHICS_X_MIDDLE-15,GRAPHICS_Y_MIDDLE, 2, 2, 0, 1);
+	write_line_outlined(GRAPHICS_X_MIDDLE+15, GRAPHICS_Y_MIDDLE,GRAPHICS_X_MIDDLE+25,GRAPHICS_Y_MIDDLE, 2, 2, 0, 1);
+
+	
+	write_filled_rectangle_lm(x-9, y+6, 15, 9, 0, 1);	
+	sprintf(tmp_str, "%d", (int)osd_pitch);
+	write_string(tmp_str, x, y+5, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
+	
+	y = GRAPHICS_Y_MIDDLE-75;
+	//draw roll value
+	write_line_outlined(x, y, x-4, y+8, 2, 2, 0, 1);
+	write_line_outlined(x, y, x+4, y+8, 2, 2, 0, 1);
+	write_line_outlined(x-4, y+8, x+4, y+8, 2, 2, 0, 1);
+	sprintf(tmp_str, "%d", (int)osd_roll);
+	write_string(tmp_str, x, y-3, 0, 0, TEXT_VA_BOTTOM, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
+}
+
+void hud_draw_throttle(void)
+{
+	char tmp_str[10] = { 0 };
+	int16_t pos_th_y, pos_th_x;
+	int posX, posY;
+	posX = eeprom_buffer.params.Throt_posX;
+	posY = eeprom_buffer.params.Throt_posY;
+
+	pos_th_y = (int16_t)(0.5*osd_throttle);
+	pos_th_x = posX - 25 + pos_th_y;
+	sprintf(tmp_str, "%d", (int32_t)osd_throttle);
+	write_string(tmp_str, posX, posY, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[0]);
+	
+//	if(eeprom_buffer.params.Throt_scale_en){
+//		write_filled_rectangle_lm(posX-25, posY+10, pos_th_x, 5, 1, 1);
+//		write_hline_lm(pos_th_x, posX+25, posY+10, 1, 1);
+//		write_hline_lm(pos_th_x, posX+25, posY+14, 1, 1);
+//		write_vline_lm(posX+25, posY+10, posY+14, 1, 1);
+//		write_vline_lm(posX-25, posY+10, posY+14, 1, 1);
+//	}
+	
+	if(eeprom_buffer.params.Throt_scale_en){
+		if(eeprom_buffer.params.Throttle_Scale_Type == 0){
+			write_filled_rectangle_lm(posX+3, posY+25-pos_th_y, 5, pos_th_y, 1, 1);
+			write_hline_lm(posX+3, posX+7, posY-25, 1, 1);
+			write_hline_lm(posX+3, posX+7, posY+25-pos_th_y, 1, 1);
+			write_vline_lm(posX+3, posY-25, posY+25-pos_th_y, 1, 1);
+			write_vline_lm(posX+7, posY-25, posY+25-pos_th_y, 1, 1);
+		}
+		else if(eeprom_buffer.params.Throttle_Scale_Type == 1){
+			write_filled_rectangle_lm(posX-25, posY+10, pos_th_y, 5, 1, 1);
+			write_hline_lm(pos_th_x, posX+25, posY+10, 1, 1);
+			write_hline_lm(pos_th_x, posX+25, posY+14, 1, 1);
+			write_vline_lm(posX+25, posY+10, posY+14, 1, 1);
+			write_vline_lm(posX-25, posY+10, posY+14, 1, 1);
+		}
+	}
+}
+
+void hud_draw_CWH(void)
+{
+	char tmp_str[100] = { 0 };
+	float dstlon, dstlat, dstsqrt;
+
+	if(osd_got_home == 0 && osd_fix_type > 1){
+		osd_home_lat = osd_lat;
+		osd_home_lon = osd_lon;
+		osd_got_home = 1;
+	}
+	else if(osd_got_home == 1){
+		// shrinking factor for longitude going to poles direction
+		float rads = fabs(osd_home_lat) * D2R;
+		double scaleLongDown = Fast_Cos(rads);
+		double scaleLongUp   = 1.0f/Fast_Cos(rads);
+		
+		//DST to Home
+		dstlat = fabs(osd_home_lat - osd_lat) * 111319.5;
+		dstlon = fabs(osd_home_lon - osd_lon) * 111319.5 * scaleLongDown;
+		dstsqrt = dstlat*dstlat + dstlon*dstlon;
+		osd_home_distance = sqrt(dstsqrt) / 10000000.0f;
+
+		//DIR to Home
+		dstlon = (osd_home_lon - osd_lon); //OffSet_X
+		dstlat = (osd_home_lat - osd_lat) * scaleLongUp; //OffSet Y
+		osd_home_bearing = 90 + (atan2(dstlat, -dstlon) * R2D); //absolut home direction
+		osd_home_bearing = (osd_home_bearing+360)%360;
+	}
+	
+	//distance
+	if(eeprom_buffer.params.CWH_home_dist_en && bShownAtPanle(eeprom_buffer.params.CWH_home_dist_panel)){	
+		float tmp = osd_home_distance * convert_distance;
+		sprintf(tmp_str, "%s%d%s", " H:", (int)tmp, dist_unit);
+		write_string(tmp_str, eeprom_buffer.params.CWH_home_dist_posX, eeprom_buffer.params.CWH_home_dist_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.CWH_home_dist_align, 0, SIZE_TO_FONT[eeprom_buffer.params.CWH_home_dist_fontsize]);
+	}
+	if((wp_number != 0) &&(eeprom_buffer.params.CWH_wp_dist_en) && bShownAtPanle(eeprom_buffer.params.CWH_wp_dist_panel)){	
+		float tmp = wp_dist * convert_distance;
+		sprintf(tmp_str, "%s%d%s", "WP:", (int)tmp, dist_unit);
+		write_string(tmp_str, eeprom_buffer.params.CWH_wp_dist_posX, eeprom_buffer.params.CWH_wp_dist_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.CWH_wp_dist_align, 0, SIZE_TO_FONT[eeprom_buffer.params.CWH_wp_dist_fontsize]);
+	}
+	
+	//direction - map-like mode
+	if(eeprom_buffer.params.CWH_Nmode_en && bShownAtPanle(eeprom_buffer.params.CWH_Nmode_panel)){		
+		hud_draw_head_wp_home();
+	}
+		
+	//direction - scale mode
+	if(eeprom_buffer.params.CWH_Tmode_en && bShownAtPanle(eeprom_buffer.params.CWH_Tmode_panel)){
+		hud_draw_linear_compass(osd_heading, 0, 120, 180, GRAPHICS_X_MIDDLE, eeprom_buffer.params.CWH_Tmode_posY, 15, 30, 5, 8, 0);
+	}
+
+}
 
 /**
  * hud_draw_compass: Draw a compass.
@@ -841,21 +767,6 @@ void hud_draw_linear_compass(int v, int home_dir, int range, int width, int x, i
 	write_string(headingstr, x + 1, majtick_start + textoffset + 2, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_CENTER, 1, 3);
 #endif
 }
-
-// map with uav at center
-void draw_map_uav_center(int width_px, int height_px, int width_m, int height_m, bool show_wp, bool show_uav)
-{
-	// Draw UAV
-	if (show_uav) {
-		write_line_outlined(GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE, GRAPHICS_X_MIDDLE - 5, GRAPHICS_Y_MIDDLE + 9, 2, 0, 0, 1);
-		write_line_outlined(GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE, GRAPHICS_X_MIDDLE + 5, GRAPHICS_Y_MIDDLE + 9, 2, 0, 0, 1);
-	}
-	
-	// Draw rool scale
-	write_circle_outlined(GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE, 70, 0, 0,0,1);
-}
-
-
 
 /**
  * hud_draw_vertical_scale: Draw a vertical scale.
@@ -1016,146 +927,6 @@ void hud_draw_vertical_scale(int v, int range, int halign, int x, int y, int hei
 	write_hline_outlined(boundtick_start, boundtick_end, y - (height / 2), 2, 2, 0, 1);
 }
 
-
-void hud_draw_uav3d(void)
-{
-	static MATRIX4X4 mrot; // general rotation matrix
-	
-	static int32_t roll = 0;
-	static int32_t pitch=0;
-	static int32_t yaw=0;
-	
-	//need to adjust viewport base on the video mode
-	Adjust_Viewport_CAM4DV1(&cam, GRAPHICS_RIGHT, GRAPHICS_BOTTOM);
-	
-	roll = ((int32_t)osd_roll + 360) %360;	
-	roll = fabs(roll-360);
-	
-	pitch = ((int32_t)osd_pitch + 360) %360;
-	pitch = fabs(pitch-360);
-	
-	yaw = fabs(osd_heading-360);
-
-	Reset_OBJECT4DV1(&uav3D);
-	
-	// generate rotation matrix around
-	Build_XYZ_Rotation_MATRIX4X4(pitch, roll, yaw, &mrot);
-	//Build_XYZ_Rotation_MATRIX4X4(pitch, yaw, roll, &mrot);
-	
-	
-	// rotate and transfer to world coord
-	Transform_To_World_OBJECT4DV1(&uav3D, &mrot);
-
-	// generate camera matrix
-	Build_CAM4DV1_Matrix_Euler(&cam);
-
-	// transfer obj world -> camera -> perspective -> screen
-	// then perform backfaces remove
-	Transform_To_Screen_OBJECT4DV1(&uav3D, &cam);
-	
-	//draw object wire
-	for (int poly=0; poly < uav3D.num_polys; poly++)
-    {
-		// render this polygon if and only if it's not clipped, not culled,
-		// active, and visible, note however the concecpt of "backface" is 
-		// irrelevant in a wire frame engine though
-		if (!(uav3D.plist[poly].state & POLY4DV1_STATE_ACTIVE) ||
-			 (uav3D.plist[poly].state & POLY4DV1_STATE_CLIPPED ) ||
-			 (uav3D.plist[poly].state & POLY4DV1_STATE_BACKFACE) )
-		   continue; // move onto next poly
-		
-		// extract vertex indices into master list, rember the polygons are 
-		// NOT self contained, but based on the vertex list stored in the object
-		// itself
-		int vindex_0 = uav3D.plist[poly].vert[0];
-		int vindex_1 = uav3D.plist[poly].vert[1];
-		int vindex_2 = uav3D.plist[poly].vert[2];
-		
-		// draw the lines now								
-		write_line_outlined(uav3D.vlist_trans[ vindex_0 ].x, uav3D.vlist_trans[ vindex_0 ].y, 
-							uav3D.vlist_trans[ vindex_1 ].x, uav3D.vlist_trans[ vindex_1 ].y, 
-							2, 2, 0, 1);
-		
-		write_line_outlined(uav3D.vlist_trans[ vindex_1 ].x, uav3D.vlist_trans[ vindex_1 ].y, 
-							uav3D.vlist_trans[ vindex_2 ].x, uav3D.vlist_trans[ vindex_2 ].y, 
-							2, 2, 0, 1);
-		
-		write_line_outlined(uav3D.vlist_trans[ vindex_2 ].x, uav3D.vlist_trans[ vindex_2 ].y, 
-							uav3D.vlist_trans[ vindex_0 ].x, uav3D.vlist_trans[ vindex_0 ].y, 
-							2, 2, 0, 1);
-
-    } // end for poly
-}
-
-void hud_draw_uav2d()
-{
-	int index = 0;
-
-	
-//	drawBox(MIN_CLIP_X, MIN_CLIP_Y, MAX_CLIP_X, MAX_CLIP_Y);
-//	return;
-	
-	Reset_Polygon2D(&uav2D);
-	Transform_Polygon2D(&uav2D, -osd_roll, 0, osd_pitch);
-	
-	// loop thru and draw a line from vertices 1 to n
-	VECTOR4D v;
-	for (index=0; index < uav2D.num_verts-1; )
-	{
-		VECTOR4D_INITXYZW(&v, 	uav2D.vlist_trans[index].x+uav2D.x0, uav2D.vlist_trans[index].y+uav2D.y0, 
-								uav2D.vlist_trans[index+1].x+uav2D.x0, uav2D.vlist_trans[index+1].y+uav2D.y0);
-		if(Clip_Line(&v))
-		{
-			write_line_outlined(v.x, v.y, v.z, v.w, 2, 2, 0, 1);
-		}
-		index += 2;
-	} // end for
-	
-	//rotate roll scale and display, we only cal x
-	Reset_Polygon2D(&rollscale2D);
-	Rotate_Polygon2D(&rollscale2D, -osd_roll);
-	for (index=0; index < rollscale2D.num_verts-1; index++)
-	{
-		// draw line from ith to ith+1 vertex
-		write_line_outlined(rollscale2D.vlist_trans[index].x + rollscale2D.x0, rollscale2D.vlist_trans[index].y + rollscale2D.y0,
-							rollscale2D.vlist_trans[index+1].x + rollscale2D.x0, rollscale2D.vlist_trans[index+1].y + rollscale2D.y0,
-							2, 2, 0, 1);
-	} // end for
-	
-	int x = GRAPHICS_X_MIDDLE,
-		y = GRAPHICS_Y_MIDDLE;
-	char tmp_str[10] = {0};
-	//draw uav
-	write_line_outlined(GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE,GRAPHICS_X_MIDDLE-9,GRAPHICS_Y_MIDDLE+5, 2, 2, 0, 1);
-	write_line_outlined(GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE,GRAPHICS_X_MIDDLE+9,GRAPHICS_Y_MIDDLE+5, 2, 2, 0, 1);
-	write_line_outlined(GRAPHICS_X_MIDDLE-25, GRAPHICS_Y_MIDDLE,GRAPHICS_X_MIDDLE-15,GRAPHICS_Y_MIDDLE, 2, 2, 0, 1);
-	write_line_outlined(GRAPHICS_X_MIDDLE+15, GRAPHICS_Y_MIDDLE,GRAPHICS_X_MIDDLE+25,GRAPHICS_Y_MIDDLE, 2, 2, 0, 1);
-	
-//	for (i = 0; i < arrow_len; i++) 
-//	{
-//		write_pixel_lm(xx - arrow_len + i, y - i - 1, 1, 1);
-//		write_hline_lm(xx + dim.width - 1, xx - arrow_len + i + 1, y - i - 1, 0, 1);
-//		write_hline_lm(xx + dim.width - 1, xx - arrow_len + i + 1, y + i - 1, 0, 1);
-//	}
-	
-	write_filled_rectangle_lm(x-9, y+6, 15, 9, 0, 1);	
-	sprintf(tmp_str, "%d", (int)osd_pitch);
-	write_string(tmp_str, x, y+5, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
-	//write_filled_rectangle_lm(150, y-105, 30, 5, 0, 0);
-	
-	y = GRAPHICS_Y_MIDDLE-75;
-	//draw roll value
-	write_line_outlined(x, y, x-4, y+8, 2, 2, 0, 1);
-	write_line_outlined(x, y, x+4, y+8, 2, 2, 0, 1);
-	write_line_outlined(x-4, y+8, x+4, y+8, 2, 2, 0, 1);
-	sprintf(tmp_str, "%d", (int)osd_roll);
-	write_string(tmp_str, x, y-3, 0, 0, TEXT_VA_BOTTOM, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
-	
-	//draw compass
-//	hud_draw_linear_compass(osd_heading, osd_home_bearing, 120, 180, GRAPHICS_X_MIDDLE, 15, 15, 30, 5, 8, 0);
-//	hud_draw_head_wp_home();
-}
-
 void hud_draw_head_wp_home()
 {
 	int posX, posY, r;
@@ -1166,11 +937,7 @@ void hud_draw_head_wp_home()
 	posY = eeprom_buffer.params.CWH_Nmode_posY;
 	r = eeprom_buffer.params.CWH_Nmode_radius;
 	write_circle_outlined(posX, posY, r, 0, 1, 0, 1);
-//	write_string("N", posX, posY - r, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
-//	write_string("E", posX + r, posY, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[0]);
-//	write_string("S", posX, posY+r+2, 0, 0, TEXT_VA_BOTTOM, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
-//	write_string("W", posX - r+2, posY, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-	
+	write_string("N", posX, posY - r, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);	
 
 	//draw heading
 	POLYGON2D suav;
@@ -1182,18 +949,12 @@ void hud_draw_head_wp_home()
 	VECTOR2D_INITXYZ(&(suav.vlist_local[1]), -3, 7);
 	VECTOR2D_INITXYZ(&(suav.vlist_local[2]), 3, 7);
 	Reset_Polygon2D(&suav);
-	//Rotate_Polygon2D(&suav, -osd_heading);
 	Rotate_Polygon2D(&suav, osd_heading);
 	write_line_outlined(suav.vlist_trans[0].x+suav.x0, suav.vlist_trans[0].y+suav.y0,
 						suav.vlist_trans[1].x+suav.x0,suav.vlist_trans[1].y+suav.y0, 2, 2, 0, 1);
 	write_line_outlined(suav.vlist_trans[0].x+suav.x0, suav.vlist_trans[0].y+suav.y0,
 						suav.vlist_trans[2].x+suav.x0,suav.vlist_trans[2].y+suav.y0, 2, 2, 0, 1);
-	
-//	osd_home_distance = 30;
-//	wp_number = 2;
-//	wp_dist = 50;
-//	osd_home_bearing = 30;
-//	wp_target_bearing = 60;
+
 	// draw home			
 	// the home only shown when the distance above 2m
 	if(((int32_t)osd_home_distance > 2))
@@ -1210,16 +971,186 @@ void hud_draw_head_wp_home()
 		float wpCY = posY + (eeprom_buffer.params.CWH_Nmode_wp_radius)*Fast_Cos(wp_target_bearing);
 		sprintf(tmp_str, "%d", (int)wp_number);
 		write_string(tmp_str, wpCX, wpCY, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
-//		int wplen = 6;
-//		VERTEX2DF vlist_wp[4];
-//		VECTOR2D_INITXYZ(&(vlist_wp[0]), 0, -wplen);
-//		VECTOR2D_INITXYZ(&(vlist_wp[1]), wplen, 0);
-//		VECTOR2D_INITXYZ(&(vlist_wp[2]), 0, wplen-2);
-//		VECTOR2D_INITXYZ(&(vlist_wp[3]), 0, 0);
-//		write_line_lm(vlist_wp[2].x+wpCX, vlist_wp[2].y+wpCY,
-//					  vlist_wp[3].x+wpCX, vlist_wp[3].y+wpCY, 1, 1);
-//		write_triangle_wire(vlist_wp[0].x+wpCX, vlist_wp[0].y+wpCY,
-//							vlist_wp[1].x+wpCX, vlist_wp[1].y+wpCY,
-//							vlist_wp[3].x+wpCX, vlist_wp[3].y+wpCY);
 	}
+}
+
+void hud_draw_wind(void)
+{
+	char tmp_str[10] = {0};
+	uint16_t posX = eeprom_buffer.params.Wind_posX;
+	uint16_t posY = eeprom_buffer.params.Wind_posY;
+	
+	//write_string("wind:", posX, posY, 0, 0, TEXT_VA_MIDDLE, eeprom_buffer.params.Wind_align, 0, SIZE_TO_FONT[eeprom_buffer.params.Wind_fontsize]);
+	
+	//draw direction
+	POLYGON2D obj2D;
+	obj2D.state       = 1; 
+	obj2D.num_verts   = 5;  
+	obj2D.x0          = posX; 
+	obj2D.y0          = posY;
+	VECTOR2D_INITXYZ(&(obj2D.vlist_local[0]), -3, -2);
+	VECTOR2D_INITXYZ(&(obj2D.vlist_local[1]), 0, -8);
+	VECTOR2D_INITXYZ(&(obj2D.vlist_local[2]), 3, -2);
+	VECTOR2D_INITXYZ(&(obj2D.vlist_local[3]), 0, 8);
+	VECTOR2D_INITXYZ(&(obj2D.vlist_local[4]), 0, -2);
+	Reset_Polygon2D(&obj2D);
+	Rotate_Polygon2D(&obj2D, osd_windDir);
+	write_triangle_wire(obj2D.vlist_trans[0].x+obj2D.x0, obj2D.vlist_trans[0].y+obj2D.y0,
+											obj2D.vlist_trans[1].x+obj2D.x0,obj2D.vlist_trans[1].y+obj2D.y0,
+											obj2D.vlist_trans[2].x+obj2D.x0, obj2D.vlist_trans[2].y+obj2D.y0);
+	write_line_outlined(obj2D.vlist_trans[3].x+obj2D.x0, obj2D.vlist_trans[3].y+obj2D.y0,
+											obj2D.vlist_trans[4].x+obj2D.x0,obj2D.vlist_trans[4].y+obj2D.y0, 2, 2, 0, 1);
+											
+	//draw wind speed
+	float tmp = osd_windSpeed * convert_speed;
+	sprintf(tmp_str, "%.2f%s", tmp, spd_unit);
+	write_string(tmp_str, posX+15, posY, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
+}
+
+void hud_draw_warnning(void)
+{
+	
+	write_string(warn_str, eeprom_buffer.params.Alarm_posX, eeprom_buffer.params.Alarm_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.Alarm_align, 0, SIZE_TO_FONT[eeprom_buffer.params.Alarm_fontsize]);
+	
+	if((GetSystimeMS() - last_warn_time) < 1000)
+	{
+		return;
+	}
+	
+	
+	bool haswarn = false;
+	const static int warn_cnt = 6;
+	uint8_t warning[]={0, 0, 0, 0, 0, 0}; 
+	
+	//no GPS fix!
+	if( eeprom_buffer.params.Alarm_GPS_status_en && (osd_fix_type < GPS_OK_FIX_3D)) {
+		haswarn = true;
+		warning[0] = 1;
+	}
+	
+	//low batt
+	if( eeprom_buffer.params.Alarm_low_batt_en && (osd_battery_remaining_A < eeprom_buffer.params.Alarm_low_batt)) {
+		haswarn = true;
+		warning[1] = 1;
+	}
+	
+	//under speed
+	if( eeprom_buffer.params.Alarm_low_speed_en && (osd_groundspeed < eeprom_buffer.params.Alarm_low_speed)) {
+		haswarn = true;
+		warning[2] = 1;
+	}
+	
+	//over speed
+	if( eeprom_buffer.params.Alarm_over_speed_en && (osd_groundspeed > eeprom_buffer.params.Alarm_over_speed)) {
+		haswarn = true;
+		warning[3] = 1;
+	}
+	
+	//under altitude
+	if( eeprom_buffer.params.Alarm_low_alt_en && (osd_alt < eeprom_buffer.params.Alarm_low_alt)) {
+		haswarn = true;
+		warning[4] = 1;
+	}
+	
+	//over altitude
+	if( eeprom_buffer.params.Alarm_over_alt_en && (osd_alt > eeprom_buffer.params.Alarm_over_alt)) {
+		haswarn = true;
+		warning[5] = 1;
+	}
+	
+	if(haswarn ){
+		last_warn_time = GetSystimeMS();
+		if(last_warn_type > (warn_cnt - 1)) last_warn_type = 0;
+		
+		if((last_warn_type == 0) && (warning[0] == 1)){
+			warn_str = "NO GPS FIX";
+			last_warn_type++;
+			return;
+		}
+		
+		if((last_warn_type == 1) && (warning[1] == 1)){
+			warn_str = "LOW BATTERY";
+			last_warn_type++;
+			return;
+		}
+		
+		if((last_warn_type == 2) && (warning[2] == 1)){
+			warn_str = "SPEED LOW";
+			last_warn_type++;
+			return;
+		}
+		if((last_warn_type == 3) && (warning[3] == 1)){
+			warn_str = "OVER SPEED";
+			last_warn_type++;
+			return;
+		}
+		if((last_warn_type == 4) && (warning[4] == 1)){
+			warn_str = "LOW ALT";
+			last_warn_type++;
+			return;
+		}
+		if((last_warn_type == 5) && (warning[5] == 1)){
+			warn_str = "HIGH ALT";
+			last_warn_type++;
+			return;
+		}
+		last_warn_type++;
+	}
+	else{
+		warn_str = "";
+	}
+}
+
+void DJI_test(void)
+{
+	char tmp_str[100] = { 0 };
+	
+	int16_t tmp_int16;
+	int tmp_int1, tmp_int2;
+	
+	sprintf(tmp_str, "%0.1fV", (float)osd_vbat_A);
+	write_string(tmp_str, 20, 50, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[1]);
+	sprintf(tmp_str, "%i", osd_battery_remaining_A);
+	write_string(tmp_str, 90, 50, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
+	
+	sprintf(tmp_str, "P %d", (int32_t)osd_pitch);
+	write_string(tmp_str, GRAPHICS_X_MIDDLE-50, 50, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[1]);
+	sprintf(tmp_str, "R %d", (int32_t)osd_roll);
+	write_string(tmp_str, GRAPHICS_X_MIDDLE-50, 65, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[1]);
+	
+	sprintf(tmp_str, "hV %0.1f", (double)osd_groundspeed);
+	write_string(tmp_str, GRAPHICS_X_MIDDLE+10, 50, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[1]);
+	
+	sprintf(tmp_str, "GPS %d", osd_satellites_visible);
+	write_string(tmp_str, GRAPHICS_X_MIDDLE+150, 50, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
+	sprintf(tmp_str, "%0.5f lat", (double)(osd_lat / 10000000.0));
+	write_string(tmp_str, GRAPHICS_X_MIDDLE+170, 65, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
+	sprintf(tmp_str, "%0.5f lon", (double)(osd_lon / 10000000.0));
+	write_string(tmp_str, GRAPHICS_X_MIDDLE+170, 80, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
+	sprintf(tmp_str, "%0.1f hdop", (double)(osd_hdop));
+	write_string(tmp_str, GRAPHICS_X_MIDDLE+170, 95, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
+	
+	sprintf(tmp_str, "D %d", (int32_t)osd_home_distance);
+	write_string(tmp_str, 20, GRAPHICS_Y_MIDDLE-30, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[1]);
+	
+	sprintf(tmp_str, "H %d", (int32_t)osd_alt);
+	write_string(tmp_str, 20, GRAPHICS_Y_MIDDLE-15, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[1]);
+	
+	char* mode_str = "unknown";
+	if(osd_mode == 0) mode_str = "MANUAL";
+	else if(osd_mode == 1) mode_str = "GPS";
+	else if(osd_mode == 2) mode_str = "FAILSAFE";
+	else if(osd_mode == 3) mode_str = "ATTI";
+
+	write_string(mode_str, 20, GRAPHICS_Y_MIDDLE+15, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
+	
+	sprintf(tmp_str, "%0.5f Hlat", (double)(osd_home_lat / 10000000.0));
+	write_string(tmp_str, GRAPHICS_X_MIDDLE+10, GRAPHICS_Y_MIDDLE+15, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
+	sprintf(tmp_str, "%0.5f Hlon", (double)(osd_home_lon / 10000000.0));
+	write_string(tmp_str, GRAPHICS_X_MIDDLE+170, GRAPHICS_Y_MIDDLE+15, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
+	
+	sprintf(tmp_str, "vV %0.1f", (double)osd_downVelocity);
+	write_string(tmp_str, GRAPHICS_X_MIDDLE+150, GRAPHICS_Y_MIDDLE-15, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[1]);
+
+	hud_draw_linear_compass(osd_heading, osd_home_bearing, 120, 180, GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE+80, 15, 30, 5, 8, 0);
 }

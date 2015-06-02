@@ -113,7 +113,7 @@ namespace px4uploader
                     if (!File.Exists(port))
                         throw new Exception("No such device");
                 this.port.Open();
-                this.port.Write("reboot -b\r");
+                //this.port.Write("reboot -b\r");
                 Console.WriteLine("..done");
             }
             catch (Exception ex)

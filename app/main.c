@@ -25,7 +25,6 @@ bool stackOverflow = false;
 xSemaphoreHandle onScreenDisplaySemaphore;
 xSemaphoreHandle onMavlinkSemaphore;
 xSemaphoreHandle onUAVTalkSemaphore;
-//xSemaphoreHandle onVCPSemaphore;
 
 int main(void)
 {
@@ -33,7 +32,6 @@ int main(void)
 	vSemaphoreCreateBinary(onScreenDisplaySemaphore);
 	vSemaphoreCreateBinary(onMavlinkSemaphore);
 	vSemaphoreCreateBinary(onUAVTalkSemaphore);
-//	vSemaphoreCreateBinary(onVCPSemaphore);
 	
 	board_init();
 	module_init();

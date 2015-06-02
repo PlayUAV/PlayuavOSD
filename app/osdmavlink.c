@@ -36,7 +36,7 @@ void request_mavlink_rates(void)
         MAV_DATA_STREAM_POSITION,
         MAV_DATA_STREAM_EXTRA1, 
         MAV_DATA_STREAM_EXTRA2};
-    //const u16 MAVRates[maxStreams] = {0x01, 0x02, 0x05, 0x02, 0x05, 0x02};
+  //const u16 MAVRates[maxStreams] = {0x01, 0x02, 0x05, 0x02, 0x05, 0x02};
 	u16 MAVRates[maxStreams] = {0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A};
 	if(apm_mav_component == 0x32) //pixhawk origin FW
 	{
@@ -75,8 +75,13 @@ void parseMavlink(void)
 						apm_mav_type      = mavlink_msg_heartbeat_get_type(&msg);            
 						osd_mode = (uint8_t)mavlink_msg_heartbeat_get_custom_mode(&msg);
 						base_mode = mavlink_msg_heartbeat_get_base_mode(&msg);
+						
+						last_motor_armed = motor_armed;
 						motor_armed = base_mode & (1 << 7);
 						
+						if(heatbeat_start_time == 0){
+							heatbeat_start_time = GetSystimeMS();
+						}	
 						lastMAVBeat = GetSystimeMS();
 						if(waitingMAVBeats == 1){
 							enable_mav_request = 1;
@@ -157,6 +162,12 @@ void parseMavlink(void)
 						osd_rssi = mavlink_msg_rc_channels_raw_get_rssi(&msg);
 					}
 					break;
+				case MAVLINK_MSG_ID_WIND:
+					{
+						osd_windDir = mavlink_msg_wind_get_direction(&msg); // 0..360 deg, 0=north
+						osd_windSpeed = mavlink_msg_wind_get_speed(&msg); //m/s
+					}
+					break;
 				default:
 					//Do nothing
 					break;
@@ -173,24 +184,6 @@ void MavlinkTask(void *pvParameters)
 	while (1) 
 	{
 		xSemaphoreTake(onMavlinkSemaphore, portMAX_DELAY);
-
-		//if no mavlink update for 2 secs, show waring and request mavlink rate again
-		if(GetSystimeMS() > (lastMAVBeat + 2200))
-		{
-			waitingMAVBeats = 1;
-			//showWarnning();
-		}
-
-		if(enable_mav_request == 1)
-		{
-			for(int n = 0; n < 3; n++){
-				request_mavlink_rates();//Three times to certify it will be readed
-				vTaskDelay(50/portTICK_RATE_MS);
-			}
-			enable_mav_request = 0;
-			waitingMAVBeats = 0;
-			lastMAVBeat = GetSystimeMS();
-		}
 		parseMavlink();
 	}
 }

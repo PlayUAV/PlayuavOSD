@@ -224,6 +224,14 @@ typedef union{
 		
 		uint16_t FC_Type;	
 		
+		uint16_t Wind_en;
+		uint16_t Wind_panel;
+		uint16_t Wind_posX;
+		uint16_t Wind_posY;
+		
+		uint16_t Time_type;
+		
+		uint16_t Throttle_Scale_Type;
 //		//below is unused. if add a param, reduce one item here
 //		uint16_t unused[EERROM_SIZE/2 - 104];
 	}params;

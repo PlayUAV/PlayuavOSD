@@ -22,9 +22,9 @@ float my_sin_look[361];
 
 float32_t VECTOR3D_Length(VECTOR3D_PTR va)
 {
-// computes the magnitude of a vector, slow
+	// computes the magnitude of a vector, slow
 
-return( (float32_t)sqrtf(va->x*va->x + va->y*va->y + va->z*va->z) );
+	return( (float32_t)sqrtf(va->x*va->x + va->y*va->y + va->z*va->z) );
 
 } // end VECTOR3D_Length
 

@@ -44,16 +44,18 @@ void board_init(void)
 	GPIO_InitTypeDef  gpio;
 	SystemCoreClockUpdate( );
 	
-    // turn on peripherals needed by all
-    RCC_AHB1PeriphClockCmd(	RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | 
-							RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD |
-							RCC_AHB1Periph_DMA1  | RCC_AHB1Periph_DMA2  |
-							RCC_AHB1Periph_BKPSRAM, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1 | RCC_APB2Periph_TIM1 | RCC_APB2Periph_SYSCFG, ENABLE);
-    RCC_APB1PeriphClockCmd( RCC_APB1Periph_SPI2 | RCC_APB1Periph_SPI3 | RCC_APB1Periph_TIM2 | 
-							RCC_APB1Periph_TIM3 | RCC_APB1Periph_TIM4 | RCC_APB1Periph_PWR, ENABLE);
+	// turn on peripherals needed by all
+	RCC_AHB1PeriphClockCmd(	RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | 
+													RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD |
+													RCC_AHB1Periph_DMA1  | RCC_AHB1Periph_DMA2  |
+													RCC_AHB1Periph_BKPSRAM, ENABLE);
+	
+	RCC_APB2PeriphClockCmd( RCC_APB2Periph_SPI1 | RCC_APB2Periph_TIM1 | RCC_APB2Periph_SYSCFG, ENABLE);
+	
+	RCC_APB1PeriphClockCmd( RCC_APB1Periph_SPI2 | RCC_APB1Periph_SPI3 | RCC_APB1Periph_TIM2 | 
+													RCC_APB1Periph_TIM3 | RCC_APB1Periph_TIM4 | RCC_APB1Periph_PWR, ENABLE);
 
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
 	RCC_LSEConfig(RCC_LSE_OFF);
 	
@@ -86,15 +88,13 @@ void board_init(void)
 	//SPI1 output to electronic switch to control mask
 	GPIO_StructInit(&gpio);
 	gpio.GPIO_Pin = GPIO_Pin_6; // SPI1 MISO
-    gpio.GPIO_Mode = GPIO_Mode_AF;
+	gpio.GPIO_Mode = GPIO_Mode_AF;
 	gpio.GPIO_OType = GPIO_OType_PP;
-    gpio.GPIO_Speed = GPIO_Speed_50MHz;
+	gpio.GPIO_Speed = GPIO_Speed_50MHz;
 	gpio.GPIO_PuPd  = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOA, &gpio);
 	GPIO_ResetBits(GPIOA, GPIO_Pin_6);
 
-	
-	/* 配置 SCK, MISO 、 MOSI 为复用功能 */
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_SPI3);
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_SPI3);
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource12, GPIO_AF_SPI3);
@@ -103,7 +103,7 @@ void board_init(void)
 	gpio.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12;
 	gpio.GPIO_Mode = GPIO_Mode_AF;
 	gpio.GPIO_OType = GPIO_OType_PP;
-    gpio.GPIO_Speed = GPIO_Speed_50MHz;
+	gpio.GPIO_Speed = GPIO_Speed_50MHz;
 	gpio.GPIO_PuPd  = GPIO_PuPd_DOWN;
 	GPIO_Init(GPIOC, &gpio);
 	
@@ -118,15 +118,12 @@ void board_init(void)
 	
 	SPI_MAX7456_init();
 
-	
 	LoadParams();
 	
 	Build_Sin_Cos_Tables();
 	
-
 	/* Initialize USB VCP */    
-    TM_USB_VCP_Init();
-	//mavlink_usart_init(57600);
+	TM_USB_VCP_Init();
 }
 
 void module_init(void)
@@ -142,9 +139,6 @@ void module_init(void)
 	
 	xTaskCreate( vTaskVCP, (const char*)"Task VCP", 
 	STACK_SIZE_MIN*2, NULL, THREAD_PRIO_HIGH, &xTaskVCPHandle );
-	
-	//suspend the VCP routine when start. Resume it when the use connecting
-	//vTaskSuspend(xTaskVCPHandle);
 	
 	switch(eeprom_buffer.params.FC_Type){
 		case FC_APM_PIXHAWK:
@@ -189,6 +183,24 @@ void vTask10HZ(void *pvParameters)
 		if(eeprom_buffer.params.PWM_Panel_en)
 		{
 			triggerPanel();
+		}
+		
+		//if no mavlink update for 2 secs, show waring and request mavlink rate again
+		if(GetSystimeMS() > (lastMAVBeat + 2200))
+		{
+			heatbeat_start_time = 0;
+			waitingMAVBeats = 1;
+		}
+
+		if(enable_mav_request == 1)
+		{
+			for(int n = 0; n < 3; n++){
+				request_mavlink_rates();//Three times to certify it will be readed
+				vTaskDelay(50/portTICK_RATE_MS);
+			}
+			enable_mav_request = 0;
+			waitingMAVBeats = 0;
+			lastMAVBeat = GetSystimeMS();
 		}
 	}
 }

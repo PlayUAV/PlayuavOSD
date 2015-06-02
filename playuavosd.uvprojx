@@ -474,11 +474,6 @@
               <FilePath>.\app\osdmavlink.c</FilePath>
             </File>
             <File>
-              <FileName>dsptest.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\app\dsptest.c</FilePath>
-            </File>
-            <File>
               <FileName>m3dlib.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\app\m3dlib.c</FilePath>

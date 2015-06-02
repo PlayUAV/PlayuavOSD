@@ -33,7 +33,7 @@ namespace OSD
         byte[] paramdefault = new byte[1024];
 
         PlayuavOSD self;
-        string currentVersion = "1.0.0.3";
+        string currentVersion = "1.0.0.4";
 
         // Changes made to the params between writing to the copter
         readonly Hashtable _changes = new Hashtable();
@@ -901,6 +901,22 @@ namespace OSD
 
             _paramsAddr["FC_Type"] = address; address += 2;
             u16toEPPROM(paramdefault, (int)_paramsAddr["FC_Type"], 0);
+
+            //wind speed & direction
+            _paramsAddr["Wind_Enable"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Wind_Enable"], 1);
+            _paramsAddr["Wind_Panel"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Wind_Panel"], 2);
+            _paramsAddr["Wind_H_Position"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Wind_H_Position"], 10);
+            _paramsAddr["Wind_V_Position"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Wind_V_Position"], 50);
+
+            _paramsAddr["Time_Type"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Time_Type"], 0);
+
+            _paramsAddr["Throttle_Scale_Type"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Throttle_Scale_Type"], 0);
         }
 
         internal PlayuavOSD.data genChildData(string root, string name, string value, string unit, string range, string desc)
@@ -1123,6 +1139,7 @@ namespace OSD
             dataTime.children.Add(genChildData(dataTime.paramname, "V_Position", getU16ParamString(eeprom, (int)_paramsAddr["Time_V_Position"]), "", "0 - 230", lang.getLangStr("vpos")));
             dataTime.children.Add(genChildData(dataTime.paramname, "Font_Size", getU16ParamString(eeprom, (int)_paramsAddr["Time_Font_Size"]), "", "0, 1, 2", lang.getLangStr("font")));
             dataTime.children.Add(genChildData(dataTime.paramname, "H_Alignment", getU16ParamString(eeprom, (int)_paramsAddr["Time_H_Alignment"]), "", "0, 1, 2", lang.getLangStr("halign")));
+            dataTime.children.Add(genChildData(dataTime.paramname, "Type", getU16PanelString(eeprom, (int)_paramsAddr["Time_Type"]), "", "0, 1, 2", lang.getLangStr("Time_Type")));
             roots.Add(dataTime);
 
             data dataAlt = new PlayuavOSD.data();
@@ -1163,6 +1180,7 @@ namespace OSD
             dataThrottle.children.Add(genChildData(dataThrottle.paramname, "Scale_Enable", getU16ParamString(eeprom, (int)_paramsAddr["Throttle_Scale_Enable"]), "", "0, 1", lang.getLangStr("Throttle_Scale_Enable")));
             dataThrottle.children.Add(genChildData(dataThrottle.paramname, "H_Position", getU16ParamString(eeprom, (int)_paramsAddr["Throttle_H_Position"]), "", "0 - 350", lang.getLangStr("hpos")));
             dataThrottle.children.Add(genChildData(dataThrottle.paramname, "V_Position", getU16ParamString(eeprom, (int)_paramsAddr["Throttle_V_Position"]), "", "0 - 230", lang.getLangStr("vpos")));
+            dataThrottle.children.Add(genChildData(dataThrottle.paramname, "Scale_Type", getU16ParamString(eeprom, (int)_paramsAddr["Throttle_Scale_Type"]), "", "0, 1", lang.getLangStr("Throttle_Scale_Type")));
             roots.Add(dataThrottle);
 
             data dataHomeDist = new PlayuavOSD.data();
@@ -1247,6 +1265,15 @@ namespace OSD
             dataRSSI.children.Add(genChildData(dataRSSI.paramname, "Max", getU16ParamString(eeprom, (int)_paramsAddr["RSSI_Max"]), "", "RSSI_Min-255", lang.getLangStr("RSSI_Max")));
             dataRSSI.children.Add(genChildData(dataRSSI.paramname, "Raw_Enable", getU16ParamString(eeprom, (int)_paramsAddr["RSSI_Raw_Enable"]), "", "0, 1", lang.getLangStr("RSSI_Raw_Enable")));
             roots.Add(dataRSSI);
+
+            data dataWind = new PlayuavOSD.data();
+            dataWind.paramname = "Wind";
+            dataWind.desc = lang.getLangStr("Wind_speed_dir");
+            dataWind.children.Add(genChildData(dataWind.paramname, "Enable", getU16ParamString(eeprom, (int)_paramsAddr["Wind_Enable"]), "", "0, 1", lang.getLangStr("enable")));
+            dataWind.children.Add(genChildData(dataWind.paramname, "Panel", getU16PanelString(eeprom, (int)_paramsAddr["Wind_Panel"]), "", "1 - Max_Panels", lang.getLangStr("panel")));
+            dataWind.children.Add(genChildData(dataWind.paramname, "H_Position", getU16ParamString(eeprom, (int)_paramsAddr["Wind_H_Position"]), "", "0 - 350", lang.getLangStr("hpos")));
+            dataWind.children.Add(genChildData(dataWind.paramname, "V_Position", getU16ParamString(eeprom, (int)_paramsAddr["Wind_V_Position"]), "", "0 - 230", lang.getLangStr("Misc")));
+            roots.Add(dataWind);
 
             foreach (var item in roots)
             {
@@ -1725,6 +1752,7 @@ namespace OSD
             this.saveOSDFileToolStripMenuItem.Text = lang.getLangStr("menu_file_save");
             this.openOSDFileToolStripMenuItem.Text = lang.getLangStr("menu_file_load");
             this.loadDefaultsToolStripMenuItem.Text = lang.getLangStr("menu_file_default");
+            this.loadCustomFirmwareToolStripMenuItem.Text = lang.getLangStr("menu_file_custom");
             this.exitToolStripMenuItem.Text = lang.getLangStr("menu_file_exit");
             this.optionsToolStripMenuItem.Text = lang.getLangStr("menu_opt");
             this.languageToolStripMenuItem.Text = lang.getLangStr("menu_opt_lang");
@@ -1948,6 +1976,8 @@ namespace OSD
                 short wpradio = getU16Param(eeprom, (int)_paramsAddr["CHWDIR_Nmode_WP_Radius"]);
                 Rectangle rc = new Rectangle(iposX - radio, iposY - radio, 2 * radio, 2 * radio);
                 ogl.DrawEllipse(whitePen, rc);
+                strOffset = ogl.calstring("N", font, SIZE_TO_FONT[0], whiteBrush, 1);
+                ogl.drawstring("N", font, SIZE_TO_FONT[0], whiteBrush, iposX - strOffset, iposY - radio-1);
                 ogl.drawstring("H", font, SIZE_TO_FONT[0], whiteBrush, iposX + hradio, iposY);
                 ogl.drawstring("W", font, SIZE_TO_FONT[0], whiteBrush, iposX, iposY + wpradio);
                 ogl.DrawLine(whitePen, iposX, iposY - 7, iposX - 3, iposY+7);
@@ -2349,6 +2379,9 @@ namespace OSD
                 plist[5] = new PointF(iposX-b, iposY + a);
                 plist[6] = new PointF(iposX+b, iposY + a);
                 plist[7] = new PointF(iposX, iposY+5);
+                strOffset = ogl.calstring("N", font, SIZE_TO_FONT[0], whiteBrush, 1);
+                ogl.drawstring("N", font, SIZE_TO_FONT[0], whiteBrush, iposX - strOffset, iposY - 40);
+                ogl.drawstring("E", font, SIZE_TO_FONT[0], whiteBrush, iposX + 40, iposY - 5);
                 ogl.DrawLine(whitePen, plist[0].X, plist[0].Y, plist[5].X, plist[5].Y);
                 ogl.DrawLine(whitePen, plist[1].X, plist[1].Y, plist[3].X, plist[3].Y);
                 ogl.DrawLine(whitePen, plist[3].X, plist[3].Y, plist[4].X, plist[4].Y);
@@ -2358,6 +2391,26 @@ namespace OSD
                 ogl.DrawLine(whitePen, plist[6].X, plist[6].Y, plist[7].X, plist[7].Y);
                 ogl.DrawLine(whitePen, plist[2].X, plist[2].Y, plist[4].X, plist[4].Y);
 
+            }
+
+            //wind speed direction
+            ien = getU16Param(eeprom, (int)_paramsAddr["Wind_Enable"]);
+            ipanel = getU16Param(eeprom, (int)_paramsAddr["Wind_Panel"]);
+            if (bShownAtPanle(ipanel, curPanel) && ien == 1)
+            {
+                iposX = getU16Param(eeprom, (int)_paramsAddr["Wind_H_Position"]);
+                iposY = getU16Param(eeprom, (int)_paramsAddr["Wind_V_Position"]);
+                PointF[] plist = new PointF[5];
+                plist[0] = new PointF(iposX, iposY - 8);
+                plist[1] = new PointF(iposX - 3, iposY-2);
+                plist[2] = new PointF(iposX + 3, iposY-2);
+                plist[3] = new PointF(iposX, iposY - 2);
+                plist[4] = new PointF(iposX, iposY + 8);
+                ogl.DrawLine(whitePen, plist[0].X, plist[0].Y, plist[1].X, plist[1].Y);
+                ogl.DrawLine(whitePen, plist[1].X, plist[1].Y, plist[2].X, plist[2].Y);
+                ogl.DrawLine(whitePen, plist[2].X, plist[2].Y, plist[0].X, plist[0].Y);
+                ogl.DrawLine(whitePen, plist[3].X, plist[3].Y, plist[4].X, plist[4].Y);
+                ogl.drawstring("0.00kmh", font, SIZE_TO_FONT[ifont], whiteBrush, iposX+15, iposY-5);
             }
         }
 

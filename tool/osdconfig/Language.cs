@@ -87,6 +87,9 @@ namespace OSD
             _langdspen["menu_file_default"] = "Load default params";
             _langdspzh["menu_file_default"] = "加载默认参数";
 
+            _langdspen["menu_file_custom"] = "Load custom firmware...";
+            _langdspzh["menu_file_custom"] = "加载自定义固件";
+
             _langdspen["menu_file_exit"] = "Exit";
             _langdspzh["menu_file_exit"] = "退出";
 
@@ -302,6 +305,14 @@ namespace OSD
             _langdspen["RSSI_Raw_Enable"] = "If show the raw value of RSSI or not. 0:percentage, 1:raw value";
             _langdspzh["RSSI_Raw_Enable"] = "是否显示RSSI原始值.0:百分比, 1:原始值";
 
+            _langdspen["Wind_speed_dir"] = "Wind Speed and direction";
+            _langdspzh["Wind_speed_dir"] = "风速,风向";
+
+            _langdspen["Time_Type"] = "Time count start from 0:power on, 1:last heartbeat 2:armed";
+            _langdspzh["Time_Type"] = "从哪里开始计时：0：上电 1：上次心跳 2：解锁";
+
+            _langdspen["Throttle_Scale_Type"] = "0:Vertical, 1:Horizontal";
+            _langdspzh["Throttle_Scale_Type"] = "0:垂直, 1:水平";
         }
     }
 }

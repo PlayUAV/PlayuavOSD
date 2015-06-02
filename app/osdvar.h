@@ -14,7 +14,8 @@ extern u8		apm_mav_system;
 extern u8		apm_mav_component;
 extern u8		enable_mav_request;
 extern u32 		sys_start_time;
-
+extern u32 		heatbeat_start_time;
+extern u32 		armed_start_time;
 /////////////////////////////////////////////////////////////////////////
 extern float        osd_vbat_A;                 // Battery A voltage in milivolt
 extern int16_t      osd_curr_A;                 // Battery A current
@@ -58,6 +59,7 @@ extern float        eff; //Efficiency
 
 extern uint8_t      osd_mode;
 extern bool 		motor_armed;
+extern bool 		last_motor_armed;
 extern uint8_t      base_mode;
 
 extern int16_t      chan1_raw;
@@ -76,6 +78,9 @@ extern long         osd_home_distance;          // distance from home
 extern uint32_t		osd_home_bearing;
 extern uint8_t      osd_alt_cnt;              // counter for stable osd_alt
 extern float        osd_alt_prev;             // previous altitude
+
+extern float osd_windSpeed;
+extern float osd_windDir;
 
 extern volatile uint8_t 	current_panel;
 

@@ -188,7 +188,7 @@ namespace MissionPlanner.Utilities
             __getSyncbl();
         }
         //////////////////////////////rentt////////////////////////////
- 
+
 
         public static void SaveSoftwares(List<software> list)
         {
@@ -211,8 +211,8 @@ namespace MissionPlanner.Utilities
                     return (List<software>)reader.Deserialize(sr);
                 }
             }
-            catch (Exception ex) 
-            { 
+            catch (Exception ex)
+            {
                 log.Error(ex);
             }
 
@@ -491,7 +491,7 @@ namespace MissionPlanner.Utilities
         //    catch { }
         //}
 
- 
+
 
         /// <summary>
         /// upload to playuav standalone
@@ -514,8 +514,8 @@ namespace MissionPlanner.Utilities
 
             try
             {
-                if (comPortosdbl.IsOpen)
-                    comPortosdbl.Close();
+                //if (comPortosdbl.IsOpen())
+                comPortosdbl.Close();
 
                 try
                 {
@@ -530,8 +530,8 @@ namespace MissionPlanner.Utilities
                 __sendbl(new byte[] { (byte)Codebl.BL_UPLOAD, (byte)Codebl.EOC });
                 __getSyncbl();
 
-                comPortosdbl.BaseStream.Flush();
-                if (comPortosdbl.IsOpen)
+                //comPortosdbl.BaseStream.Flush();
+                if(comPortosdbl.IsOpen)
                     comPortosdbl.Close();
                 //CustomMessageBox.Show("Please unplug the board, and then press OK and plug back in.\nMission Planner will look for 30 seconds to find the board");
 
@@ -560,10 +560,10 @@ namespace MissionPlanner.Utilities
             catch (Exception ex)
             {
                 log.Error(ex);
-                CustomMessageBox.Show(ex.ToString());
-                //CustomMessageBox.Show("Please unplug the board, and then press OK and plug back in.\nMission Planner will look for 30 seconds to find the board");
+                CustomMessageBox.Show("Please unplug the board, and then press OK and plug back in.\nMission Planner will look for 30 seconds to find the board");
             }
 
+            //System.Threading.Thread.Sleep(1);
             DateTime DEADLINE = DateTime.Now.AddSeconds(30);
 
             updateProgress(0, "Scanning comports");
@@ -709,7 +709,7 @@ namespace MissionPlanner.Utilities
             return false;
         }
 
-  
+
 
         string _message = "";
 
