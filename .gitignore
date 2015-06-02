@@ -29,6 +29,7 @@
 .DS_Store
 .metadata/
 .project
+.cproject
 .settings/
 .vagrant
 /tmp/*
