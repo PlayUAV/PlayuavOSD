@@ -139,7 +139,7 @@ namespace OSD
 
             this.Text = this.Text + "-V" + currentVersion;
             //CheckNewVersion();
-            timer1.Start();
+            //timer1.Start();
         }
 
         private void CheckNewVersion()
@@ -2375,6 +2375,30 @@ namespace OSD
         {
             CheckNewVersion();
             timer1.Stop();
+        }
+
+        private void loadCustomFirmwareToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var fd = new OpenFileDialog { Filter = "Firmware (*.hex;*.px4;*.vrx)|*.hex;*.px4;*.vrx" };
+            fd.ShowDialog();
+            if (File.Exists(fd.FileName))
+            {
+                fw.Progress -= fw_Progress;
+                fw.Progress += fw_Progress1;
+
+                BoardDetect.boards boardtype = BoardDetect.boards.none;
+                try
+                {
+                    boardtype = BoardDetect.DetectBoard(comPortName);
+                }
+                catch
+                {
+                    CustomMessageBox.Show("Can not connect to com port and detect board type", Strings.ERROR);
+                    return;
+                }
+
+                fw.UploadFlash(comPortName, fd.FileName, boardtype);
+            }
         }
     }
 }

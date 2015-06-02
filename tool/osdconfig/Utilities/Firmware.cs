@@ -514,8 +514,8 @@ namespace MissionPlanner.Utilities
 
             try
             {
-                //if (comPortosdbl.IsOpen())
-                comPortosdbl.Close();
+                if (comPortosdbl.IsOpen)
+                    comPortosdbl.Close();
 
                 try
                 {
@@ -531,7 +531,8 @@ namespace MissionPlanner.Utilities
                 __getSyncbl();
 
                 comPortosdbl.BaseStream.Flush();
-                comPortosdbl.Close();
+                if (comPortosdbl.IsOpen)
+                    comPortosdbl.Close();
                 //CustomMessageBox.Show("Please unplug the board, and then press OK and plug back in.\nMission Planner will look for 30 seconds to find the board");
 
                 //// check if we are seeing heartbeats
@@ -559,7 +560,8 @@ namespace MissionPlanner.Utilities
             catch (Exception ex)
             {
                 log.Error(ex);
- //               CustomMessageBox.Show("Please unplug the board, and then press OK and plug back in.\nMission Planner will look for 30 seconds to find the board");
+                CustomMessageBox.Show(ex.ToString());
+                //CustomMessageBox.Show("Please unplug the board, and then press OK and plug back in.\nMission Planner will look for 30 seconds to find the board");
             }
 
             DateTime DEADLINE = DateTime.Now.AddSeconds(30);

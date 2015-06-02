@@ -67,6 +67,7 @@
             this.lbl_fc = new System.Windows.Forms.Label();
             this.cbx_fc = new System.Windows.Forms.ComboBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.loadCustomFirmwareToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.Params)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -153,7 +154,7 @@
             this.CMB_ComPort.FormattingEnabled = true;
             this.CMB_ComPort.Location = new System.Drawing.Point(623, 374);
             this.CMB_ComPort.Name = "CMB_ComPort";
-            this.CMB_ComPort.Size = new System.Drawing.Size(91, 21);
+            this.CMB_ComPort.Size = new System.Drawing.Size(91, 20);
             this.CMB_ComPort.TabIndex = 81;
             this.CMB_ComPort.SelectedIndexChanged += new System.EventHandler(this.CMB_ComPort_SelectedIndexChanged);
             this.CMB_ComPort.Click += new System.EventHandler(this.CMB_ComPort_Click);
@@ -187,7 +188,7 @@
             this.lbl_status.ImeMode = System.Windows.Forms.ImeMode.NoControl;
             this.lbl_status.Location = new System.Drawing.Point(1, 516);
             this.lbl_status.Name = "lbl_status";
-            this.lbl_status.Size = new System.Drawing.Size(37, 13);
+            this.lbl_status.Size = new System.Drawing.Size(41, 12);
             this.lbl_status.TabIndex = 84;
             this.lbl_status.Text = "Status";
             // 
@@ -242,10 +243,11 @@
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.saveOSDFileToolStripMenuItem,
             this.openOSDFileToolStripMenuItem,
+            this.saveOSDFileToolStripMenuItem,
             this.toolStripSeparator1,
             this.loadDefaultsToolStripMenuItem,
+            this.loadCustomFirmwareToolStripMenuItem,
             this.toolStripSeparator2,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -255,38 +257,38 @@
             // saveOSDFileToolStripMenuItem
             // 
             this.saveOSDFileToolStripMenuItem.Name = "saveOSDFileToolStripMenuItem";
-            this.saveOSDFileToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.saveOSDFileToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
             this.saveOSDFileToolStripMenuItem.Text = "Save OSD file...";
             this.saveOSDFileToolStripMenuItem.Click += new System.EventHandler(this.saveOSDFileToolStripMenuItem_Click);
             // 
             // openOSDFileToolStripMenuItem
             // 
             this.openOSDFileToolStripMenuItem.Name = "openOSDFileToolStripMenuItem";
-            this.openOSDFileToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.openOSDFileToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
             this.openOSDFileToolStripMenuItem.Text = "Open OSD file...";
             this.openOSDFileToolStripMenuItem.Click += new System.EventHandler(this.openOSDFileToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(165, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(212, 6);
             // 
             // loadDefaultsToolStripMenuItem
             // 
             this.loadDefaultsToolStripMenuItem.Name = "loadDefaultsToolStripMenuItem";
-            this.loadDefaultsToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.loadDefaultsToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
             this.loadDefaultsToolStripMenuItem.Text = "Load Defaults";
             this.loadDefaultsToolStripMenuItem.Click += new System.EventHandler(this.loadDefaultsToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(165, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(212, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -304,7 +306,7 @@
             this.englishToolStripMenuItem,
             this.chineseToolStripMenuItem});
             this.languageToolStripMenuItem.Name = "languageToolStripMenuItem";
-            this.languageToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
+            this.languageToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.languageToolStripMenuItem.Text = "Language";
             // 
             // englishToolStripMenuItem
@@ -412,7 +414,7 @@
             this.lbl_port.AutoSize = true;
             this.lbl_port.Location = new System.Drawing.Point(552, 378);
             this.lbl_port.Name = "lbl_port";
-            this.lbl_port.Size = new System.Drawing.Size(26, 13);
+            this.lbl_port.Size = new System.Drawing.Size(29, 12);
             this.lbl_port.TabIndex = 97;
             this.lbl_port.Text = "Port";
             this.lbl_port.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -423,7 +425,7 @@
             this.lbl_fc.AutoSize = true;
             this.lbl_fc.Location = new System.Drawing.Point(552, 406);
             this.lbl_fc.Name = "lbl_fc";
-            this.lbl_fc.Size = new System.Drawing.Size(65, 13);
+            this.lbl_fc.Size = new System.Drawing.Size(83, 12);
             this.lbl_fc.TabIndex = 98;
             this.lbl_fc.Text = "FlightControl";
             this.lbl_fc.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -437,7 +439,7 @@
             "CC3D/Revo"});
             this.cbx_fc.Location = new System.Drawing.Point(623, 404);
             this.cbx_fc.Name = "cbx_fc";
-            this.cbx_fc.Size = new System.Drawing.Size(91, 21);
+            this.cbx_fc.Size = new System.Drawing.Size(91, 20);
             this.cbx_fc.TabIndex = 99;
             this.cbx_fc.SelectedIndexChanged += new System.EventHandler(this.cbx_fc_SelectedIndexChanged);
             // 
@@ -445,6 +447,13 @@
             // 
             this.timer1.Interval = 5000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // loadCustomFirmwareToolStripMenuItem
+            // 
+            this.loadCustomFirmwareToolStripMenuItem.Name = "loadCustomFirmwareToolStripMenuItem";
+            this.loadCustomFirmwareToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
+            this.loadCustomFirmwareToolStripMenuItem.Text = "Load custom firmware...";
+            this.loadCustomFirmwareToolStripMenuItem.Click += new System.EventHandler(this.loadCustomFirmwareToolStripMenuItem_Click);
             // 
             // PlayuavOSD
             // 
@@ -522,5 +531,6 @@
         private System.Windows.Forms.Label lbl_fc;
         private System.Windows.Forms.ComboBox cbx_fc;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.ToolStripMenuItem loadCustomFirmwareToolStripMenuItem;
     }
 }
