@@ -325,6 +325,18 @@ namespace OSD
 
             _langdspen["Attitude_3D_Map_radius"] = "The raduis of map-like indicator alone with UAV 3D model";
             _langdspzh["Attitude_3D_Map_radius"] = "3D模型的地图指示半径";
+
+            _langdspen["Firmware_update"] = "The OSD firmware need to upgrade before doing setup!";
+            _langdspzh["Firmware_update"] = "固件需要更新，请先更新固件，再进行设置!";
+
+            _langdspen["successed"] = "Operation successful!";
+            _langdspzh["successed"] = "操作成功!";
+
+            _langdspen["failed"] = "Operation failed!";
+            _langdspzh["failed"] = "操作失败!";
+
+            _langdspen["CT_upgrade"] = "The config tool is up to date!";
+            _langdspzh["CT_upgrade"] = "配置工具已是最新!";
         }
     }
 }

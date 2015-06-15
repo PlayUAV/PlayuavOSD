@@ -33,8 +33,9 @@ namespace OSD
         byte[] paramdefault = new byte[1024];
 
         PlayuavOSD self;
-        string currentVersion = "1.0.0.5";
+        string currentVersion = "1.0.0.6";
         bool bCheckUpdateStartup = false;
+        short firmwareVesion = 5;
 
         // Changes made to the params between writing to the copter
         readonly Hashtable _changes = new Hashtable();
@@ -166,7 +167,7 @@ namespace OSD
             }
             else
             {
-                MessageBox.Show("The config tool is up to date!", "Info", MessageBoxButtons.OK); return;
+                MessageBox.Show(lang.getLangStr("CT_upgrade"), "Info", MessageBoxButtons.OK); return;
             }
         }
 
@@ -977,6 +978,9 @@ namespace OSD
             _paramsAddr["Misc_Start_Col"] = address; address += 2;
             u16toEPPROM(paramdefault, (int)_paramsAddr["Misc_Start_Col"], 0);
 
+            _paramsAddr["Misc_Firmware_ver"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Misc_Firmware_ver"], firmwareVesion);
+
         }
 
         internal PlayuavOSD.data genChildData(string root, string name, string value, string unit, string range, string desc)
@@ -1497,12 +1501,21 @@ namespace OSD
                 System.Threading.Thread.Sleep(500);
                 comPort.Close();
 
-                MessageBox.Show("Successful reading parameters", "Message", MessageBoxButtons.OK, MessageBoxIcon.None);
+                short osdver = getU16Param(eeprom, (int)_paramsAddr["Misc_Firmware_ver"]); 
+                if (osdver != firmwareVesion)
+                {
+                    MessageBox.Show(lang.getLangStr("Firmware_update"), "Message", MessageBoxButtons.OK, MessageBoxIcon.None);
+                }
+                else
+                {
+                    MessageBox.Show(lang.getLangStr("successed"), "Message", MessageBoxButtons.OK, MessageBoxIcon.None);
+                }
+                
             }
             catch 
             {
                 paramdefault.CopyTo(eeprom, 0);
-                MessageBox.Show("Error reading parameters", "Message", MessageBoxButtons.OK, MessageBoxIcon.None);
+                MessageBox.Show(lang.getLangStr("failed"), "Message", MessageBoxButtons.OK, MessageBoxIcon.None);
             }
             
         }
@@ -1557,10 +1570,10 @@ namespace OSD
                 System.Threading.Thread.Sleep(500);
                 comPort.Close();
 
-                MessageBox.Show("Successful writing parameters to memory", "Message", MessageBoxButtons.OK, MessageBoxIcon.None);
+                MessageBox.Show(lang.getLangStr("successed"), "Message", MessageBoxButtons.OK, MessageBoxIcon.None);
 
             }
-            catch { MessageBox.Show("Error writing parameters to memory", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
+            catch { MessageBox.Show(lang.getLangStr("failed"), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
         }
 
         private void Sav_To_EEPROM_Click(object sender, EventArgs e)
@@ -1614,10 +1627,10 @@ namespace OSD
                 comPort.BaseStream.Flush();
                 comPort.Close();
 
-                MessageBox.Show("Successful writing parameters to FLASH", "Message", MessageBoxButtons.OK, MessageBoxIcon.None);
+                MessageBox.Show(lang.getLangStr("successed"), "Message", MessageBoxButtons.OK, MessageBoxIcon.None);
 
             }
-            catch { MessageBox.Show("Error writing parameters to FLASH", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
+            catch { MessageBox.Show(lang.getLangStr("failed"), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
         }
 
         void loadparamsfromfile(string fn)

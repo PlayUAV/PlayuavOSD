@@ -60,8 +60,8 @@ void dev_test()
 	int16_t x = GRAPHICS_RIGHT/2;
 	int16_t y = GRAPHICS_BOTTOM/2 -30;
     //write_pixel_lm(GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE, 1, 1);
-    //hud_draw_uav2d();
-    hud_draw_uav3d();
+    hud_draw_uav2d();
+    //hud_draw_uav3d();
 }
 
 void do_converts(void)
