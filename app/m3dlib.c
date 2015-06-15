@@ -46,6 +46,37 @@ void Reset_OBJECT4DV1(OBJECT4DV1_PTR obj)
 
 } // end Reset_OBJECT4DV1
 
+void Translate_OBJECT4DV1(OBJECT4DV1_PTR obj, VECTOR4D_PTR vt) 
+{
+    // NOTE: Not matrix based
+    // this function translates an object without matrices,
+    // simply updates the world_pos
+    VECTOR4D_Add(&obj->world_pos, vt, &obj->world_pos);
+
+} // end Translate_OBJECT4DV1
+
+/////////////////////////////////////////////////////////////
+
+void Scale_OBJECT4DV1(OBJECT4DV1_PTR obj, VECTOR4D_PTR vs)
+{
+    // NOTE: Not matrix based
+    // this function scales and object without matrices 
+    // modifies the object's local vertex list 
+    // additionally the radii is updated for the object
+
+    // for each vertex in the mesh scale the local coordinates by
+    // vs on a componentwise basis, that is, sx, sy, sz
+    for (int vertex=0; vertex < obj->num_vertices; vertex++)
+        {
+        obj->vlist_local[vertex].x*=vs->x;
+        obj->vlist_local[vertex].y*=vs->y;
+        obj->vlist_local[vertex].z*=vs->z;
+        // leave w unchanged, always equal to 1
+
+        } // end for vertex
+
+} // end Scale_OBJECT4DV1
+
 ///////////////////////////////////////////////////////////
 
 void Transform_OBJECT4DV1(OBJECT4DV1_PTR obj, // object to transform

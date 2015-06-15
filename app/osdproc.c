@@ -54,6 +54,16 @@ float convert_distance;
 const char * dist_unit = METRIC_DIST;
 const char * spd_unit = METRIC_SPEED;
 
+void dev_test()
+{
+	drawBox(0,0,GRAPHICS_RIGHT,GRAPHICS_BOTTOM);
+	int16_t x = GRAPHICS_RIGHT/2;
+	int16_t y = GRAPHICS_BOTTOM/2 -30;
+    //write_pixel_lm(GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE, 1, 1);
+    //hud_draw_uav2d();
+    hud_draw_uav3d();
+}
+
 void do_converts(void)
 {
 	if (eeprom_buffer.params.Units_mode == 1)
@@ -84,7 +94,9 @@ void vTaskOSD(void *pvParameters)
 	uav2D_init();
 
 	osdCoreInit();
-	
+	osdVideoSetXOffset(eeprom_buffer.params.osd_offsetX);
+    osdVideoSetYOffset(eeprom_buffer.params.osd_offsetY);
+    
 	for(;;)
 	{
 		xSemaphoreTake(onScreenDisplaySemaphore, portMAX_DELAY);
@@ -92,6 +104,7 @@ void vTaskOSD(void *pvParameters)
 		clearGraphics();
 		
 		RenderScreen();
+        //dev_test();
 	}
 }
 
@@ -417,9 +430,12 @@ void hud_draw_uav3d(void)
 	static int32_t roll = 0;
 	static int32_t pitch=0;
 	static int32_t yaw=0;
-	
-	write_string("N", GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE-40, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
-	write_string("E", GRAPHICS_X_MIDDLE+40, GRAPHICS_Y_MIDDLE, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
+	int x = eeprom_buffer.params.Atti_3D_posX;
+    int y = eeprom_buffer.params.Atti_3D_posY;
+    int map_radius = (int)(eeprom_buffer.params.Atti_3D_map_radius * atti_3d_scale);
+    
+	write_string("N", x, y-map_radius, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
+	write_string("E", x+map_radius, y, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
 	//need to adjust viewport base on the video mode
 	Adjust_Viewport_CAM4DV1(&cam, GRAPHICS_RIGHT, GRAPHICS_BOTTOM);
 	
@@ -483,7 +499,7 @@ void hud_draw_uav3d(void)
 void hud_draw_uav2d()
 {
 	int index = 0;
-	
+    
 	Reset_Polygon2D(&uav2D);
 	Transform_Polygon2D(&uav2D, -osd_roll, 0, osd_pitch);
 	
@@ -511,21 +527,23 @@ void hud_draw_uav2d()
 							2, 2, 0, 1);
 	} // end for
 	
-	int x = GRAPHICS_X_MIDDLE,
-		y = GRAPHICS_Y_MIDDLE;
+	int x = eeprom_buffer.params.Atti_mp_posX;
+    int y = eeprom_buffer.params.Atti_mp_posY;
+    int wingStart = (int)(12.0f * atti_mp_scale);
+    int wingEnd = (int)(7.0f * atti_mp_scale);
 	char tmp_str[10] = {0};
 	//draw uav
-	write_line_outlined(GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE,GRAPHICS_X_MIDDLE-9,GRAPHICS_Y_MIDDLE+5, 2, 2, 0, 1);
-	write_line_outlined(GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE,GRAPHICS_X_MIDDLE+9,GRAPHICS_Y_MIDDLE+5, 2, 2, 0, 1);
-	write_line_outlined(GRAPHICS_X_MIDDLE-25, GRAPHICS_Y_MIDDLE,GRAPHICS_X_MIDDLE-15,GRAPHICS_Y_MIDDLE, 2, 2, 0, 1);
-	write_line_outlined(GRAPHICS_X_MIDDLE+15, GRAPHICS_Y_MIDDLE,GRAPHICS_X_MIDDLE+25,GRAPHICS_Y_MIDDLE, 2, 2, 0, 1);
+	write_line_outlined(x, y,x-9,y+5, 2, 2, 0, 1);
+	write_line_outlined(x, y,x+9,y+5, 2, 2, 0, 1);
+	write_line_outlined(x-wingStart, y,x-wingEnd,y, 2, 2, 0, 1);
+	write_line_outlined(x+wingEnd, y,x+wingStart,y, 2, 2, 0, 1);
 
 	
 	write_filled_rectangle_lm(x-9, y+6, 15, 9, 0, 1);	
 	sprintf(tmp_str, "%d", (int)osd_pitch);
 	write_string(tmp_str, x, y+5, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
 	
-	y = GRAPHICS_Y_MIDDLE-75;
+	y = eeprom_buffer.params.Atti_mp_posY-(int)(38.0f * atti_mp_scale);
 	//draw roll value
 	write_line_outlined(x, y, x-4, y+8, 2, 2, 0, 1);
 	write_line_outlined(x, y, x+4, y+8, 2, 2, 0, 1);

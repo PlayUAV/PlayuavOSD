@@ -16,6 +16,8 @@
 #include "m3dlib.h"
 #include "UAVObj.h"
 #include "osdcore.h"
+#include "osdconfig.h"
+#include "osdvar.h"
 
 // initialize camera position and direction
 POINT4D  cam_pos = {0,0,0,1};
@@ -59,47 +61,9 @@ void uav3D_init(void)
 	VECTOR4D_INITXYZ(&(uav3D.world_pos), 0.0, 0.0, 100.0);
 	VECTOR4D_ZERO(&(uav3D.dir));
 
-////////////////////////////////////////////////////////////////////////////
-//	obj3D.num_vertices = 4;
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[0]), 0.0, 10.0, 0.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[1]), 7.0, -10.0, 0.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[2]), 0.0, -5.0, -5.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[3]), -7.0, -10.0, 0.0);
-
-//	for(i=0; i<4; i++)
-//	{
-//		VECTOR4D_ZERO(&(obj3D.vlist_trans[i]));
-//	}
-
-//	
-//	obj3D.num_polys = 4;
-//	
-//	for(i=0; i<obj3D.num_polys; i++)
-//	{
-//		obj3D.plist[i].state = 1;
-//		obj3D.plist[i].attr = 137;
-//		obj3D.plist[i].color = 1920;
-//		VECTOR4D_COPY(obj3D.plist[i].vlist, obj3D.vlist_local);
-//	}
-//	
-//	obj3D.plist[0].vert[0] = 0;
-//	obj3D.plist[0].vert[1] = 1;
-//	obj3D.plist[0].vert[2] = 2;
-
-//	obj3D.plist[1].vert[0] = 0;
-//	obj3D.plist[1].vert[1] = 1;
-//	obj3D.plist[1].vert[2] = 3;
-//	
-//	obj3D.plist[2].vert[0] = 0;
-//	obj3D.plist[2].vert[1] = 2;
-//	obj3D.plist[2].vert[2] = 3;
-//	
-//	obj3D.plist[3].vert[0] = 2;
-//	obj3D.plist[3].vert[1] = 1;
-//	obj3D.plist[3].vert[2] = 3;
-
 //////////////////////////////////////////////////////////
 	uav3D.num_vertices = 8;
+    
 	VECTOR4D_INITXYZ(&(uav3D.vlist_local[0]), 0.0, 12.0, 0.0);
 	VECTOR4D_INITXYZ(&(uav3D.vlist_local[1]), 5.0, -12.0, 0.0);
 	VECTOR4D_INITXYZ(&(uav3D.vlist_local[2]), 0.0, -5.0, -5.0);
@@ -144,110 +108,20 @@ void uav3D_init(void)
 	uav3D.plist[4].vert[0] = 2;
 	uav3D.plist[4].vert[1] = 1;
 	uav3D.plist[4].vert[2] = 3;
-	
-//	obj3D.plist[5].vert[0] = 2;
-//	obj3D.plist[5].vert[1] = 6;
-//	obj3D.plist[5].vert[2] = 3;
-
-//////////////////////////////////////////////////////////
-//	obj3D.num_vertices = 8;
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[0]), 0.0, 10.0, 0.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[1]), 3.0, 0.0, 0.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[2]), 17.0, -10.0, 0.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[3]), 5.0, -10.0, 0.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[4]), 0.0, -10.0, -7.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[5]), -5.0, -10.0, 0.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[6]), -3.0, 0.0, 0.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[7]), -17.0, -10.0, 0.0);
-
-//	for(i=0; i<obj3D.num_vertices; i++)
-//	{
-//		VECTOR4D_ZERO(&(obj3D.vlist_trans[i]));
-//	}
-
-//	
-//	obj3D.num_polys = 6;
-//	
-//	for(i=0; i<obj3D.num_polys; i++)
-//	{
-//		obj3D.plist[i].state = 1;
-//		obj3D.plist[i].attr = 137;
-//		obj3D.plist[i].color = 1920;
-//		VECTOR4D_COPY(obj3D.plist[i].vlist, obj3D.vlist_local);
-//	}
-//	
-//	obj3D.plist[0].vert[0] = 0;
-//	obj3D.plist[0].vert[1] = 3;
-//	obj3D.plist[0].vert[2] = 4;
-
-//	obj3D.plist[1].vert[0] = 1;
-//	obj3D.plist[1].vert[1] = 2;
-//	obj3D.plist[1].vert[2] = 3;
-//	
-//	obj3D.plist[2].vert[0] = 0;
-//	obj3D.plist[2].vert[1] = 3;
-//	obj3D.plist[2].vert[2] = 5;
-//	
-//	obj3D.plist[3].vert[0] = 3;
-//	obj3D.plist[3].vert[1] = 5;
-//	obj3D.plist[3].vert[2] = 4;
-//	
-//	obj3D.plist[4].vert[0] = 0;
-//	obj3D.plist[4].vert[1] = 4;
-//	obj3D.plist[4].vert[2] = 5;
-//	
-//	obj3D.plist[5].vert[0] = 6;
-//	obj3D.plist[5].vert[1] = 5;
-//	obj3D.plist[5].vert[2] = 7;
-
-//////////////////////////////////////////////////////////////
-//	obj3D.num_vertices = 6;
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[0]), 0.0, 35.0, 0.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[1]), 15.0, -20.0, 0.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[2]), 5.0, -20.0, 0.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[3]), 0.0, -20.0, 8.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[4]), -5.0, -20.0, 0.0);
-//	VECTOR4D_INITXYZ(&(obj3D.vlist_local[5]), -15.0, -20.0, 0.0);
-
-//	for(i=0; i<obj3D.num_vertices; i++)
-//	{
-//		VECTOR4D_ZERO(&(obj3D.vlist_trans[i]));
-//	}
-
-//	
-//	obj3D.num_polys = 4;
-//	
-//	for(i=0; i<obj3D.num_polys; i++)
-//	{
-//		obj3D.plist[i].state = 1;
-//		obj3D.plist[i].attr = 137;
-//		obj3D.plist[i].color = 1920;
-//		VECTOR4D_COPY(obj3D.plist[i].vlist, obj3D.vlist_local);
-//	}
-//	
-//	obj3D.plist[0].vert[0] = 0;
-//	obj3D.plist[0].vert[1] = 1;
-//	obj3D.plist[0].vert[2] = 2;
-
-//	obj3D.plist[1].vert[0] = 0;
-//	obj3D.plist[1].vert[1] = 2;
-//	obj3D.plist[1].vert[2] = 3;
-//	
-//	obj3D.plist[2].vert[0] = 0;
-//	obj3D.plist[2].vert[1] = 3;
-//	obj3D.plist[2].vert[2] = 4;
-//	
-//	obj3D.plist[3].vert[0] = 0;
-//	obj3D.plist[3].vert[1] = 4;
-//	obj3D.plist[3].vert[2] = 5;
-
 
 	
 //	MATRIX4X4 mrot;
 //	Build_XYZ_Rotation_MATRIX4X4(90, 0, 0, &mrot);
 //	Transform_OBJECT4DV1(&obj3D, &mrot, TRANSFORM_LOCAL_ONLY);
 
-
+    VECTOR4D v;   
+    //translate the obj
+    VECTOR4D_INITXYZ(&v, eeprom_buffer.params.Atti_3D_posX - GRAPHICS_X_MIDDLE, 
+                         -eeprom_buffer.params.Atti_3D_posY + GRAPHICS_Y_MIDDLE, 0);
+    Translate_OBJECT4DV1(&uav3D, &v);
+    //scale the mode
+    VECTOR4D_INITXYZ(&v, atti_3d_scale, atti_3d_scale, 0);
+    Scale_OBJECT4DV1(&uav3D, &v);
 	
 }
 
@@ -257,26 +131,17 @@ void uav2D_init(void)
 	// initialize uav2d
 	uav2D.state       = 1;   // turn it on
 	uav2D.num_verts   = 38;  
-	uav2D.x0          = GRAPHICS_X_MIDDLE; // position it
-	uav2D.y0          = GRAPHICS_Y_MIDDLE;
+	uav2D.x0          = eeprom_buffer.params.Atti_mp_posX; // position it
+	uav2D.y0          = eeprom_buffer.params.Atti_mp_posY;
 
 	int index=0, i=0;
-	const int lX = 10;
-//	const int sX = 6;
-	const int stepY = 22;
-	const int hX = 45;
+	const int lX = 5;
+	const int stepY = 11;
+	const int hX = 22;
 	for(index=0; index<uav2D.num_verts/2-1;)
 	{
-//		if((i%2) == 0)
-//		{
-//			VECTOR2D_INITXYZ(&(uav2D.vlist_local[index]), -sX, stepY*(i+1));
-//			VECTOR2D_INITXYZ(&(uav2D.vlist_local[index+1]), sX, stepY*(i+1));
-//		}
-//		else
-		{
-			VECTOR2D_INITXYZ(&(uav2D.vlist_local[index]), -lX, stepY*(i+1));
-			VECTOR2D_INITXYZ(&(uav2D.vlist_local[index+1]), lX, stepY*(i+1));
-		}
+        VECTOR2D_INITXYZ(&(uav2D.vlist_local[index]), -lX, stepY*(i+1));
+        VECTOR2D_INITXYZ(&(uav2D.vlist_local[index+1]), lX, stepY*(i+1));
 		index += 2;
 		i++;
 	}
@@ -287,63 +152,27 @@ void uav2D_init(void)
 	i=0;
 	for(;index<uav2D.num_verts;)
 	{
-//		if((i%2) == 0)
-//		{
-//			VECTOR2D_INITXYZ(&(uav2D.vlist_local[index]), -sX, -stepY*(i+1));
-//			VECTOR2D_INITXYZ(&(uav2D.vlist_local[index+1]), sX, -stepY*(i+1));
-//		}
-//		else
-		{
-			VECTOR2D_INITXYZ(&(uav2D.vlist_local[index]), -lX, -stepY*(i+1));
-			VECTOR2D_INITXYZ(&(uav2D.vlist_local[index+1]), lX, -stepY*(i+1));
-		}
+        VECTOR2D_INITXYZ(&(uav2D.vlist_local[index]), -lX, -stepY*(i+1));
+        VECTOR2D_INITXYZ(&(uav2D.vlist_local[index+1]), lX, -stepY*(i+1));
 		index += 2;
 		i++;
 	}
 
-	
-//	
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), hX, 11);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), lX, 8);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), 1, 7);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), 1, -1);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), 3, -1);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), 3, -2);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), 11, -3);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), 11, -6);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), 3, -7);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), 2, -8);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), 1, -8);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), 1, -7);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), -1, -7);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), -1, -8);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), -2, -8);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), -3, -7);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), -11, -6);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), -11, -3);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), -3, -2);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), -3, -1);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), -1, -1);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), -1, 7);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), -2, 8);
-//	VECTOR2D_INITXYZ(&(uav2D.vlist_local[i++]), -1, 11);
 
-
-//	// do a quick scale on the vertices, they are a bit too small
-//	Scale_Polygon2D(&uav2D, 3.0, 7.0);
-
+	// do a quick scale on the vertices
+	Scale_Polygon2D(&uav2D, atti_mp_scale, atti_mp_scale);
 
 	// initialize roll scale
 	rollscale2D.state       = 1;   // turn it on
 	rollscale2D.num_verts   = 13;  
-	rollscale2D.x0          = GRAPHICS_X_MIDDLE; // position it
-	rollscale2D.y0          = GRAPHICS_Y_MIDDLE;
+	rollscale2D.x0          = eeprom_buffer.params.Atti_mp_posX; // position it
+	rollscale2D.y0          = eeprom_buffer.params.Atti_mp_posY;
 	
 	
 	int x, y, theta;
 	int mp = (rollscale2D.num_verts-1)/2;
 	i=mp;
-	int radio = 75;
+	int radio = 38;
 	int arcStep = (mp*10)/6;
 	for(index=0; index<mp;index++)
 	{
@@ -356,7 +185,7 @@ void uav2D_init(void)
 	}
 	
 	VECTOR2D_INITXYZ(&(rollscale2D.vlist_local[index]), 0, -radio);
-
+    Scale_Polygon2D(&rollscale2D, atti_mp_scale, atti_mp_scale);
 }
 
 

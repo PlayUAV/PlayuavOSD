@@ -33,7 +33,8 @@ namespace OSD
         byte[] paramdefault = new byte[1024];
 
         PlayuavOSD self;
-        string currentVersion = "1.0.0.4";
+        string currentVersion = "1.0.0.5";
+        bool bCheckUpdateStartup = false;
 
         // Changes made to the params between writing to the copter
         readonly Hashtable _changes = new Hashtable();
@@ -138,13 +139,21 @@ namespace OSD
             processToScreen();
 
             this.Text = this.Text + "-V" + currentVersion;
-            //CheckNewVersion();
+
+            
+            CheckNewVersion();
+            
             //timer1.Start();
         }
 
         private void CheckNewVersion()
         {
-            if (Updater.NewVersionExists(currentVersion))
+            lbl_status.Text = "Checking new version......";
+            this.Cursor = Cursors.WaitCursor;
+            bool bNeedUpdate = Updater.NewVersionExists(currentVersion);
+            this.Cursor = Cursors.Default;
+            lbl_status.Text = "";
+            if (bNeedUpdate)
             {
                 UpdateAvailable frmUpdateAvailable = new UpdateAvailable();
                 System.Windows.Forms.DialogResult result = frmUpdateAvailable.ShowDialog();
@@ -154,7 +163,11 @@ namespace OSD
                     Process.Start(AppDomain.CurrentDomain.BaseDirectory + @"\CTToolUpdater.exe");
                     this.Close();
                 }
-            }          
+            }
+            else
+            {
+                MessageBox.Show("The config tool is up to date!", "Info", MessageBoxButtons.OK); return;
+            }
         }
 
         public void __send(byte c)
@@ -260,6 +273,28 @@ namespace OSD
         {
             buf[addr] = (byte)(val & 0xFF);
             buf[addr + 1] = (byte)((val >> 8) & 0xFF);
+        }
+
+        internal string getScaleParamString(byte[] buf, int paramAddr)
+        {
+            string strRet = "";
+            string strReal = "";
+            string strFrac = "";
+            try
+            {
+                short stmp = Convert.ToInt16(buf[paramAddr]);
+                short stmp1 = Convert.ToInt16(buf[paramAddr + 1]);
+                strReal = Convert.ToString(stmp + (stmp1 << 8));
+                stmp = Convert.ToInt16(buf[paramAddr+2]);
+                stmp1 = Convert.ToInt16(buf[paramAddr + 3]);
+                strFrac = Convert.ToString(stmp + (stmp1 << 8));
+                strRet = strReal + "." + strFrac;
+            }
+            catch
+            {
+            }
+
+            return strRet;
         }
 
         internal string getU16ParamString(byte[] buf, int paramAddr)
@@ -917,6 +952,31 @@ namespace OSD
 
             _paramsAddr["Throttle_Scale_Type"] = address; address += 2;
             u16toEPPROM(paramdefault, (int)_paramsAddr["Throttle_Scale_Type"], 0);
+
+            _paramsAddr["Attitude_MP_H_Position"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Attitude_MP_H_Position"], 180);
+            _paramsAddr["Attitude_MP_V_Position"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Attitude_MP_V_Position"], 133);
+            _paramsAddr["Attitude_MP_Scale_Real"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Attitude_MP_Scale_Real"], 1);
+            _paramsAddr["Attitude_MP_Scale_Frac"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Attitude_MP_Scale_Frac"], 0);
+            _paramsAddr["Attitude_3D_H_Position"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Attitude_3D_H_Position"], 180);
+            _paramsAddr["Attitude_3D_V_Position"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Attitude_3D_V_Position"], 133);
+            _paramsAddr["Attitude_3D_Scale_Real"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Attitude_3D_Scale_Real"], 1);
+            _paramsAddr["Attitude_3D_Scale_Frac"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Attitude_3D_Scale_Frac"], 0);
+            _paramsAddr["Attitude_3D_Map_radius"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Attitude_3D_Map_radius"], 40);
+
+            _paramsAddr["Misc_Start_Row"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Misc_Start_Row"], 0);
+            _paramsAddr["Misc_Start_Col"] = address; address += 2;
+            u16toEPPROM(paramdefault, (int)_paramsAddr["Misc_Start_Col"], 0);
+
         }
 
         internal PlayuavOSD.data genChildData(string root, string name, string value, string unit, string range, string desc)
@@ -964,9 +1024,17 @@ namespace OSD
             dataAtti.desc = lang.getLangStr("Attitude");
             dataAtti.children.Add(genChildData(dataAtti.paramname, "MP_Enable", getU16ParamString(eeprom, (int)_paramsAddr["Attitude_MP_Enable"]), "", "0, 1", lang.getLangStr("Attitude_MP_Enable")));
             dataAtti.children.Add(genChildData(dataAtti.paramname, "MP_Panel", getU16PanelString(eeprom, (int)_paramsAddr["Attitude_MP_Panel"]), "", "1 - Max_Panels", lang.getLangStr("panel")));
-            dataAtti.children.Add(genChildData(dataAtti.paramname, "MP_Mode", getU16ParamString(eeprom, (int)_paramsAddr["Attitude_MP_Mode"]), "", "0, 1", lang.getLangStr("Attitude_MP_Mode")));
+            //dataAtti.children.Add(genChildData(dataAtti.paramname, "MP_Mode", getU16ParamString(eeprom, (int)_paramsAddr["Attitude_MP_Mode"]), "", "0, 1", lang.getLangStr("Attitude_MP_Mode")));
+            dataAtti.children.Add(genChildData(dataAtti.paramname, "MP_H_Position", getU16ParamString(eeprom, (int)_paramsAddr["Attitude_MP_H_Position"]), "", "0 - 350", lang.getLangStr("hpos")));
+            dataAtti.children.Add(genChildData(dataAtti.paramname, "MP_V_Position", getU16ParamString(eeprom, (int)_paramsAddr["Attitude_MP_V_Position"]), "", "0 - 230", lang.getLangStr("vpos")));
+            dataAtti.children.Add(genChildData(dataAtti.paramname, "MP_Scale", getScaleParamString(eeprom, (int)_paramsAddr["Attitude_MP_Scale_Real"]), "", "", lang.getLangStr("Attitude_Scale")));
+
             dataAtti.children.Add(genChildData(dataAtti.paramname, "3D_Enable", getU16ParamString(eeprom, (int)_paramsAddr["Attitude_3D_Enable"]), "", "0, 1", lang.getLangStr("Attitude_3D_Enable")));
             dataAtti.children.Add(genChildData(dataAtti.paramname, "3D_Panel", getU16ParamString(eeprom, (int)_paramsAddr["Attitude_3D_Panel"]), "", "1 - Max_Panels", lang.getLangStr("panel")));
+            dataAtti.children.Add(genChildData(dataAtti.paramname, "3D_H_Position", getU16ParamString(eeprom, (int)_paramsAddr["Attitude_3D_H_Position"]), "", "0 - 350", lang.getLangStr("hpos")));
+            dataAtti.children.Add(genChildData(dataAtti.paramname, "3D_V_Position", getU16ParamString(eeprom, (int)_paramsAddr["Attitude_3D_V_Position"]), "", "0 - 230", lang.getLangStr("vpos")));
+            dataAtti.children.Add(genChildData(dataAtti.paramname, "3D_Scale", getScaleParamString(eeprom, (int)_paramsAddr["Attitude_3D_Scale_Real"]), "", "", lang.getLangStr("Attitude_Scale")));
+            dataAtti.children.Add(genChildData(dataAtti.paramname, "3D_Map_radius", getScaleParamString(eeprom, (int)_paramsAddr["Attitude_3D_Map_radius"]), "", "", lang.getLangStr("Attitude_3D_Map_radius")));
             roots.Add(dataAtti);
 
             data dataMisc = new PlayuavOSD.data();
@@ -974,6 +1042,8 @@ namespace OSD
             dataMisc.desc = lang.getLangStr("Misc");
             dataMisc.children.Add(genChildData(dataMisc.paramname, "Units_Mode", getU16ParamString(eeprom, (int)_paramsAddr["Misc_Units_Mode"]), "", "0, 1", lang.getLangStr("Misc_Units_Mode")));
             dataMisc.children.Add(genChildData(dataMisc.paramname, "Max_Panels", getU16ParamString(eeprom, (int)_paramsAddr["Misc_Max_Panels"]), "", ">=1", lang.getLangStr("Misc_Max_Panels")));
+            dataMisc.children.Add(genChildData(dataMisc.paramname, "Start_Row", getU16ParamString(eeprom, (int)_paramsAddr["Misc_Start_Row"]), "", "", lang.getLangStr("Misc_Start_Row")));
+            dataMisc.children.Add(genChildData(dataMisc.paramname, "Start_Col", getU16ParamString(eeprom, (int)_paramsAddr["Misc_Start_Col"]), "", "", lang.getLangStr("Misc_Start_Col")));
             roots.Add(dataMisc);
 
             data dataPWM = new PlayuavOSD.data();
@@ -1346,7 +1416,20 @@ namespace OSD
                 //_changes[((data)e.RowObject).paramname] = newvalue;
                 _changes[paramsfullname] = newvalue;
 
-                u16toEPPROM(eeprom, (int)_paramsAddr[paramsfullname], Convert.ToInt16(newvalue));
+                if (paramsfullname.Contains("Attitude_") && paramsfullname.Contains("_Scale"))
+                {
+                    //this is size scale, divide into two parts for storing
+                    short temp = Convert.ToInt16(Math.Floor(newvalue));
+                    u16toEPPROM(eeprom, (int)_paramsAddr[paramsfullname + "_Real"], temp);
+                    newvalue -= temp;
+                    temp = Convert.ToInt16(newvalue*100);
+                    u16toEPPROM(eeprom, (int)_paramsAddr[paramsfullname + "_Frac"], temp);
+                }
+                else
+                {
+                    u16toEPPROM(eeprom, (int)_paramsAddr[paramsfullname], Convert.ToInt16(newvalue));
+                }
+                
 
                 ((data)e.RowObject).Value = e.NewValue.ToString();
 
@@ -2089,22 +2172,27 @@ namespace OSD
             ipanel = getU16Param(eeprom, (int)_paramsAddr["Attitude_MP_Panel"]);
             if (bShownAtPanle(ipanel, curPanel) && ien == 1)
             {
-                ogl.drawstring("0", font, SIZE_TO_FONT[1], whiteBrush, 175, 40);
-                RectangleF rect = new RectangleF(105, 55, 150, 100);
-                ogl.DrawArc(whitePen, rect, -142, 134);
-                PointF[] plist = new PointF[3];
-                plist[0] = new PointF(180,58);
-                plist[1] = new PointF(176, 66);
-                plist[2] = new PointF(184, 66);
-                ogl.DrawPolygon(whitePen, plist);
-                ogl.DrawLine(whitePen, 160, halfheight - 60, 200, halfheight - 60);
-                ogl.DrawLine(whitePen, 160, halfheight - 30, 200, halfheight - 30);
-                ogl.DrawLine(whitePen, 140, halfheight, 220, halfheight);
-                ogl.DrawLine(whitePen, 160, halfheight + 60, 200, halfheight + 60);
-                ogl.DrawLine(whitePen, 160, halfheight + 30, 200, halfheight + 30);
-                ogl.DrawLine(whitePen, 180, halfheight, 170, halfheight + 5);
-                ogl.DrawLine(whitePen, 180, halfheight, 190, halfheight + 5);
-                ogl.drawstring("0", font, SIZE_TO_FONT[1], whiteBrush, 175, halfheight);
+                iposX = getU16Param(eeprom, (int)_paramsAddr["Attitude_MP_H_Position"]);
+                iposY = getU16Param(eeprom, (int)_paramsAddr["Attitude_MP_V_Position"]);
+                iposY += 10;
+                double scale = Convert.ToDouble(getScaleParamString(eeprom, (int)_paramsAddr["Attitude_MP_Scale_Real"]));
+
+                //ogl.drawstring("0", font, SIZE_TO_FONT[1], whiteBrush, iposX, (float)(40.0 * scale));
+                //RectangleF rect = new RectangleF(105, 55, 150, 100);
+                //ogl.DrawArc(whitePen, rect, -142, 134);
+                //PointF[] plist = new PointF[3];
+                //plist[0] = new PointF(180,58);
+                //plist[1] = new PointF(176, 66);
+                //plist[2] = new PointF(184, 66);
+                //ogl.DrawPolygon(whitePen, plist);
+
+                ogl.DrawLine(whitePen, iposX - 10.0 * scale, iposY - 30.0 * scale, iposX + 10.0 * scale, iposY - 30.0 * scale);
+                ogl.DrawLine(whitePen, iposX - 10.0 * scale, iposY - 15.0 * scale, iposX + 10.0 * scale, iposY - 15.0 * scale);
+                ogl.DrawLine(whitePen, iposX - 20.0 * scale, iposY, iposX + 20.0 * scale, iposY);
+                ogl.DrawLine(whitePen, iposX - 10.0 * scale, iposY + 30.0 * scale, iposX + 10.0 * scale, iposY + 30.0 * scale);
+                ogl.DrawLine(whitePen, iposX - 10.0 * scale, iposY + 15.0 * scale, iposX + 10.0 * scale, iposY + 15.0 * scale);
+                ogl.DrawLine(whitePen, iposX, iposY, iposX - 5.0 * scale, iposY + 2.5 * scale);
+                ogl.DrawLine(whitePen, iposX, iposY, iposX + 5.0 * scale, iposY + 2.5 * scale);
             }
 
             //altitude scale
@@ -2364,13 +2452,18 @@ namespace OSD
             ipanel = getU16Param(eeprom, (int)_paramsAddr["Attitude_3D_Panel"]);
             if (bShownAtPanle(ipanel, curPanel) && ien == 1)
             {
-                iposX = 180;
-                iposY = (short)halfheight;
+                iposX = getU16Param(eeprom, (int)_paramsAddr["Attitude_3D_H_Position"]);
+                iposY = getU16Param(eeprom, (int)_paramsAddr["Attitude_3D_V_Position"]);
+                iposY += 10;
+                double scale = Convert.ToDouble(getScaleParamString(eeprom, (int)_paramsAddr["Attitude_3D_Scale_Real"]));
+                short map_radius = getU16Param(eeprom, (int)_paramsAddr["Attitude_3D_Map_radius"]);
+                map_radius = Convert.ToInt16(Convert.ToDouble(map_radius) * scale);
+
                 PointF[] plist = new PointF[8];
-                float a = 24;
-                float b = 10;
-                float c = 20;
-                float d = 4;
+                float a = (float)(24.0 * scale);
+                float b = (float)(10.0 * scale);
+                float c = (float)(20.0 * scale);
+                float d = (float)(4.0 * scale);
                 plist[0] = new PointF(iposX, iposY - a);
                 plist[1] = new PointF(iposX-d, iposY);
                 plist[2] = new PointF(iposX+d, iposY);
@@ -2380,8 +2473,8 @@ namespace OSD
                 plist[6] = new PointF(iposX+b, iposY + a);
                 plist[7] = new PointF(iposX, iposY+5);
                 strOffset = ogl.calstring("N", font, SIZE_TO_FONT[0], whiteBrush, 1);
-                ogl.drawstring("N", font, SIZE_TO_FONT[0], whiteBrush, iposX - strOffset, iposY - 40);
-                ogl.drawstring("E", font, SIZE_TO_FONT[0], whiteBrush, iposX + 40, iposY - 5);
+                ogl.drawstring("N", font, SIZE_TO_FONT[0], whiteBrush, iposX - strOffset, iposY - map_radius);
+                ogl.drawstring("E", font, SIZE_TO_FONT[0], whiteBrush, iposX + map_radius, iposY - 5);
                 ogl.DrawLine(whitePen, plist[0].X, plist[0].Y, plist[5].X, plist[5].Y);
                 ogl.DrawLine(whitePen, plist[1].X, plist[1].Y, plist[3].X, plist[3].Y);
                 ogl.DrawLine(whitePen, plist[3].X, plist[3].Y, plist[4].X, plist[4].Y);

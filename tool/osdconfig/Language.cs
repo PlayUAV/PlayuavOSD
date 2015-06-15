@@ -313,6 +313,18 @@ namespace OSD
 
             _langdspen["Throttle_Scale_Type"] = "0:Vertical, 1:Horizontal";
             _langdspzh["Throttle_Scale_Type"] = "0:垂直, 1:水平";
+
+            _langdspen["Misc_Start_Row"] = "Sometimes you will find the item doesn't show on the screen when the x is zero. Try to set a offset value.";
+            _langdspzh["Misc_Start_Row"] = "假设你打算把项目显示在第0行，却发现屏幕上没有，增加一些行才显示在屏幕的最上方，这是由于不同摄像头和屏幕造成的，可以设置一个偏移量";
+
+            _langdspen["Misc_Start_Col"] = "Please refer to Start_Row";
+            _langdspzh["Misc_Start_Col"] = "参考上面的行偏移";
+
+            _langdspen["Attitude_Scale"] = "The attitude display scale factor. You can set like 1.2, 0.8, 2.0 and etc.";
+            _langdspzh["Attitude_Scale"] = "姿态显示部分的缩放。默认是没缩放。可以设置成浮点数，比如1.2就是放大1.2倍。0.8就是缩小";
+
+            _langdspen["Attitude_3D_Map_radius"] = "The raduis of map-like indicator alone with UAV 3D model";
+            _langdspzh["Attitude_3D_Map_radius"] = "3D模型的地图指示半径";
         }
     }
 }

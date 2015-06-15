@@ -84,4 +84,10 @@ extern float osd_windDir;
 
 extern volatile uint8_t 	current_panel;
 
+extern float atti_mp_scale;
+extern float atti_3d_scale;
+extern uint32_t atti_3d_min_clipX;
+extern uint32_t atti_3d_max_clipX;
+extern uint32_t atti_3d_min_clipY;
+extern uint32_t atti_3d_max_clipY;
 #endif

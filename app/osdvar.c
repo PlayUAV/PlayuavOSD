@@ -96,4 +96,10 @@ float osd_windDir = 0.0;
 
 volatile uint8_t 	current_panel = 1;
 
+float atti_mp_scale = 0.0;
+float atti_3d_scale = 0.0;
+uint32_t atti_3d_min_clipX = 0;
+uint32_t atti_3d_max_clipX = 0;
+uint32_t atti_3d_min_clipY = 0;
+uint32_t atti_3d_max_clipY = 0;
 

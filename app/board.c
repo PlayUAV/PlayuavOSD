@@ -119,7 +119,13 @@ void board_init(void)
 	SPI_MAX7456_init();
 
 	LoadParams();
-	
+	atti_mp_scale = (float)eeprom_buffer.params.Atti_mp_scale_real + (float)eeprom_buffer.params.Atti_mp_scale_frac * 0.01;
+    atti_3d_scale = (float)eeprom_buffer.params.Atti_3D_scale_real + (float)eeprom_buffer.params.Atti_3D_scale_frac * 0.01;
+    atti_3d_min_clipX = eeprom_buffer.params.Atti_mp_posX - (uint32_t)(22*atti_mp_scale);
+    atti_3d_max_clipX = eeprom_buffer.params.Atti_mp_posX + (uint32_t)(22*atti_mp_scale);
+    atti_3d_min_clipY = eeprom_buffer.params.Atti_mp_posY - (uint32_t)(30*atti_mp_scale);
+    atti_3d_max_clipY = eeprom_buffer.params.Atti_mp_posY + (uint32_t)(34*atti_mp_scale);
+    
 	Build_Sin_Cos_Tables();
 	
 	/* Initialize USB VCP */    

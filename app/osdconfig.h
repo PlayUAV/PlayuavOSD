@@ -232,6 +232,19 @@ typedef union{
 		uint16_t Time_type;
 		
 		uint16_t Throttle_Scale_Type;
+        
+        uint16_t Atti_mp_posX;
+        uint16_t Atti_mp_posY;
+        uint16_t Atti_mp_scale_real;
+        uint16_t Atti_mp_scale_frac;
+        uint16_t Atti_3D_posX;
+        uint16_t Atti_3D_posY;
+        uint16_t Atti_3D_scale_real;
+        uint16_t Atti_3D_scale_frac;
+        uint16_t Atti_3D_map_radius;
+        
+        uint16_t osd_offsetY;
+        uint16_t osd_offsetX;
 //		//below is unused. if add a param, reduce one item here
 //		uint16_t unused[EERROM_SIZE/2 - 104];
 	}params;
