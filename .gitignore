@@ -15,7 +15,6 @@
 *.tlog
 *.tlog.raw
 *.vbrain
-*.zip
 *.uvoptx
 *.uvguix.*
 .*.swo
