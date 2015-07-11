@@ -144,12 +144,12 @@ void module_init(void)
 	//suspend the VCP routine when start. Resume it when the use connecting
 	//vTaskSuspend(xTaskVCPHandle);
 
-	switch(eeprom_buffer.params.FC_Type){
-		case FC_APM_PIXHAWK:
+	switch(eeprom_buffer.params.FC_Protocol){
+		case PROTOCOL_MAVLINK:
 			xTaskCreate( MavlinkTask, (const char*)"Task Mavlink",
 						 STACK_SIZE_MIN*2, NULL, THREAD_PRIO_HIGH, NULL );
 			break;
-		case FC_CC3D_REVO:
+		case PROTOCOL_UAVTALK:
 			xTaskCreate( UAVTalkTask, (const char*)"Task UAVTalk",
 						 STACK_SIZE_MIN*2, NULL, THREAD_PRIO_HIGH, NULL );
 			break;

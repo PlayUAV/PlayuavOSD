@@ -221,7 +221,7 @@ typedef union{
 		uint16_t RSSI_max;
 		uint16_t RSSI_raw_en;
 		
-		uint16_t FC_Type;	
+		uint16_t FC_Protocol;
 		
 //		//below is unused. if add a param, reduce one item here
 //		uint16_t unused[EERROM_SIZE/2 - 104];
