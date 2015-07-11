@@ -96,11 +96,11 @@ void mavlink_usart_init(uint32_t baudRate)
     USART_Cmd(USART3, ENABLE);
 	
 	switch(eeprom_buffer.params.FC_Type){
-		case FC_APM_PIXHAWK:
+		case PROTOCOL_MAVLINK:
 			//start with "0xFE"
 			protocol_start = 0xFE;
 			break;
-		case FC_CC3D_REVO:
+		case PROTOCOL_UAVTALK:
 			//start with "0x3C"
 			protocol_start = 0x3C;
 			break;
@@ -128,10 +128,10 @@ void USART3_IRQHandler(void)
 			mavlink_recv_pos = 0;
 			memset(mavlink_buffer_recv, 0, MAVLINK_BUFFER_SIZE);
 			switch(eeprom_buffer.params.FC_Type){
-				case FC_APM_PIXHAWK:
+				case PROTOCOL_MAVLINK:
 					xSemaphoreGiveFromISR(onMavlinkSemaphore, &xHigherPriorityTaskWoken);
 					break;
-				case FC_CC3D_REVO:
+				case PROTOCOL_UAVTALK:
 					xSemaphoreGiveFromISR(onUAVTalkSemaphore, &xHigherPriorityTaskWoken);
 					break;
 				default:

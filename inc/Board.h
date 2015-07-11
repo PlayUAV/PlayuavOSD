@@ -70,11 +70,13 @@ enum thread_prio_e
 	THREAD_PRIO_HIGHEST = 4, /* @note: this has to match (configMAX_PRIORITIES - 1) */
 };
 
-//all supports flight control type
-enum FC_Type_e
+//all supported protocols
+enum FC_Protocol
 {
-	FC_APM_PIXHAWK = 0,
-	FC_CC3D_REVO = 1,
+	PROTOCOL_MAVLINK = 0,
+	PROTOCOL_UAVTALK = 1,
+	PROTOCOL_MWII = 2,
+	PROTOCOL_GPS = 3,
 	//FC_DJI_NAZAV2 = 3,
 };
 
