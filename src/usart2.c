@@ -95,7 +95,7 @@ void mavlink_usart_init(uint32_t baudRate)
 	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
     USART_Cmd(USART3, ENABLE);
 	
-	switch(eeprom_buffer.params.FC_Type){
+	switch(eeprom_buffer.params.FC_Protocol){
 		case PROTOCOL_MAVLINK:
 			//start with "0xFE"
 			protocol_start = 0xFE;
@@ -127,7 +127,7 @@ void USART3_IRQHandler(void)
 			mavlink_buf_swap();
 			mavlink_recv_pos = 0;
 			memset(mavlink_buffer_recv, 0, MAVLINK_BUFFER_SIZE);
-			switch(eeprom_buffer.params.FC_Type){
+			switch(eeprom_buffer.params.FC_Protocol){
 				case PROTOCOL_MAVLINK:
 					xSemaphoreGiveFromISR(onMavlinkSemaphore, &xHigherPriorityTaskWoken);
 					break;
