@@ -33,7 +33,7 @@ extern xSemaphoreHandle onScreenDisplaySemaphore;
 //OS_FlagID osdUpdateFlag;
 u8 OSD_need_update = 0;
 // How many frames until we redraw
-#define VSYNC_REDRAW_CNT 2
+#define VSYNC_REDRAW_CNT 4
 
 static const struct pios_video_type_boundary pios_video_type_boundary_ntsc = {
 	.graphics_right  = 351,         // must be: graphics_width_real - 1

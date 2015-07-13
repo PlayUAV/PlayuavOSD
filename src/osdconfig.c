@@ -41,6 +41,7 @@
 static const uint32_t	bl_proto_rev = 1;	// value returned by PROTO_DEVICE_BL_REV
 EEPROM_BUF_TYPE eeprom_buffer;
 
+static const uint32_t usb_vcp_timeout = 1;
 
 static void sync_response(void)
 {
@@ -99,14 +100,14 @@ void vTaskVCP(void *pvParameters)
 		{
 			switch(c) {
 				case PROTO_GET_SYNC:
-					if (cin_wait(1) != PROTO_EOC)
+					if (cin_wait(usb_vcp_timeout) != PROTO_EOC)
 						goto cmd_bad;
 					break;
 				case PROTO_GET_DEVICE:
-					arg = cin_wait(1);
+					arg = cin_wait(usb_vcp_timeout);
 					if (arg < 0)
 						goto cmd_bad;
-					if (cin_wait(1) != PROTO_EOC)
+					if (cin_wait(usb_vcp_timeout) != PROTO_EOC)
 						goto cmd_bad;
 					
 					switch (arg) {
@@ -119,13 +120,13 @@ void vTaskVCP(void *pvParameters)
 			
 					break;
 				case PROTO_START_TRANS:
-					if (cin_wait(1) != PROTO_EOC)
+					if (cin_wait(usb_vcp_timeout) != PROTO_EOC)
 						goto cmd_bad;
 					address = 0;
 					memset(tmpbuf,0,EERROM_SIZE);
 					break;
 				case PROTO_SET_PARAMS:
-					arg = cin_wait(1);
+					arg = cin_wait(usb_vcp_timeout);
 					if (arg < 0)
 						goto cmd_bad;
 
@@ -136,7 +137,7 @@ void vTaskVCP(void *pvParameters)
 						goto cmd_bad;
 					for (int i = 0; i < arg; i++) 
 					{
-						c = cin_wait(1);
+						c = cin_wait(usb_vcp_timeout);
 						if (c < 0)
 							goto cmd_bad;
 						
@@ -145,7 +146,7 @@ void vTaskVCP(void *pvParameters)
 					
 					break;
 				case PROTO_END_TRANS:
-					if (cin_wait(1) != PROTO_EOC)
+					if (cin_wait(usb_vcp_timeout) != PROTO_EOC)
 						goto cmd_bad;
 					
 					//ensure we receive right size
@@ -160,7 +161,7 @@ void vTaskVCP(void *pvParameters)
 					}
 					break;
 				case PROTO_SAVE_TO_FLASH:
-					if (cin_wait(1) != PROTO_EOC)
+					if (cin_wait(usb_vcp_timeout) != PROTO_EOC)
 						goto cmd_bad;
 					
 					//ensure we receive right size
@@ -174,7 +175,7 @@ void vTaskVCP(void *pvParameters)
 					}
 					break;	
 				case PROTO_GET_PARAMS:
-					if (cin_wait(1) != PROTO_EOC)
+					if (cin_wait(usb_vcp_timeout) != PROTO_EOC)
 						goto cmd_bad;
 					for (int i = 0; i < EERROM_SIZE; i++)
 					{
@@ -185,7 +186,7 @@ void vTaskVCP(void *pvParameters)
 					
 					break;
 				case PROTO_BL_UPLOAD:
-					if (cin_wait(1) != PROTO_EOC)
+					if (cin_wait(usb_vcp_timeout) != PROTO_EOC)
 						goto cmd_bad;
 //					PWR_BackupAccessCmd(ENABLE);
 //					RCC_BackupResetCmd(ENABLE);

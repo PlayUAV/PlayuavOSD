@@ -68,12 +68,20 @@ void board_init(void)
 	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOB, &gpio);
 	GPIO_SetBits(GPIOB,GPIO_Pin_12);
-	Delay_us(300000);
+	Delay_us(1000000);
 	GPIO_ResetBits(GPIOB,GPIO_Pin_12);
+	/* Initialize USB VCP */
+	TM_USB_VCP_Init();
 
 	LEDInit(LED_BLUE);
 	LEDInit(LED_GREEN);
 
+//	uint32_t index = 0;
+//	while(index++ < 100)
+//	{
+//	    LEDToggle(LED_BLUE);
+//	    Delay_us(500000);
+//	}
 	gpio.GPIO_Pin = GPIO_Pin_0;
 	gpio.GPIO_Mode = GPIO_Mode_OUT;
 	gpio.GPIO_OType = GPIO_OType_PP;
@@ -123,8 +131,7 @@ void board_init(void)
 
 	Build_Sin_Cos_Tables();
 
-	/* Initialize USB VCP */
-    TM_USB_VCP_Init();
+
 }
 
 void module_init(void)

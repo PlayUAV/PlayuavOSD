@@ -33,7 +33,7 @@ STM32_INCLUDES = -I$(STMLIBSDIR)/CMSIS/Include/ \
           		 -I$(MAVLINKDIR)    \
           		 -I$(USBCDCDIR)    \
 				 -I./inc 
-OPTIMIZE       = -Os
+OPTIMIZE       = -O0
 
 CFLAGS	= $(MCFLAGS)  $(OPTIMIZE)  $(DEFS) -I./ -I./ $(STM32_INCLUDES)  -Wl,-T,./linker/stm32_flash.ld
 AFLAGS	= $(MCFLAGS) 
@@ -126,10 +126,4 @@ $(EXECUTABLE): $(SRC) $(STARTUP)
 	$(CC) $(CFLAGS) $^ -lm -lc -lnosys -o $@
 
 clean:
-	del $(TARGET)
-	del $(TARGETBIN)
-	del $(EXECUTABLE)
-	del $(SRC:.c=.lst)
-#clean:
-#	rm -f Startup.lst  $(TARGET) $(TARGETBIN) $(EXECUTABLE) $(TARGET).lst $(OBJ) $(AUTOGEN)  $(TARGET).out  $(TARGET).hex  $(TARGET).map \
-#	 $(TARGET).dmp  $(TARGET).elf
+	rm -f $(TARGET) $(TARGETBIN) $(EXECUTABLE) $(SRC:.c=.lst)

@@ -63,6 +63,13 @@ const char * spd_unit = METRIC_SPEED;
 //#define SHOW_UAV_3D		0
 //#define SIMULATE_VALUE
 
+void devel_test(void)
+{
+    write_string("test string", 180, 25, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
+    write_circle_outlined(180, 100, 30,  0, 1, 0, 1);
+    drawBox(10, 10, 30, 30);
+}
+
 void do_converts(void)
 {
 	if (eeprom_buffer.params.Units_mode == 1)
@@ -117,6 +124,7 @@ void vTaskOSD(void *pvParameters)
 #endif		
 		
 		RenderScreen();
+		//devel_test();
 		//vTaskDelay(5);
 	}
 }

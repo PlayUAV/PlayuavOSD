@@ -30,8 +30,8 @@ void delay (int a);
 
 int main(void)
 {
-	//SCB->VTOR = FLASH_BASE | 0x4000; /* Vector Table Relocation in Internal FLASH. */
-	//SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));
+	SCB->VTOR = FLASH_BASE | 0x4000; /* Vector Table Relocation in Internal FLASH. */
+	SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));
 //	LEDInit(LED_GREEN);
 //	LEDInit(LED_BLUE);
 
