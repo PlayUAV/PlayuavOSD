@@ -197,6 +197,10 @@ typedef struct CAM4DV1_TYP
 
 void Reset_OBJECT4DV1(OBJECT4DV1_PTR obj);
 
+void Translate_OBJECT4DV1(OBJECT4DV1_PTR obj, VECTOR4D_PTR vt);
+
+void Scale_OBJECT4DV1(OBJECT4DV1_PTR obj, VECTOR4D_PTR vs);
+
 void Transform_OBJECT4DV1(OBJECT4DV1_PTR obj, MATRIX4X4_PTR mt,   
                           int coord_select);
 

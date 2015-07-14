@@ -38,7 +38,7 @@
 #define PROTO_SAVE_TO_FLASH	0x29
 #define PROTO_BL_UPLOAD		0x55
 
-static const uint32_t	bl_proto_rev = 1;	// value returned by PROTO_DEVICE_BL_REV
+static const uint8_t	bl_proto_rev = 1;	// value returned by PROTO_DEVICE_BL_REV
 EEPROM_BUF_TYPE eeprom_buffer;
 
 static const uint32_t usb_vcp_timeout = 1;

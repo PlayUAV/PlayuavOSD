@@ -26,7 +26,8 @@ u8		apm_mav_system;
 u8		apm_mav_component;
 u8		enable_mav_request = 0;
 u32 	sys_start_time = 0;
-
+u32 	heatbeat_start_time = 0;
+u32 	armed_start_time = 0;
 /////////////////////////////////////////////////////////////////////////
 float        osd_vbat_A = 0;                 // Battery A voltage in milivolt
 int16_t      osd_curr_A = 0;                 // Battery A current
@@ -69,7 +70,8 @@ float	    xtrack_error = 0; // Current crosstrack error on x-y plane in meters
 float        eff = 0; //Efficiency
 
 uint8_t      osd_mode = 0;
-bool 		 motor_armed = 0;
+bool motor_armed = false;
+bool last_motor_armed = false;
 uint8_t      base_mode = 0;
 
 int16_t      chan1_raw = 0;
@@ -89,6 +91,15 @@ uint32_t	 osd_home_bearing = 0;
 uint8_t      osd_alt_cnt = 0;              // counter for stable osd_alt
 float        osd_alt_prev = 0;             // previous altitude
 
+float osd_windSpeed = 0.0;
+float osd_windDir = 0.0;
+
 volatile uint8_t 	current_panel = 1;
 
+float atti_mp_scale = 0.0;
+float atti_3d_scale = 0.0;
+uint32_t atti_3d_min_clipX = 0;
+uint32_t atti_3d_max_clipX = 0;
+uint32_t atti_3d_min_clipY = 0;
+uint32_t atti_3d_max_clipY = 0;
 

@@ -7,10 +7,6 @@
 
 #define OBJECT2DV1_MAX_VERTICES           80
 
-#define MIN_CLIP_X			GRAPHICS_X_MIDDLE - 45
-#define MAX_CLIP_X			GRAPHICS_X_MIDDLE + 45
-#define MIN_CLIP_Y			GRAPHICS_Y_MIDDLE - 60
-#define MAX_CLIP_Y			GRAPHICS_Y_MIDDLE + 75
 
 // a 2D polygon
 typedef struct POLYGON2D_TYP

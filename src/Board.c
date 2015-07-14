@@ -32,6 +32,7 @@ void vTaskHeartBeat(void *pvParameters);
 void vTask10HZ(void *pvParameters);
 void triggerVideo(void);
 void triggerPanel(void);
+void checkDefaultParam(void);
 
 uint8_t video_switch=0;
 
@@ -56,9 +57,7 @@ void board_init(void)
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
 	RCC_LSEConfig(RCC_LSE_OFF);
-//	SystemCoreClockUpdate();
-//
-//	uint32_t tmp = SystemCoreClock;
+
 
 	//This is a trick to perform a USB re-enumerate
 	gpio.GPIO_Pin = GPIO_Pin_12;
@@ -70,18 +69,13 @@ void board_init(void)
 	GPIO_SetBits(GPIOB,GPIO_Pin_12);
 	Delay_us(1000000);
 	GPIO_ResetBits(GPIOB,GPIO_Pin_12);
-	/* Initialize USB VCP */
+
+	// Initialize USB VCP. Do it ASAP
 	TM_USB_VCP_Init();
 
 	LEDInit(LED_BLUE);
 	LEDInit(LED_GREEN);
 
-//	uint32_t index = 0;
-//	while(index++ < 100)
-//	{
-//	    LEDToggle(LED_BLUE);
-//	    Delay_us(500000);
-//	}
 	gpio.GPIO_Pin = GPIO_Pin_0;
 	gpio.GPIO_Mode = GPIO_Mode_OUT;
 	gpio.GPIO_OType = GPIO_OType_PP;
@@ -125,13 +119,19 @@ void board_init(void)
 	GPIO_Init(GPIOA, &gpio);
 	GPIO_SetBits(GPIOA,GPIO_Pin_15);
 
-	SPI_MAX7456_init();
+    SPI_MAX7456_init();
 
-	LoadParams();
+    Build_Sin_Cos_Tables();
 
-	Build_Sin_Cos_Tables();
+    LoadParams();
+    checkDefaultParam();
 
-
+    atti_mp_scale = (float)eeprom_buffer.params.Atti_mp_scale_real + (float)eeprom_buffer.params.Atti_mp_scale_frac * 0.01;
+    atti_3d_scale = (float)eeprom_buffer.params.Atti_3D_scale_real + (float)eeprom_buffer.params.Atti_3D_scale_frac * 0.01;
+    atti_3d_min_clipX = eeprom_buffer.params.Atti_mp_posX - (uint32_t)(22*atti_mp_scale);
+    atti_3d_max_clipX = eeprom_buffer.params.Atti_mp_posX + (uint32_t)(22*atti_mp_scale);
+    atti_3d_min_clipY = eeprom_buffer.params.Atti_mp_posY - (uint32_t)(30*atti_mp_scale);
+    atti_3d_max_clipY = eeprom_buffer.params.Atti_mp_posY + (uint32_t)(34*atti_mp_scale);
 }
 
 void module_init(void)
@@ -147,9 +147,6 @@ void module_init(void)
 
 	xTaskCreate( vTaskVCP, (const char*)"Task VCP",
 	STACK_SIZE_MIN*2, NULL, THREAD_PRIO_HIGH, &xTaskVCPHandle );
-
-	//suspend the VCP routine when start. Resume it when the use connecting
-	//vTaskSuspend(xTaskVCPHandle);
 
 	switch(eeprom_buffer.params.FC_Protocol){
 		case PROTOCOL_MAVLINK:
@@ -180,22 +177,40 @@ void vTaskHeartBeat(void *pvParameters)
 
 void vTask10HZ(void *pvParameters)
 {
-	for(;;)
-	{
-		vTaskDelay( 100 / portTICK_RATE_MS );
+    for(;;)
+        {
+            vTaskDelay( 100 / portTICK_RATE_MS );
 
-		//trigger video switch
-		if(eeprom_buffer.params.PWM_Video_en)
-		{
-			triggerVideo();
-		}
+            //trigger video switch
+            if(eeprom_buffer.params.PWM_Video_en)
+            {
+                triggerVideo();
+            }
 
-		//trigger panel switch
-		if(eeprom_buffer.params.PWM_Panel_en)
-		{
-			triggerPanel();
-		}
-	}
+            //trigger panel switch
+            if(eeprom_buffer.params.PWM_Panel_en)
+            {
+                triggerPanel();
+            }
+
+            //if no mavlink update for 2 secs, show waring and request mavlink rate again
+            if(GetSystimeMS() > (lastMAVBeat + 2200))
+            {
+                heatbeat_start_time = 0;
+                waitingMAVBeats = 1;
+            }
+
+            if(enable_mav_request == 1)
+            {
+                for(int n = 0; n < 3; n++){
+                    request_mavlink_rates();//Three times to certify it will be readed
+                    vTaskDelay(50/portTICK_RATE_MS);
+                }
+                enable_mav_request = 0;
+                waitingMAVBeats = 0;
+                lastMAVBeat = GetSystimeMS();
+            }
+        }
 }
 
 void triggerVideo(void)
@@ -282,4 +297,41 @@ void Delay_us(u32 nus)
 		i=12;
 		while(i--);
 	}
+}
+
+void checkDefaultParam()
+{
+    bool bNeedUpdateFlash = false;
+    //if new version add parameters, we should set them to default
+    u16 curVer = eeprom_buffer.params.firmware_ver;
+
+    //v1.0.5              Released: 2015-6-15
+    if(curVer < 5 || curVer == 0xFFFF)
+    {
+        bNeedUpdateFlash = true;
+
+        eeprom_buffer.params.Atti_mp_posX = 180;
+        eeprom_buffer.params.Atti_mp_posY = 133;
+        eeprom_buffer.params.Atti_mp_scale_real = 1;
+        eeprom_buffer.params.Atti_mp_scale_frac = 0;
+        eeprom_buffer.params.Atti_3D_posX = 180;
+        eeprom_buffer.params.Atti_3D_posY = 133;
+        eeprom_buffer.params.Atti_3D_scale_real = 1;
+        eeprom_buffer.params.Atti_3D_scale_frac = 0;
+        eeprom_buffer.params.Atti_3D_map_radius = 40;
+        eeprom_buffer.params.osd_offsetY = 0;
+        eeprom_buffer.params.osd_offsetX = 0;
+    }
+
+
+    bool ret = false;
+    if(bNeedUpdateFlash)
+    {
+        eeprom_buffer.params.firmware_ver = 5;
+        ret = StoreParams();
+        if(!ret)
+        {
+            //TODO - handle flash write error here
+        }
+    }
 }

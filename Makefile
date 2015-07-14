@@ -1,4 +1,3 @@
-TARGET=PlayuavOSD.hex
 EXECUTABLE=PlayuavOSD.elf
 TARGETBIN=PlayuavOSD.bin
 
@@ -21,7 +20,8 @@ STMLIBSDIR    = ./lib/STM32F4-Discovery_FW_V1.1.0/Libraries
 STMSPDDIR    = $(STMLIBSDIR)/STM32F4xx_StdPeriph_Driver
 STMSPSRCDDIR = $(STMSPDDIR)/src
 STMSPINCDDIR = $(STMSPDDIR)/inc
-FREERTOSDIR = ./lib/FreeRTOS8.1.2/Source
+#FREERTOSDIR = ./lib/FreeRTOS8.1.2/Source
+FREERTOSDIR = ./lib/FreeRTOSV8.2.0/FreeRTOS/Source
 USBCDCDIR = ./lib/usb_cdc_device
 MAVLINKDIR = ./lib/mavlink/v1.0
 
@@ -114,10 +114,7 @@ OBJDIR = .
 OBJ = $(SRC:%.c=$(OBJDIR)/%.o) 
 #OBJ += Startup.o
 
-all: $(TARGET) $(TARGETBIN)
-
-$(TARGET): $(EXECUTABLE)
-	$(CP) -O ihex $^ $@
+all: $(TARGETBIN)
 
 $(TARGETBIN): $(EXECUTABLE)
 	$(BIN) $^ $@
@@ -126,4 +123,4 @@ $(EXECUTABLE): $(SRC) $(STARTUP)
 	$(CC) $(CFLAGS) $^ -lm -lc -lnosys -o $@
 
 clean:
-	rm -f $(TARGET) $(TARGETBIN) $(EXECUTABLE) $(SRC:.c=.lst)
+	rm -f $(TARGETBIN) $(EXECUTABLE) $(SRC:.c=.lst)
