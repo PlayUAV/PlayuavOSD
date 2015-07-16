@@ -15,6 +15,9 @@ You will notice the current firmware only supports MAVLink protocols. It will be
 
 The firmware can be built with ARM GCC. It is highly recommended using PX4 Toolchain which can be download here:https://pixhawk.org/dev/toolchain_installation
 
+Note:
+The bin file can be flash to chip directly. The start address is 0x8004000. Address before 0x8004000 used for bootloader.
+The hex flle generated from the playuavosd.bin file with "px_mkfw.py", can be used with the config tool.
 
 Contact Us
 ==========
