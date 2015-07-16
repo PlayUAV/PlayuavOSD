@@ -14,7 +14,11 @@ Developer
 You will notice the current firmware only supports MAVLink protocols. It will be great if supports more FC systems and protocols like UAVTalk, even the commercial FC like DJI can protocols. Besides, your suggestions are valuable to us. If you want to add a feature, or if you find any bug, please feel free to discuss on our website.
 
 The firmware can be built with ARM GCC. It is highly recommended using PX4 Toolchain which can be download here:https://pixhawk.org/dev/toolchain_installation
+After the toolchain installing, start the app "PX4 Console". Then change to the directory where the source code stored and enter the command:make
 
+Note:
+The bin file can be flash to chip directly. The start address is 0x8004000. Address before 0x8004000 used for bootloader.
+The hex flle generated from the playuavosd.bin file with "px_mkfw.py", can be used with the config tool.
 
 Contact Us
 ==========
