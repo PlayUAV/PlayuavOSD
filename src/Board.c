@@ -22,7 +22,6 @@
 #include "max7456.h"
 #include "usart2.h"
 #include "osdconfig.h"
-#include "tm_stm32f4_usb_vcp.h"
 #include "osdconfig.h"
 #include "math3d.h"
 #include "osdvar.h"
@@ -57,21 +56,6 @@ void board_init(void)
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
 	RCC_LSEConfig(RCC_LSE_OFF);
-
-
-	//This is a trick to perform a USB re-enumerate
-	gpio.GPIO_Pin = GPIO_Pin_12;
-	gpio.GPIO_Speed = GPIO_Speed_100MHz;
-	gpio.GPIO_Mode = GPIO_Mode_OUT;
-	gpio.GPIO_OType = GPIO_OType_PP;
-	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIOB, &gpio);
-	GPIO_SetBits(GPIOB,GPIO_Pin_12);
-	Delay_us(1000000);
-	GPIO_ResetBits(GPIOB,GPIO_Pin_12);
-
-	// Initialize USB VCP. Do it ASAP
-	TM_USB_VCP_Init();
 
 	LEDInit(LED_BLUE);
 	LEDInit(LED_GREEN);
@@ -146,7 +130,7 @@ void module_init(void)
 		STACK_SIZE_MIN*2, NULL, THREAD_PRIO_HIGHEST, NULL );
 
 	xTaskCreate( vTaskVCP, (const char*)"Task VCP",
-	STACK_SIZE_MIN*2, NULL, THREAD_PRIO_HIGH, &xTaskVCPHandle );
+	STACK_SIZE_MIN*2, NULL, THREAD_PRIO_NORMAL, &xTaskVCPHandle );
 
 	switch(eeprom_buffer.params.FC_Protocol){
 		case PROTOCOL_MAVLINK:

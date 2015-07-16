@@ -25,19 +25,11 @@
   ******************************************************************************
   */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USBD_CDC_VCP_H
 #define __USBD_CDC_VCP_H
 
-/* Includes ------------------------------------------------------------------*/
+#include <stdint.h>
 
-#include "usbd_cdc_core.h"
-#include "usbd_conf.h"
-
-uint16_t VCP_DataTx   (uint8_t* Buf, uint32_t Len);
-uint16_t VCP_DataRx   (uint8_t* Buf, uint32_t Len);
-
-/* Exported typef ------------------------------------------------------------*/
 /* The following structures groups all needed parameters to be configured for the 
    ComPort. These parameters can modified on the fly by the host through CDC class
    command class requests. */
@@ -49,12 +41,14 @@ typedef struct
   uint8_t  datatype;
 }LINE_CODING;
 
+/* Functions */
+void VCP_put_char(uint8_t buf);
 
-#define DEFAULT_CONFIG                  0
-#define OTHER_CONFIG                    1
+void VCP_send_str(uint8_t* buf);
 
-/* Exported macro ------------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
+uint8_t VCP_get_char(uint8_t *buf);
+
+uint8_t VCP_get_string(uint8_t *buf);
 
 #endif /* __USBD_CDC_VCP_H */
 

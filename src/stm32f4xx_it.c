@@ -30,6 +30,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
 
+#include "usb_core.h"
+#include "usb_dcd_int.h"
+#include "usbd_core.h"
+#include "usbd_cdc_core.h"
+
+extern uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
+extern USB_OTG_CORE_HANDLE USB_OTG_dev;
+
 /** @addtogroup STM32F4xx_StdPeriph_Examples
   * @{
   */
@@ -163,11 +171,13 @@ void DebugMon_Handler(void)
 }*/
 
 /**
-  * @}
-  */ 
-
-/**
-  * @}
-  */ 
+  * @brief  This function handles USB interrupts.
+  * @param  None
+  * @retval None
+  */
+void OTG_FS_IRQHandler(void)
+{
+    USBD_OTG_ISR_Handler (&USB_OTG_dev);
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

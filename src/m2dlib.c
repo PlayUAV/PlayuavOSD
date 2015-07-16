@@ -13,392 +13,368 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #include "m2dlib.h"
 #include "osdvar.h"
 
 //Reset 2d object, just copy local verts to transfer verts
-void Reset_Polygon2D(POLYGON2D_PTR poly)
-{
-	for (int curr_vert = 0; curr_vert < poly->num_verts; curr_vert++)
-	{
-		VECTOR2D_COPY(&(poly->vlist_trans[curr_vert]), &(poly->vlist_local[curr_vert]));
-	}
+void Reset_Polygon2D(POLYGON2D_PTR poly) {
+    for (int curr_vert = 0; curr_vert < poly->num_verts; curr_vert++) {
+        VECTOR2D_COPY(&(poly->vlist_trans[curr_vert]),
+                &(poly->vlist_local[curr_vert]));
+    }
 }
 
-int Transform_Polygon2D(POLYGON2D_PTR poly, float roate, float tx, float ty)
-{
-	// test for valid pointer
-	if (!poly)
-		return(0);
+int Transform_Polygon2D(POLYGON2D_PTR poly, float roate, float tx, float ty) {
+    // test for valid pointer
+    if (!poly)
+        return (0);
 
-	// test for negative rotation angle
-	if (roate < 0)
-		roate+=360;
+    // test for negative rotation angle
+    if (roate < 0)
+        roate += 360;
 
-	// loop and rotate each point, very crude, no lookup!!!
-	for (int curr_vert = 0; curr_vert < poly->num_verts; curr_vert++)
-	{
-		poly->vlist_trans[curr_vert].x += tx;
-		poly->vlist_trans[curr_vert].y += ty;
-		// perform rotation
-		float xr = 	(float)poly->vlist_trans[curr_vert].x*Fast_Cos(roate) - 
-					(float)poly->vlist_trans[curr_vert].y*Fast_Sin(roate);
+    // loop and rotate each point, very crude, no lookup!!!
+    for (int curr_vert = 0; curr_vert < poly->num_verts; curr_vert++) {
+        poly->vlist_trans[curr_vert].x += tx;
+        poly->vlist_trans[curr_vert].y += ty;
+        // perform rotation
+        float xr = (float) poly->vlist_trans[curr_vert].x * Fast_Cos(roate)
+                - (float) poly->vlist_trans[curr_vert].y * Fast_Sin(roate);
 
-		float yr = 	(float)poly->vlist_trans[curr_vert].x*Fast_Sin(roate) + 
-					(float)poly->vlist_trans[curr_vert].y*Fast_Cos(roate);
+        float yr = (float) poly->vlist_trans[curr_vert].x * Fast_Sin(roate)
+                + (float) poly->vlist_trans[curr_vert].y * Fast_Cos(roate);
 
-		// store result back
-		poly->vlist_trans[curr_vert].x = xr;
-		poly->vlist_trans[curr_vert].y = yr;
+        // store result back
+        poly->vlist_trans[curr_vert].x = xr;
+        poly->vlist_trans[curr_vert].y = yr;
 
-	} // end for curr_vert
+    } // end for curr_vert
 
-	// return success
-	return(1);
+    // return success
+    return (1);
 }
 
-int Translate_Polygon2D(POLYGON2D_PTR poly, float dx, float dy)
-{
-	// this function translates the center of a polygon
+int Translate_Polygon2D(POLYGON2D_PTR poly, float dx, float dy) {
+    // this function translates the center of a polygon
 
-	// test for valid pointer
-	if (!poly)
-		return(0);
+    // test for valid pointer
+    if (!poly)
+        return (0);
 
-	// translate
-	poly->x0+=dx;
-	poly->y0+=dy;
+    // translate
+    poly->x0 += dx;
+    poly->y0 += dy;
 
-	// return success
-	return(1);
+    // return success
+    return (1);
 
 } // end Translate_Polygon2D
 
-int Rotate_Polygon2D(POLYGON2D_PTR poly, float theta)
-{
-	// this function rotates the local coordinates of the polygon
+int Rotate_Polygon2D(POLYGON2D_PTR poly, float theta) {
+    // this function rotates the local coordinates of the polygon
 
-	// test for valid pointer
-	if (!poly)
-		return(0);
+    // test for valid pointer
+    if (!poly)
+        return (0);
 
-	// test for negative rotation angle
-	if (theta < 0)
-		theta+=360;
+    // test for negative rotation angle
+    if (theta < 0)
+        theta += 360;
 
-	// loop and rotate each point, very crude, no lookup!!!
-	for (int curr_vert = 0; curr_vert < poly->num_verts; curr_vert++)
-	{
-		// perform rotation
-		float xr = 	(float)poly->vlist_trans[curr_vert].x*Fast_Cos(theta) - 
-					(float)poly->vlist_trans[curr_vert].y*Fast_Sin(theta);
+    // loop and rotate each point, very crude, no lookup!!!
+    for (int curr_vert = 0; curr_vert < poly->num_verts; curr_vert++) {
+        // perform rotation
+        float xr = (float) poly->vlist_trans[curr_vert].x * Fast_Cos(theta)
+                - (float) poly->vlist_trans[curr_vert].y * Fast_Sin(theta);
 
-		float yr = 	(float)poly->vlist_trans[curr_vert].x*Fast_Sin(theta) + 
-					(float)poly->vlist_trans[curr_vert].y*Fast_Cos(theta);
+        float yr = (float) poly->vlist_trans[curr_vert].x * Fast_Sin(theta)
+                + (float) poly->vlist_trans[curr_vert].y * Fast_Cos(theta);
 
-		// store result back
-		poly->vlist_trans[curr_vert].x = xr;
-		poly->vlist_trans[curr_vert].y = yr;
+        // store result back
+        poly->vlist_trans[curr_vert].x = xr;
+        poly->vlist_trans[curr_vert].y = yr;
 
-	} // end for curr_vert
+    } // end for curr_vert
 
-	// return success
-	return(1);
+    // return success
+    return (1);
 
 } // end Rotate_Polygon2D
 
-int Scale_Polygon2D(POLYGON2D_PTR poly, float sx, float sy)
-{
-	// this function scalesthe local coordinates of the polygon
+int Scale_Polygon2D(POLYGON2D_PTR poly, float sx, float sy) {
+    // this function scalesthe local coordinates of the polygon
 
-	// test for valid pointer
-	if (!poly)
-		return(0);
+    // test for valid pointer
+    if (!poly)
+        return (0);
 
-	// loop and scale each point
-	for (int curr_vert = 0; curr_vert < poly->num_verts; curr_vert++)
-	{
-		// scale and store result back
-		poly->vlist_local[curr_vert].x *= sx;
-		poly->vlist_local[curr_vert].y *= sy;
+    // loop and scale each point
+    for (int curr_vert = 0; curr_vert < poly->num_verts; curr_vert++) {
+        // scale and store result back
+        poly->vlist_local[curr_vert].x *= sx;
+        poly->vlist_local[curr_vert].y *= sy;
 
-	} // end for curr_vert
+    } // end for curr_vert
 
-	// return success
-	return(1);
+    // return success
+    return (1);
 
 } // end Scale_Polygon2D
 
 //return 1: visible
 //		 0: invisible
-int Clip_Line(VECTOR4D_PTR v)
-{
-	// this function clips the sent line using the globally defined clipping
-	// region
+int Clip_Line(VECTOR4D_PTR v) {
+    // this function clips the sent line using the globally defined clipping
+    // region
 
-	// internal clipping codes
-	#define CLIP_CODE_C  0x0000
-	#define CLIP_CODE_N  0x0008
-	#define CLIP_CODE_S  0x0004
-	#define CLIP_CODE_E  0x0002
-	#define CLIP_CODE_W  0x0001
+    // internal clipping codes
+#define CLIP_CODE_C  0x0000
+#define CLIP_CODE_N  0x0008
+#define CLIP_CODE_S  0x0004
+#define CLIP_CODE_E  0x0002
+#define CLIP_CODE_W  0x0001
 
-	#define CLIP_CODE_NE 0x000a
-	#define CLIP_CODE_SE 0x0006
-	#define CLIP_CODE_NW 0x0009 
-	#define CLIP_CODE_SW 0x0005
-	
-	int x1=v->x, 
-		y1=v->y, 
-		x2=v->z, 
-		y2=v->w;
-	
-	int xc1=x1, 
-		yc1=y1, 
-		xc2=x2, 
-		yc2=y2;
+#define CLIP_CODE_NE 0x000a
+#define CLIP_CODE_SE 0x0006
+#define CLIP_CODE_NW 0x0009
+#define CLIP_CODE_SW 0x0005
 
-	int p1_code=0, 
-		p2_code=0;
+    int x1 = v->x, y1 = v->y, x2 = v->z, y2 = v->w;
 
-	// determine codes for p1 and p2
-	if (y1 < atti_3d_min_clipY)
-		p1_code|=CLIP_CODE_N;
-	else if(y1 > atti_3d_max_clipY)
-		p1_code|=CLIP_CODE_S;
+    int xc1 = x1, yc1 = y1, xc2 = x2, yc2 = y2;
 
-	if (x1 < atti_3d_min_clipX)
-		p1_code|=CLIP_CODE_W;
-	else if (x1 > atti_3d_max_clipX)
-		p1_code|=CLIP_CODE_E;
+    int p1_code = 0, p2_code = 0;
 
-	if (y2 < atti_3d_min_clipY)
-		p2_code|=CLIP_CODE_N;
-	else if (y2 > atti_3d_max_clipY)
-		p2_code|=CLIP_CODE_S;
+    // determine codes for p1 and p2
+    if (y1 < atti_3d_min_clipY)
+        p1_code |= CLIP_CODE_N;
+    else if (y1 > atti_3d_max_clipY)
+        p1_code |= CLIP_CODE_S;
 
-	if (x2 < atti_3d_min_clipX)
-		p2_code|=CLIP_CODE_W;
-	else if (x2 > atti_3d_max_clipX)
-		p2_code|=CLIP_CODE_E;
+    if (x1 < atti_3d_min_clipX)
+        p1_code |= CLIP_CODE_W;
+    else if (x1 > atti_3d_max_clipX)
+        p1_code |= CLIP_CODE_E;
 
-	// try and trivially reject
-	if ((p1_code & p2_code)) 
-		return(0);
+    if (y2 < atti_3d_min_clipY)
+        p2_code |= CLIP_CODE_N;
+    else if (y2 > atti_3d_max_clipY)
+        p2_code |= CLIP_CODE_S;
 
-	// test for totally visible, if so leave points untouched
-	if (p1_code==0 && p2_code==0)
-		return(1);
+    if (x2 < atti_3d_min_clipX)
+        p2_code |= CLIP_CODE_W;
+    else if (x2 > atti_3d_max_clipX)
+        p2_code |= CLIP_CODE_E;
 
-	// determine end clip point for p1
-	switch(p1_code)
-	{
-		case CLIP_CODE_C: break;
+    // try and trivially reject
+    if ((p1_code & p2_code))
+        return (0);
 
-		case CLIP_CODE_N:
-			{
-				yc1 = atti_3d_min_clipY;
-				xc1 = x1 + 0.5+(atti_3d_min_clipY-y1)*(x2-x1)/(y2-y1);
-			} break;
-		case CLIP_CODE_S:
-			{
-				yc1 = atti_3d_max_clipY;
-				xc1 = x1 + 0.5+(atti_3d_max_clipY-y1)*(x2-x1)/(y2-y1);
-			} break;
+    // test for totally visible, if so leave points untouched
+    if (p1_code == 0 && p2_code == 0)
+        return (1);
 
-		case CLIP_CODE_W:
-			{
-				xc1 = atti_3d_min_clipX;
-				yc1 = y1 + 0.5+(atti_3d_min_clipX-x1)*(y2-y1)/(x2-x1);
-			} break;
+    // determine end clip point for p1
+    switch (p1_code) {
+    case CLIP_CODE_C:
+        break;
 
-		case CLIP_CODE_E:
-			{
-				xc1 = atti_3d_max_clipX;
-				yc1 = y1 + 0.5+(atti_3d_max_clipX-x1)*(y2-y1)/(x2-x1);
-			} break;
+    case CLIP_CODE_N: {
+        yc1 = atti_3d_min_clipY;
+        xc1 = x1 + 0.5 + (atti_3d_min_clipY - y1) * (x2 - x1) / (y2 - y1);
+    }
+        break;
+    case CLIP_CODE_S: {
+        yc1 = atti_3d_max_clipY;
+        xc1 = x1 + 0.5 + (atti_3d_max_clipY - y1) * (x2 - x1) / (y2 - y1);
+    }
+        break;
 
-		// these cases are more complex, must compute 2 intersections
-		case CLIP_CODE_NE:
-			{
-				// north hline intersection
-				yc1 = atti_3d_min_clipY;
-				xc1 = x1 + 0.5+(atti_3d_min_clipY-y1)*(x2-x1)/(y2-y1);
+    case CLIP_CODE_W: {
+        xc1 = atti_3d_min_clipX;
+        yc1 = y1 + 0.5 + (atti_3d_min_clipX - x1) * (y2 - y1) / (x2 - x1);
+    }
+        break;
 
-				// test if intersection is valid, of so then done, else compute next
-				if (xc1 < atti_3d_min_clipX || xc1 > atti_3d_max_clipX)
-				{
-					// east vline intersection
-					xc1 = atti_3d_max_clipX;
-					yc1 = y1 + 0.5+(atti_3d_max_clipX-x1)*(y2-y1)/(x2-x1);
-				} // end if
+    case CLIP_CODE_E: {
+        xc1 = atti_3d_max_clipX;
+        yc1 = y1 + 0.5 + (atti_3d_max_clipX - x1) * (y2 - y1) / (x2 - x1);
+    }
+        break;
 
-			} break;
+        // these cases are more complex, must compute 2 intersections
+    case CLIP_CODE_NE: {
+        // north hline intersection
+        yc1 = atti_3d_min_clipY;
+        xc1 = x1 + 0.5 + (atti_3d_min_clipY - y1) * (x2 - x1) / (y2 - y1);
 
-		case CLIP_CODE_SE:
-			{
-				// south hline intersection
-				yc1 = atti_3d_max_clipY;
-				xc1 = x1 + 0.5+(atti_3d_max_clipY-y1)*(x2-x1)/(y2-y1);
+        // test if intersection is valid, of so then done, else compute next
+        if (xc1 < atti_3d_min_clipX || xc1 > atti_3d_max_clipX) {
+            // east vline intersection
+            xc1 = atti_3d_max_clipX;
+            yc1 = y1 + 0.5 + (atti_3d_max_clipX - x1) * (y2 - y1) / (x2 - x1);
+        } // end if
 
-				// test if intersection is valid, of so then done, else compute next
-				if (xc1 < atti_3d_min_clipX || xc1 > atti_3d_max_clipX)
-				{
-					// east vline intersection
-					xc1 = atti_3d_max_clipX;
-					yc1 = y1 + 0.5+(atti_3d_max_clipX-x1)*(y2-y1)/(x2-x1);
-				} // end if
+    }
+        break;
 
-			} break;
+    case CLIP_CODE_SE: {
+        // south hline intersection
+        yc1 = atti_3d_max_clipY;
+        xc1 = x1 + 0.5 + (atti_3d_max_clipY - y1) * (x2 - x1) / (y2 - y1);
 
-		case CLIP_CODE_NW: 
-			{
-				// north hline intersection
-				yc1 = atti_3d_min_clipY;
-				xc1 = x1 + 0.5+(atti_3d_min_clipY-y1)*(x2-x1)/(y2-y1);
+        // test if intersection is valid, of so then done, else compute next
+        if (xc1 < atti_3d_min_clipX || xc1 > atti_3d_max_clipX) {
+            // east vline intersection
+            xc1 = atti_3d_max_clipX;
+            yc1 = y1 + 0.5 + (atti_3d_max_clipX - x1) * (y2 - y1) / (x2 - x1);
+        } // end if
 
-				// test if intersection is valid, of so then done, else compute next
-				if (xc1 < atti_3d_min_clipX || xc1 > atti_3d_max_clipX)
-				{
-					xc1 = atti_3d_min_clipX;
-					yc1 = y1 + 0.5+(atti_3d_min_clipX-x1)*(y2-y1)/(x2-x1);
-				} // end if
+    }
+        break;
 
-			} break;
+    case CLIP_CODE_NW: {
+        // north hline intersection
+        yc1 = atti_3d_min_clipY;
+        xc1 = x1 + 0.5 + (atti_3d_min_clipY - y1) * (x2 - x1) / (y2 - y1);
 
-		case CLIP_CODE_SW:
-			{
-				// south hline intersection
-				yc1 = atti_3d_max_clipY;
-				xc1 = x1 + 0.5+(atti_3d_max_clipY-y1)*(x2-x1)/(y2-y1);
+        // test if intersection is valid, of so then done, else compute next
+        if (xc1 < atti_3d_min_clipX || xc1 > atti_3d_max_clipX) {
+            xc1 = atti_3d_min_clipX;
+            yc1 = y1 + 0.5 + (atti_3d_min_clipX - x1) * (y2 - y1) / (x2 - x1);
+        } // end if
 
-				// test if intersection is valid, of so then done, else compute next
-				if (xc1 < atti_3d_min_clipX || xc1 > atti_3d_max_clipX)
-				{
-					xc1 = atti_3d_min_clipX;
-					yc1 = y1 + 0.5+(atti_3d_min_clipX-x1)*(y2-y1)/(x2-x1);
-				} // end if
+    }
+        break;
 
-			} break;
+    case CLIP_CODE_SW: {
+        // south hline intersection
+        yc1 = atti_3d_max_clipY;
+        xc1 = x1 + 0.5 + (atti_3d_max_clipY - y1) * (x2 - x1) / (y2 - y1);
 
-		default:break;
+        // test if intersection is valid, of so then done, else compute next
+        if (xc1 < atti_3d_min_clipX || xc1 > atti_3d_max_clipX) {
+            xc1 = atti_3d_min_clipX;
+            yc1 = y1 + 0.5 + (atti_3d_min_clipX - x1) * (y2 - y1) / (x2 - x1);
+        } // end if
 
-	} // end switch
+    }
+        break;
 
-	// determine clip point for p2
-	switch(p2_code)
-	{
-		case CLIP_CODE_C: break;
+    default:
+        break;
 
-		case CLIP_CODE_N:
-			{
-				yc2 = atti_3d_min_clipY;
-				xc2 = x2 + (atti_3d_min_clipY-y2)*(x1-x2)/(y1-y2);
-			} break;
+    } // end switch
 
-		case CLIP_CODE_S:
-			{
-				yc2 = atti_3d_max_clipY;
-				xc2 = x2 + (atti_3d_max_clipY-y2)*(x1-x2)/(y1-y2);
-			} break;
+    // determine clip point for p2
+    switch (p2_code) {
+    case CLIP_CODE_C:
+        break;
 
-		case CLIP_CODE_W:
-			{
-				xc2 = atti_3d_min_clipX;
-				yc2 = y2 + (atti_3d_min_clipX-x2)*(y1-y2)/(x1-x2);
-			} break;
+    case CLIP_CODE_N: {
+        yc2 = atti_3d_min_clipY;
+        xc2 = x2 + (atti_3d_min_clipY - y2) * (x1 - x2) / (y1 - y2);
+    }
+        break;
 
-		case CLIP_CODE_E:
-			{
-				xc2 = atti_3d_max_clipX;
-				yc2 = y2 + (atti_3d_max_clipX-x2)*(y1-y2)/(x1-x2);
-			} break;
+    case CLIP_CODE_S: {
+        yc2 = atti_3d_max_clipY;
+        xc2 = x2 + (atti_3d_max_clipY - y2) * (x1 - x2) / (y1 - y2);
+    }
+        break;
 
-		// these cases are more complex, must compute 2 intersections
-		case CLIP_CODE_NE:
-			{
-				// north hline intersection
-				yc2 = atti_3d_min_clipY;
-				xc2 = x2 + 0.5+(atti_3d_min_clipY-y2)*(x1-x2)/(y1-y2);
+    case CLIP_CODE_W: {
+        xc2 = atti_3d_min_clipX;
+        yc2 = y2 + (atti_3d_min_clipX - x2) * (y1 - y2) / (x1 - x2);
+    }
+        break;
 
-				// test if intersection is valid, of so then done, else compute next
-				if (xc2 < atti_3d_min_clipX || xc2 > atti_3d_max_clipX)
-				{
-					// east vline intersection
-					xc2 = atti_3d_max_clipX;
-					yc2 = y2 + 0.5+(atti_3d_max_clipX-x2)*(y1-y2)/(x1-x2);
-				} // end if
+    case CLIP_CODE_E: {
+        xc2 = atti_3d_max_clipX;
+        yc2 = y2 + (atti_3d_max_clipX - x2) * (y1 - y2) / (x1 - x2);
+    }
+        break;
 
-			} break;
+        // these cases are more complex, must compute 2 intersections
+    case CLIP_CODE_NE: {
+        // north hline intersection
+        yc2 = atti_3d_min_clipY;
+        xc2 = x2 + 0.5 + (atti_3d_min_clipY - y2) * (x1 - x2) / (y1 - y2);
 
-		case CLIP_CODE_SE:
-			{
-				// south hline intersection
-				yc2 = atti_3d_max_clipY;
-				xc2 = x2 + 0.5+(atti_3d_max_clipY-y2)*(x1-x2)/(y1-y2);
+        // test if intersection is valid, of so then done, else compute next
+        if (xc2 < atti_3d_min_clipX || xc2 > atti_3d_max_clipX) {
+            // east vline intersection
+            xc2 = atti_3d_max_clipX;
+            yc2 = y2 + 0.5 + (atti_3d_max_clipX - x2) * (y1 - y2) / (x1 - x2);
+        } // end if
 
-				// test if intersection is valid, of so then done, else compute next
-				if (xc2 < atti_3d_min_clipX || xc2 > atti_3d_max_clipX)
-				{
-					// east vline intersection
-					xc2 = atti_3d_max_clipX;
-					yc2 = y2 + 0.5+(atti_3d_max_clipX-x2)*(y1-y2)/(x1-x2);
-				} // end if
+    }
+        break;
 
-			} break;
+    case CLIP_CODE_SE: {
+        // south hline intersection
+        yc2 = atti_3d_max_clipY;
+        xc2 = x2 + 0.5 + (atti_3d_max_clipY - y2) * (x1 - x2) / (y1 - y2);
 
-		case CLIP_CODE_NW: 
-			{
-				// north hline intersection
-				yc2 = atti_3d_min_clipY;
-				xc2 = x2 + 0.5+(atti_3d_min_clipY-y2)*(x1-x2)/(y1-y2);
+        // test if intersection is valid, of so then done, else compute next
+        if (xc2 < atti_3d_min_clipX || xc2 > atti_3d_max_clipX) {
+            // east vline intersection
+            xc2 = atti_3d_max_clipX;
+            yc2 = y2 + 0.5 + (atti_3d_max_clipX - x2) * (y1 - y2) / (x1 - x2);
+        } // end if
 
-				// test if intersection is valid, of so then done, else compute next
-				if (xc2 < atti_3d_min_clipX || xc2 > atti_3d_max_clipX)
-				{
-					xc2 = atti_3d_min_clipX;
-					yc2 = y2 + 0.5+(atti_3d_min_clipX-x2)*(y1-y2)/(x1-x2);
-				} // end if
+    }
+        break;
 
-			} break;
+    case CLIP_CODE_NW: {
+        // north hline intersection
+        yc2 = atti_3d_min_clipY;
+        xc2 = x2 + 0.5 + (atti_3d_min_clipY - y2) * (x1 - x2) / (y1 - y2);
 
-		case CLIP_CODE_SW:
-			{
-				// south hline intersection
-				yc2 = atti_3d_max_clipY;
-				xc2 = x2 + 0.5+(atti_3d_max_clipY-y2)*(x1-x2)/(y1-y2);
+        // test if intersection is valid, of so then done, else compute next
+        if (xc2 < atti_3d_min_clipX || xc2 > atti_3d_max_clipX) {
+            xc2 = atti_3d_min_clipX;
+            yc2 = y2 + 0.5 + (atti_3d_min_clipX - x2) * (y1 - y2) / (x1 - x2);
+        } // end if
 
-				// test if intersection is valid, of so then done, else compute next
-				if (xc2 < atti_3d_min_clipX || xc2 > atti_3d_max_clipX)
-				{
-					xc2 = atti_3d_min_clipX;
-					yc2 = y2 + 0.5+(atti_3d_min_clipX-x2)*(y1-y2)/(x1-x2);
-				} // end if
+    }
+        break;
 
-			} break;
+    case CLIP_CODE_SW: {
+        // south hline intersection
+        yc2 = atti_3d_max_clipY;
+        xc2 = x2 + 0.5 + (atti_3d_max_clipY - y2) * (x1 - x2) / (y1 - y2);
 
-		default:break;
+        // test if intersection is valid, of so then done, else compute next
+        if (xc2 < atti_3d_min_clipX || xc2 > atti_3d_max_clipX) {
+            xc2 = atti_3d_min_clipX;
+            yc2 = y2 + 0.5 + (atti_3d_min_clipX - x2) * (y1 - y2) / (x1 - x2);
+        } // end if
 
-	} // end switch
+    }
+        break;
 
-	// do bounds check
-	if ((xc1 < atti_3d_min_clipX) || (xc1 > atti_3d_max_clipX) ||
-		(yc1 < atti_3d_min_clipY) || (yc1 > atti_3d_max_clipY) ||
-		(xc2 < atti_3d_min_clipX) || (xc2 > atti_3d_max_clipX) ||
-		(yc2 < atti_3d_min_clipY) || (yc2 > atti_3d_max_clipY) )
-	{
-		return(0);
-	} // end if
+    default:
+        break;
 
-	// store vars back
-	v->x = xc1;
-	v->y = yc1;
-	v->z = xc2;
-	v->w = yc2;
+    } // end switch
 
-	return(1);
+    // do bounds check
+    if ((xc1 < atti_3d_min_clipX) || (xc1 > atti_3d_max_clipX)
+            || (yc1 < atti_3d_min_clipY) || (yc1 > atti_3d_max_clipY)
+            || (xc2 < atti_3d_min_clipX) || (xc2 > atti_3d_max_clipX)
+            || (yc2 < atti_3d_min_clipY) || (yc2 > atti_3d_max_clipY)) {
+        return (0);
+    } // end if
+
+    // store vars back
+    v->x = xc1;
+    v->y = yc1;
+    v->z = xc2;
+    v->w = yc2;
+
+    return (1);
 
 } // end Clip_Line
-
 

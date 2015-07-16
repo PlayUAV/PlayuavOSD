@@ -81,17 +81,6 @@
 
 #include "stm32f4xx.h"  // JEK -> The "SystemCoreClock comes for here.
 
-//// JEK -> STM32F407 is a Cortex-M4 with floating point.
-//#ifndef KEIL_ARMCM4F
-//#define KEIL_ARMCM4F
-//#endif
-
-///* Ensure stdint is only used by the compiler, and not the assembler. */
-//#ifdef __ICCARM__
-//	#include <stdint.h>
-//	extern uint32_t SystemCoreClock;
-//#endif
-
 
 #define configUSE_PREEMPTION			1
 #define configUSE_IDLE_HOOK				1

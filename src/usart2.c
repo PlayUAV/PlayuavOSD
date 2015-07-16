@@ -16,16 +16,6 @@
  
 #include "usart2.h"
 #include "osdconfig.h"
-#include <stdio.h>
-
-//redirect IO output
-int fputc(int ch, FILE *f)
-{
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET){}
-	USART_SendData(USART2, (u8) ch);
-
-    return 0;
-}
 
 // Allocate buffers.
 // Must be allocated in one block, so it is in a struct.
@@ -41,7 +31,6 @@ struct _buffers {
 // Pointers to each of these buffers.
 uint8_t *mavlink_buffer_recv;
 uint8_t *mavlink_buffer_proc;
-//uint8_t mavlink_recv_pos = 0;
 uint32_t mavlink_recv_pos = 0;
 
 uint8_t protocol_start = 0xFE;
@@ -160,43 +149,4 @@ void mavlink_usart_send_byte(u8 ch)
 {
 	while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET){}
 	USART_SendData(USART3, (u8) ch);
-}
-
-////////////////////////////////////////////////
-void debug_usart_init(uint32_t baudRate)
-{
-	GPIO_InitTypeDef GPIO_InitStructure;
-	USART_InitTypeDef USART_InitStructure;
-	
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-    // USART2_TX    PA2
-    // USART2_RX    PA3
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_USART2);
-	
-	//reset USART
-	USART_DeInit(USART2);
-	
-//    // RX interrupt, doesn't need high performance
-//    NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
-//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_MID;
-//    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-//    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-//    NVIC_Init(&NVIC_InitStructure);
-	
-	USART_InitStructure.USART_BaudRate = baudRate;
-    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-    USART_InitStructure.USART_StopBits = USART_StopBits_1;
-    USART_InitStructure.USART_Parity = USART_Parity_No;
-    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-    USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-    USART_Init(USART2, &USART_InitStructure);
-	//USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
-    USART_Cmd(USART2, ENABLE);
 }

@@ -15,7 +15,13 @@
  */
  
 #include "osdconfig.h"
-#include "tm_stm32f4_usb_vcp.h"
+#include "Board.h"
+#include "usbd_cdc_core.h"
+#include "usbd_usr.h"
+#include "usbd_desc.h"
+#include "usbd_cdc_vcp.h"
+
+__ALIGN_BEGIN USB_OTG_CORE_HANDLE  USB_OTG_dev __ALIGN_END;
 
 // protocol bytes
 #define PROTO_INSYNC		0x12    // 'in sync' byte sent before status
@@ -50,7 +56,7 @@ static void sync_response(void)
 		PROTO_OK	// "OK"
 	};
 
-	TM_USB_VCP_Puts((char*)data);
+	VCP_send_str(data);
 }
 
 static void invalid_response(void)
@@ -60,7 +66,7 @@ static void invalid_response(void)
 		PROTO_INVALID	// "invalid command"
 	};
 
-	TM_USB_VCP_Puts((char*)data);
+	VCP_send_str(data);
 }
 
 static void failure_response(void)
@@ -70,33 +76,57 @@ static void failure_response(void)
 		PROTO_FAILED	// "command failed"
 	};
 
-	TM_USB_VCP_Puts((char*)data);
+	VCP_send_str(data);
 }
 
 static int cin_wait(unsigned timeout)
 {
-	int ret = -1;
-	u8 c;
-	vTaskDelay( timeout / portTICK_RATE_MS );
-	if (TM_USB_VCP_Getc(&c) == TM_USB_VCP_DATA_OK)
-	{
-		ret = (int)c;
-	}
-	return ret;
+    int ret = -1;
+    u8 c;
+    vTaskDelay( timeout / portTICK_RATE_MS );
+    if (VCP_get_char(&c))
+    {
+        ret = (int)c;
+    }
+    return ret;
 }
 	
 void vTaskVCP(void *pvParameters)
 {
 	static u32 address = 0;
+	static uint8_t usb_inited = 0;
 	uint8_t c;
 	int arg;
 	uint8_t tmpbuf[EERROM_SIZE];
 	
 	for(;;)
 	{
+	    //Give the change to the OS scheduling. It is really a fool idea. Change me!
+	    //TODO - should use semaphore
+	    vTaskDelay( 1 / portTICK_RATE_MS );
 //		xSemaphoreTake(onVCPSemaphore, portMAX_DELAY);
-		
-		if (TM_USB_VCP_Getc(&c) == TM_USB_VCP_DATA_OK) 
+
+		if(usb_inited == 0)
+		{
+		    GPIO_InitTypeDef  gpio;
+            //This is a trick to perform a USB re-enumerate
+            gpio.GPIO_Pin = GPIO_Pin_12;
+            gpio.GPIO_Speed = GPIO_Speed_100MHz;
+            gpio.GPIO_Mode = GPIO_Mode_OUT;
+            gpio.GPIO_OType = GPIO_OType_PP;
+            gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
+            GPIO_Init(GPIOB, &gpio);
+            GPIO_SetBits(GPIOB, GPIO_Pin_12 );
+            vTaskDelay(500 / portTICK_RATE_MS);
+            GPIO_ResetBits(GPIOB, GPIO_Pin_12 );
+
+            // Initialize USB VCP. Do it ASAP
+            USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_CDC_cb,
+                    &USR_cb);
+            usb_inited = 1;
+		}
+
+		if (VCP_get_char(&c))
 		{
 			switch(c) {
 				case PROTO_GET_SYNC:
@@ -112,7 +142,7 @@ void vTaskVCP(void *pvParameters)
 					
 					switch (arg) {
 						case PROTO_DEVICE_BL_REV:
-							TM_USB_VCP_Puts((char*)&bl_proto_rev);
+						    VCP_send_str((uint8_t*)&bl_proto_rev);
 							break;
 						default:
 							goto cmd_bad;
@@ -179,7 +209,7 @@ void vTaskVCP(void *pvParameters)
 						goto cmd_bad;
 					for (int i = 0; i < EERROM_SIZE; i++)
 					{
-						TM_USB_VCP_Putc(eeprom_buffer.c[i]);
+					    VCP_put_char(eeprom_buffer.c[i]);
 						//TM_USB_VCP_Putc(testbuf[i]);
 						//vTaskDelay( 1 / portTICK_RATE_MS );
 					}
@@ -188,10 +218,7 @@ void vTaskVCP(void *pvParameters)
 				case PROTO_BL_UPLOAD:
 					if (cin_wait(usb_vcp_timeout) != PROTO_EOC)
 						goto cmd_bad;
-//					PWR_BackupAccessCmd(ENABLE);
-//					RCC_BackupResetCmd(ENABLE);
-//					RCC_BackupResetCmd(DISABLE);
-//					RTC_WriteBackupRegister(RTC_BKP_DR0, 0xb007b007);
+
 					sync_response();
 					vTaskDelay( 200 / portTICK_RATE_MS );
 					

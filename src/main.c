@@ -15,7 +15,6 @@
  */
 
 #include "Board.h"
-#include "Led.h"
 
 uint64_t u64Ticks=0;        // Counts OS ticks (default = 1000Hz).
 uint64_t u64IdleTicks=0;    // Value of u64IdleTicksCnt is copied once per sec.
@@ -26,14 +25,16 @@ xSemaphoreHandle onScreenDisplaySemaphore;
 xSemaphoreHandle onMavlinkSemaphore;
 xSemaphoreHandle onUAVTalkSemaphore;
 
-void delay (int a);
+/* coprocessor control register (fpu) */
+#ifndef SCB_CPACR
+#define SCB_CPACR (*((uint32_t*) (((0xE000E000UL) + 0x0D00UL) + 0x088)))
+#endif
 
 int main(void)
 {
-	SCB->VTOR = FLASH_BASE | 0x4000; /* Vector Table Relocation in Internal FLASH. */
-	SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));
-//	LEDInit(LED_GREEN);
-//	LEDInit(LED_BLUE);
+    /* enable FPU on Cortex-M4F core */
+    SCB_CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2)); /* set CP10 Full Access and set CP11 Full Access */
+
 
 	vSemaphoreCreateBinary(onScreenDisplaySemaphore);
 	vSemaphoreCreateBinary(onMavlinkSemaphore);
@@ -43,25 +44,6 @@ int main(void)
 	module_init();
 
 	vTaskStartScheduler();
-	while(1)
-	{
-		LEDToggle(LED_GREEN);
-		LEDToggle(LED_BLUE);
-		//LEDOn(LED_GREEN);
-		delay(1000000);
-	}
-}
-
-void delay (int a)
-{
-	volatile int i,j;
-
-	for (i=0 ; i < a ; i++)
-	{
-		j++;
-	}
-
-	return;
 }
 
 // This FreeRTOS callback function gets called once per tick (default = 1000Hz).

@@ -97,7 +97,7 @@ void vTaskOSD(void *pvParameters)
 
 void RenderScreen(void)
 {
-    char tmp_str[100] = { 0 };
+    char tmp_str[50] = { 0 };
     char* tmp_str1 = "";
     int16_t tmp_int16;
     int tmp_int1, tmp_int2;
@@ -144,7 +144,7 @@ void RenderScreen(void)
     }
     if(eeprom_buffer.params.BattConsumed_en && bShownAtPanle(eeprom_buffer.params.BattConsumed_panel))
     {
-        sprintf(tmp_str, "%i/", osd_battery_remaining_A);
+        sprintf(tmp_str, "%d/", osd_battery_remaining_A);
         write_string(tmp_str, eeprom_buffer.params.BattConsumed_posX, eeprom_buffer.params.BattConsumed_posY,
                      0, 0, TEXT_VA_TOP, eeprom_buffer.params.BattConsumed_align, 0,
                      SIZE_TO_FONT[eeprom_buffer.params.BattConsumed_fontsize]);
@@ -307,31 +307,32 @@ void RenderScreen(void)
 
     int x = 5;
     int y = 220;
-//    //Vertical Speed(climb rate) in m/s
-//    if(eeprom_buffer.params.ClimbRate_en && bShownAtPanle(eeprom_buffer.params.ClimbRate_panel))
-//    {
-//        int arrlen = 6;
-//        x = eeprom_buffer.params.ClimbRate_posX;
-//        y = eeprom_buffer.params.ClimbRate_posY;
-//        sprintf(tmp_str, "%0.2f", (double)fabs(osd_climb));
-//        write_string(tmp_str, x+5, y, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_LEFT, 0, SIZE_TO_FONT[eeprom_buffer.params.ClimbRate_fontsize]);
-//        if(eeprom_buffer.params.ClimbRate_fontsize != 0)
-//            arrlen += 2;
-//
-//
-//        if(osd_climb > 0) //ascent
-//        {
-//            write_vline_lm(x, y-arrlen, y+arrlen, 1, 1);
-//            write_line_outlined(x-3, y-arrlen+3, x, y-arrlen, 2, 2, 0, 1);
-//            write_line_outlined(x+3, y-arrlen+3, x, y-arrlen, 2, 2, 0, 1);
-//        }
-//        else if(osd_climb < 0) //descent
-//        {
-//            write_vline_lm(x, y-arrlen, y+arrlen, 1, 1);
-//            write_line_outlined(x-3, y+arrlen-3, x, y+arrlen, 2, 2, 0, 1);
-//            write_line_outlined(x+3, y+arrlen-3, x, y+arrlen, 2, 2, 0, 1);
-//        }
-//    }
+    //Vertical Speed(climb rate) in m/s
+    if(eeprom_buffer.params.ClimbRate_en && bShownAtPanle(eeprom_buffer.params.ClimbRate_panel))
+    {
+        int arrlen = 6;
+        x = eeprom_buffer.params.ClimbRate_posX;
+        y = eeprom_buffer.params.ClimbRate_posY;
+        sprintf(tmp_str, "%0.2f", (double) fabs(osd_climb));
+        write_string(tmp_str, x + 5, y, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_LEFT, 0,
+                SIZE_TO_FONT[eeprom_buffer.params.ClimbRate_fontsize]);
+        if (eeprom_buffer.params.ClimbRate_fontsize != 0)
+            arrlen += 2;
+
+
+        if(osd_climb > 0.0f) //ascent
+        {
+            write_vline_lm(x, y-arrlen, y+arrlen, 1, 1);
+            write_line_outlined(x-3, y-arrlen+3, x, y-arrlen, 2, 2, 0, 1);
+            write_line_outlined(x+3, y-arrlen+3, x, y-arrlen, 2, 2, 0, 1);
+        }
+        else if(osd_climb < 0.0f) //descent
+        {
+            write_vline_lm(x, y-arrlen, y+arrlen, 1, 1);
+            write_line_outlined(x-3, y+arrlen-3, x, y+arrlen, 2, 2, 0, 1);
+            write_line_outlined(x+3, y+arrlen-3, x, y+arrlen, 2, 2, 0, 1);
+        }
+    }
 
     //RSSI
     if(eeprom_buffer.params.RSSI_en && bShownAtPanle(eeprom_buffer.params.RSSI_panel))
@@ -367,11 +368,11 @@ void RenderScreen(void)
         sprintf(tmp_str, "P:%d", (int)current_panel);
         write_string(tmp_str, GRAPHICS_X_MIDDLE, 210, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[1]);
     }
-//
-//    if(eeprom_buffer.params.Wind_en && bShownAtPanle(eeprom_buffer.params.Wind_panel))
-//    {
-//        hud_draw_wind();
-//    }
+
+    if(eeprom_buffer.params.Wind_en && bShownAtPanle(eeprom_buffer.params.Wind_panel))
+    {
+        hud_draw_wind();
+    }
 
     //warnning - should be displayed lastly in case not be covered by others
     hud_draw_warnning();
@@ -602,8 +603,8 @@ void hud_draw_CWH(void)
         double scaleLongUp   = 1.0f/Fast_Cos(rads);
 
         //DST to Home
-        dstlat = fabs(osd_home_lat - osd_lat) * 111319.5;
-        dstlon = fabs(osd_home_lon - osd_lon) * 111319.5 * scaleLongDown;
+        dstlat = fabs(osd_home_lat - osd_lat) * 111319.5f;
+        dstlon = fabs(osd_home_lon - osd_lon) * 111319.5f * scaleLongDown;
         dstsqrt = dstlat*dstlat + dstlon*dstlon;
         osd_home_distance = sqrt(dstsqrt) / 10000000.0f;
 

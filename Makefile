@@ -2,27 +2,23 @@ EXECUTABLE=PlayuavOSD.elf
 TARGETBIN=PlayuavOSD.bin
 
 CC=arm-none-eabi-gcc
-#LD=arm-none-eabi-ld 
-LD=arm-none-eabi-gcc
-AR=arm-none-eabi-ar
 AS=arm-none-eabi-as
 CP=arm-none-eabi-objcopy
-OD=arm-none-eabi-objdump
 
-HEX  = $(CP) -O ihex
 BIN  = $(CP) -O binary -S
-
 DEFS = -DUSE_STDPERIPH_DRIVER -DSTM32F4XX -DHSE_VALUE=8000000
 
 MCU = cortex-m4
-MCFLAGS = -mcpu=$(MCU) -mthumb -mlittle-endian -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb-interwork -std=gnu99
+MCFLAGS = -mcpu=$(MCU) -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -std=gnu99
 STMLIBSDIR    = ./lib/STM32F4-Discovery_FW_V1.1.0/Libraries
 STMSPDDIR    = $(STMLIBSDIR)/STM32F4xx_StdPeriph_Driver
 STMSPSRCDDIR = $(STMSPDDIR)/src
 STMSPINCDDIR = $(STMSPDDIR)/inc
 #FREERTOSDIR = ./lib/FreeRTOS8.1.2/Source
 FREERTOSDIR = ./lib/FreeRTOSV8.2.0/FreeRTOS/Source
-USBCDCDIR = ./lib/usb_cdc_device
+USBOTGLIB = $(STMLIBSDIR)/STM32_USB_OTG_Driver
+USBDEVICELIB = $(STMLIBSDIR)/STM32_USB_Device_Library
+USBHOSTLIB = $(STMLIBSDIR)/STM32_USB_HOST_Library
 MAVLINKDIR = ./lib/mavlink/v1.0
 
 STM32_INCLUDES = -I$(STMLIBSDIR)/CMSIS/Include/ \
@@ -31,22 +27,25 @@ STM32_INCLUDES = -I$(STMLIBSDIR)/CMSIS/Include/ \
 				 -I$(FREERTOSDIR)/include    \
           		 -I$(FREERTOSDIR)/portable/GCC/ARM_CM4F    \
           		 -I$(MAVLINKDIR)    \
-          		 -I$(USBCDCDIR)    \
+          		 -I$(USBDEVICELIB)/Class/cdc/inc    \
+          		 -I$(USBDEVICELIB)/Core/inc    \
+          		 -I$(USBHOSTLIB)/Core/inc    \
+          		 -I$(USBOTGLIB)/inc    \
 				 -I./inc 
-OPTIMIZE       = -O0
+OPTIMIZE       = -Os
 
 CFLAGS	= $(MCFLAGS)  $(OPTIMIZE)  $(DEFS) -I./ -I./ $(STM32_INCLUDES)  -Wl,-T,./linker/stm32_flash.ld
 AFLAGS	= $(MCFLAGS) 
 #-mapcs-float use float regs. small increase in code size
 
-#STM32_USB_OTG_SRC = $(STMLIBSDIR)/STM32_USB_OTG_Driver/src/usb_dcd_int.c \
-#					$(STMLIBSDIR)/STM32_USB_OTG_Driver/src/usb_core.c \
-#					$(STMLIBSDIR)/STM32_USB_OTG_Driver/src/usb_dcd.c \
-#
-#STM32_USB_DEVICE_SRC =	$(STMLIBSDIR)/STM32_USB_Device_Library/Class/hid/src/usbd_hid_core.c \
-#						$(STMLIBSDIR)/STM32_USB_Device_Library/Core/src/usbd_req.c \
-#						$(STMLIBSDIR)/STM32_USB_Device_Library/Core/src/usbd_core.c \
-#						$(STMLIBSDIR)/STM32_USB_Device_Library/Core/src/usbd_ioreq.c
+STM32_USB_OTG_SRC = $(USBOTGLIB)/src/usb_dcd_int.c \
+					$(USBOTGLIB)/src/usb_core.c \
+					$(USBOTGLIB)/src/usb_dcd.c \
+
+STM32_USB_DEVICE_SRC =	$(USBDEVICELIB)/Class/cdc/src/usbd_cdc_core.c \
+						$(USBDEVICELIB)/Core/src/usbd_req.c \
+						$(USBDEVICELIB)/Core/src/usbd_core.c \
+						$(USBDEVICELIB)/Core/src/usbd_ioreq.c
 
 ## list of APP files
 SRC  = ./src/main.c
@@ -55,7 +54,6 @@ SRC += ./src/stm32f4xx_it.c
 SRC += ./src/Board.c
 SRC += ./src/Led.c
 SRC += ./src/spi.c
-SRC += ./src/tm_stm32f4_usb_vcp.c
 SRC += ./src/usart2.c
 SRC += ./src/osdvar.c
 SRC += ./src/font_outlined8x8.c
@@ -72,6 +70,11 @@ SRC += ./src/osdmavlink.c
 SRC += ./src/osdproc.c
 SRC += ./src/UAVObj.c
 SRC += ./src/uavTalk.c
+SRC += ./src/usb_bsp.c
+SRC += ./src/usbd_cdc_vcp.c
+SRC += ./src/usbd_desc.c
+SRC += ./src/usbd_usr.c
+SRC += ./src/printf2.c
 ## used parts of the STM-Library
 SRC += $(STMSPSRCDDIR)/stm32f4xx_dma.c
 SRC += $(STMSPSRCDDIR)/stm32f4xx_exti.c
@@ -96,31 +99,22 @@ SRC += $(FREERTOSDIR)/queue.c
 SRC += $(FREERTOSDIR)/tasks.c
 SRC += $(FREERTOSDIR)/timers.c
 ## list of USB_CDC files
-SRC += $(USBCDCDIR)/usb_bsp.c
-SRC += $(USBCDCDIR)/usb_core.c
-SRC += $(USBCDCDIR)/usb_dcd.c
-SRC += $(USBCDCDIR)/usb_dcd_int.c
-SRC += $(USBCDCDIR)/usbd_cdc_core.c
-SRC += $(USBCDCDIR)/usbd_cdc_vcp.c
-SRC += $(USBCDCDIR)/usbd_core.c
-SRC += $(USBCDCDIR)/usbd_desc.c
-SRC += $(USBCDCDIR)/usbd_ioreq.c
-SRC += $(USBCDCDIR)/usbd_req.c
-SRC += $(USBCDCDIR)/usbd_usr.c
+SRC += $(STM32_USB_OTG_SRC)
+SRC += $(STM32_USB_DEVICE_SRC)
 # List ASM source files here
 STARTUP = ./$(STMLIBSDIR)/CMSIS/ST/STM32F4xx/Source/Templates/gcc_ride7/startup_stm32f40xx.s
 
-OBJDIR = .
-OBJ = $(SRC:%.c=$(OBJDIR)/%.o) 
-#OBJ += Startup.o
 
-all: $(TARGETBIN)
+all: $(TARGETBIN) objcopy
 
 $(TARGETBIN): $(EXECUTABLE)
 	$(BIN) $^ $@
 	
 $(EXECUTABLE): $(SRC) $(STARTUP)
-	$(CC) $(CFLAGS) $^ -lm -lc -lnosys -o $@
+	$(CC) $(CFLAGS) $^ -lm -lc -lnosys -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -o $@
 
+objcopy:
+	@python -u px_mkfw.py --image $(TARGETBIN) > playuavosd.hex
+	
 clean:
 	rm -f $(TARGETBIN) $(EXECUTABLE) $(SRC:.c=.lst)

@@ -109,10 +109,6 @@ void uav3D_init(void)
 	uav3D.plist[4].vert[1] = 1;
 	uav3D.plist[4].vert[2] = 3;
 
-	
-//	MATRIX4X4 mrot;
-//	Build_XYZ_Rotation_MATRIX4X4(90, 0, 0, &mrot);
-//	Transform_OBJECT4DV1(&obj3D, &mrot, TRANSFORM_LOCAL_ONLY);
 
     VECTOR4D v;
     //translate the obj

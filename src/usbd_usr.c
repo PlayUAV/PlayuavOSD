@@ -25,67 +25,91 @@
   ******************************************************************************
   */ 
 
-/* Includes ------------------------------------------------------------------*/
 #include "usbd_usr.h"
 #include "usbd_ioreq.h"
 
-#include "tm_stm32f4_usb_vcp.h"
-
-#include "board.h"
-extern xTaskHandle xTaskVCPHandle;
-
-TM_USB_VCP_Result TM_USB_VCP_INT_Status = TM_USB_VCP_NOT_CONNECTED;
-
 USBD_Usr_cb_TypeDef USR_cb =
 {
-  USBD_USR_Init,
-  USBD_USR_DeviceReset,
-  USBD_USR_DeviceConfigured,
-  USBD_USR_DeviceSuspended,
-  USBD_USR_DeviceResumed,
-  USBD_USR_DeviceConnected,
-  USBD_USR_DeviceDisconnected,    
+	USBD_USR_Init,
+	USBD_USR_DeviceReset,
+	USBD_USR_DeviceConfigured,
+	USBD_USR_DeviceSuspended,
+	USBD_USR_DeviceResumed,
+
+	USBD_USR_DeviceConnected,
+	USBD_USR_DeviceDisconnected,
 };
 
-void USBD_USR_Init(void) {
-	TM_USB_VCP_INT_Status = TM_USB_VCP_NOT_CONNECTED;
-}
-
-void USBD_USR_DeviceReset(uint8_t speed ) {
-	TM_USB_VCP_INT_Status = TM_USB_VCP_NOT_CONNECTED;
-}
-
-void USBD_USR_DeviceConfigured (void) {
-	TM_USB_VCP_INT_Status = TM_USB_VCP_CONNECTED;
-//	xTaskResumeFromISR(xTaskVCPHandle);
-}
-
-void USBD_USR_DeviceSuspended(void) {
-	TM_USB_VCP_INT_Status = TM_USB_VCP_NOT_CONNECTED;
-}
-
-void USBD_USR_DeviceResumed(void) {
-	TM_USB_VCP_INT_Status = TM_USB_VCP_NOT_CONNECTED;
-}
-
-void USBD_USR_DeviceConnected (void) {
-	TM_USB_VCP_INT_Status = TM_USB_VCP_NOT_CONNECTED;
-}
-
-void USBD_USR_DeviceDisconnected (void) {
-	TM_USB_VCP_INT_Status = TM_USB_VCP_NOT_CONNECTED;
-}
-
-TM_USB_VCP_Result USBD_User_GetStatus(void) {
-	return TM_USB_VCP_INT_Status;
+/**
+* @brief  USBD_USR_Init 
+* 		  (not in use now)
+* @param  None
+* @retval None
+*/
+void USBD_USR_Init(void)
+{  
 }
 
 /**
-* @}
-*/ 
+* @brief  USBD_USR_DeviceReset 
+*         (not in use now)
+* @param  speed : device speed
+* @retval None
+*/
+void USBD_USR_DeviceReset(uint8_t speed )
+{
+}
 
 /**
-* @}
-*/ 
+* @brief  USBD_USR_DeviceConfigured
+*         (not in use now)
+* @param  None
+* @retval Staus
+*/
+void USBD_USR_DeviceConfigured (void)
+{
+}
+
+/**
+* @brief  USBD_USR_DeviceSuspended 
+*         (not in use now)
+* @param  None
+* @retval None
+*/
+void USBD_USR_DeviceSuspended(void)
+{
+	/* Users can do their application actions here for the USB-Reset */
+}
+
+/**
+* @brief  USBD_USR_DeviceResumed 
+*         (not in use now)
+* @param  None
+* @retval None
+*/
+void USBD_USR_DeviceResumed(void)
+{
+	/* Users can do their application actions here for the USB-Reset */
+}
+
+/**
+* @brief  USBD_USR_DeviceConnected
+*         (not in use now)
+* @param  None
+* @retval Staus
+*/
+void USBD_USR_DeviceConnected (void)
+{
+}
+
+/**
+* @brief  USBD_USR_DeviceDisonnected
+*         (not in use now)
+* @param  None
+* @retval Staus
+*/
+void USBD_USR_DeviceDisconnected (void)
+{
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
