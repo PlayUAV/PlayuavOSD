@@ -19,14 +19,6 @@ typedef enum
 #define LED_BLUE_GPIO_PORT                  GPIOC
 #define LED_BLUE_GPIO_CLK                   RCC_AHB1Periph_GPIOC
 
-//#define LED_GREEN_PIN                       GPIO_Pin_15
-//#define LED_GREEN_GPIO_PORT                 GPIOD
-//#define LED_GREEN_GPIO_CLK                  RCC_AHB1Periph_GPIOD
-//
-//#define LED_BLUE_PIN                        GPIO_Pin_13
-//#define LED_BLUE_GPIO_PORT                  GPIOD
-//#define LED_BLUE_GPIO_CLK                   RCC_AHB1Periph_GPIOD
-
 void LEDInit(Led_TypeDef Led);
 void LEDOn(Led_TypeDef Led);
 void LEDOff(Led_TypeDef Led);

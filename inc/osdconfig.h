@@ -221,8 +221,31 @@ typedef union{
 		uint16_t RSSI_max;
 		uint16_t RSSI_raw_en;
 		
-		uint16_t FC_Type;	
+		uint16_t FC_Protocol;
 		
+        uint16_t Wind_en;
+        uint16_t Wind_panel;
+        uint16_t Wind_posX;
+        uint16_t Wind_posY;
+
+        uint16_t Time_type;
+
+        uint16_t Throttle_Scale_Type;
+
+        uint16_t Atti_mp_posX;
+        uint16_t Atti_mp_posY;
+        uint16_t Atti_mp_scale_real;
+        uint16_t Atti_mp_scale_frac;
+        uint16_t Atti_3D_posX;
+        uint16_t Atti_3D_posY;
+        uint16_t Atti_3D_scale_real;
+        uint16_t Atti_3D_scale_frac;
+        uint16_t Atti_3D_map_radius;
+
+        uint16_t osd_offsetY;
+        uint16_t osd_offsetX;
+
+        uint16_t firmware_ver;
 //		//below is unused. if add a param, reduce one item here
 //		uint16_t unused[EERROM_SIZE/2 - 104];
 	}params;

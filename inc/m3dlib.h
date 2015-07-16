@@ -5,23 +5,6 @@
 
 // DEFINES ////////////////////////////////////////////////////
 
-// defines for polygons and faces version 1
-
-//// attributes of polygons and polygon faces
-//#define POLY4DV1_ATTR_2SIDED              0x0001
-//#define POLY4DV1_ATTR_TRANSPARENT         0x0002
-//#define POLY4DV1_ATTR_8BITCOLOR           0x0004
-//#define POLY4DV1_ATTR_RGB16               0x0008
-//#define POLY4DV1_ATTR_RGB24               0x0010
-
-//#define POLY4DV1_ATTR_SHADE_MODE_PURE       0x0020
-//#define POLY4DV1_ATTR_SHADE_MODE_CONSTANT   0x0020 // (alias)
-//#define POLY4DV1_ATTR_SHADE_MODE_FLAT       0x0040
-//#define POLY4DV1_ATTR_SHADE_MODE_GOURAUD    0x0080
-//#define POLY4DV1_ATTR_SHADE_MODE_PHONG      0x0100
-//#define POLY4DV1_ATTR_SHADE_MODE_FASTPHONG  0x0100 // (alias)
-//#define POLY4DV1_ATTR_SHADE_MODE_TEXTURE    0x0200 
-
 
 // states of polygons and faces
 #define POLY4DV1_STATE_ACTIVE             0x0001
@@ -196,6 +179,10 @@ typedef struct CAM4DV1_TYP
 
 
 void Reset_OBJECT4DV1(OBJECT4DV1_PTR obj);
+
+void Translate_OBJECT4DV1(OBJECT4DV1_PTR obj, VECTOR4D_PTR vt);
+
+void Scale_OBJECT4DV1(OBJECT4DV1_PTR obj, VECTOR4D_PTR vs);
 
 void Transform_OBJECT4DV1(OBJECT4DV1_PTR obj, MATRIX4X4_PTR mt,   
                           int coord_select);

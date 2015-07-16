@@ -36,7 +36,7 @@ void draw_flight_mode(int x, int y, int xs, int ys, int va, int ha, int flags, i
 
 
 void hud_draw_throttle(void);
-
+void hud_draw_wind(void);
 void hud_draw_CWH(void);							 
 void hud_draw_head_wp_home(void);
 

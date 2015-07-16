@@ -25,8 +25,6 @@
 
 #define R2D 	57.295779513082320876798154814105f						//180/PI
 #define D2R 	0.017453292519943295769236907684886f					//PI/180
-//#define M_PI	3.141592653589793f					//3.14159265358979323846
-//#define M_TWOPI	1.570796326794897f					//6.28318530717958647692
 float Rad2Deg(float x);
 float Deg2Rad(float x);
 
@@ -70,11 +68,13 @@ enum thread_prio_e
 	THREAD_PRIO_HIGHEST = 4, /* @note: this has to match (configMAX_PRIORITIES - 1) */
 };
 
-//all supports flight control type
-enum FC_Type_e
+//all supported protocols
+enum FC_Protocol
 {
-	FC_APM_PIXHAWK = 0,
-	FC_CC3D_REVO = 1,
+	PROTOCOL_MAVLINK = 0,
+	PROTOCOL_UAVTALK = 1,
+	PROTOCOL_MWII = 2,
+	PROTOCOL_GPS = 3,
 	//FC_DJI_NAZAV2 = 3,
 };
 
