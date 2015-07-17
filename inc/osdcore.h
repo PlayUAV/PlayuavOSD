@@ -5,7 +5,6 @@
 #include "stm32f4xx.h"
 
 
-
 // PAL/NTSC specific boundary values
 struct pios_video_type_boundary {
 	uint16_t graphics_right;
@@ -71,5 +70,13 @@ extern const struct pios_video_type_boundary *pios_video_type_boundary_act;
 #define BUFFER_WIDTH         (GRAPHICS_WIDTH_REAL / 8 + 1)  // Bytes plus one byte for SPI, needs to be multiple of 4 for alignment
 #define BUFFER_HEIGHT        (GRAPHICS_HEIGHT_REAL)
 
+enum Trans_mode {
+    trans_idle = 0,
+    trans_tele = 1,
+    trans_osd = 2,
+};
+
+#define TELEM_START_LINE    10
+#define TELEM_LINES         2
 
 #endif

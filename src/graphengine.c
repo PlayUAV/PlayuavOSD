@@ -27,6 +27,11 @@ void clearGraphics(void)
 {
 	memset((uint8_t *)draw_buffer_mask, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
 	memset((uint8_t *)draw_buffer_level, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
+//    for (int i = 0; i < BUFFER_HEIGHT * BUFFER_WIDTH; i++)
+//    {
+//        draw_buffer_mask[i] = 0;
+//        draw_buffer_level[i] = 0;
+//    }
 }
 
 //void drawArrow(uint16_t x, uint16_t y, uint16_t angle, uint16_t size_quarter)

@@ -70,6 +70,9 @@ struct _buffers {
 	uint8_t buffer0_mask[BUFFER_HEIGHT * BUFFER_WIDTH];
 	uint8_t buffer1_level[BUFFER_HEIGHT * BUFFER_WIDTH];
 	uint8_t buffer1_mask[BUFFER_HEIGHT * BUFFER_WIDTH];
+//	uint8_t buffer_tele_write[TELEM_LINES * BUFFER_WIDTH];
+//	uint8_t buffer_tele_trans[TELEM_LINES * BUFFER_WIDTH];
+//	uint8_t buffer_tele_switch[TELEM_LINES * BUFFER_WIDTH];
 } buffers;
 
 // Remove the struct definition (makes it easier to write for).
@@ -77,14 +80,21 @@ struct _buffers {
 #define buffer0_mask  (buffers.buffer0_mask)
 #define buffer1_level (buffers.buffer1_level)
 #define buffer1_mask  (buffers.buffer1_mask)
+//#define buffer_tele_write (buffers.buffer_tele_write)
+//#define buffer_tele_trans (buffers.buffer_tele_trans)
+//#define buffer_tele_switch (buffers.buffer_tele_switch)
 
 // Pointers to each of these buffers.
 uint8_t *draw_buffer_level;
 uint8_t *draw_buffer_mask;
 uint8_t *disp_buffer_level;
 uint8_t *disp_buffer_mask;
+//uint8_t *write_buffer_tele;
+//uint8_t *trans_buffer_tele;
+//uint8_t *switch_buffer_tele;
 
 volatile uint16_t active_line = 0;
+volatile uint8_t cur_trans_mode = trans_idle;
 
 const struct pios_video_type_boundary *pios_video_type_boundary_act = &pios_video_type_boundary_pal;
 
@@ -207,7 +217,7 @@ void osdCoreInit(void)
 	tim.TIM_ClockDivision = 0;
 	tim.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInit(LINE_COUNTER_TIMER, &tim);
-	
+
 	/* Enable the TIM4 gloabal Interrupt */
 	nvic.NVIC_IRQChannel = TIM4_IRQn;
 	nvic.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST;
@@ -219,7 +229,28 @@ void osdCoreInit(void)
 	TIM_SelectOnePulseMode(LINE_COUNTER_TIMER, TIM_OPMode_Single);
 	TIM_ITConfig(LINE_COUNTER_TIMER, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_CC3 | TIM_IT_CC4 | TIM_IT_COM | TIM_IT_Trigger | TIM_IT_Break, DISABLE);
 	TIM_Cmd(LINE_COUNTER_TIMER, DISABLE);
-	
+
+//#ifdef TELEMETRY_ENABLE
+//	//Telemetry counter:
+//    TIM_TimeBaseStructInit(&tim);
+//    tim.TIM_Period = 0xffff;
+//    tim.TIM_Prescaler = 0;
+//    tim.TIM_ClockDivision = 0;
+//    tim.TIM_CounterMode = TIM_CounterMode_Up;
+//    TIM_TimeBaseInit(TIM5, &tim);
+//    /* Enable the TIM5 gloabal Interrupt */
+//    nvic.NVIC_IRQChannel = TIM5_IRQn;
+//    nvic.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST;
+//    nvic.NVIC_IRQChannelSubPriority = 1;
+//    nvic.NVIC_IRQChannelCmd = ENABLE;
+//    NVIC_Init(&nvic);
+//    TIM_SelectInputTrigger(TIM5, TIM_TS_ITR1);
+//    TIM_SelectSlaveMode(TIM5, TIM_SlaveMode_External1);
+//    TIM_SelectOnePulseMode(TIM5, TIM_OPMode_Single);
+//    TIM_ITConfig(TIM5, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_CC3 | TIM_IT_CC4 | TIM_IT_COM | TIM_IT_Trigger | TIM_IT_Break, DISABLE);
+//    TIM_Cmd(TIM5, DISABLE);
+//#endif
+
     // init OSD mask SPI
     SPI_StructInit(&spi);
     spi.SPI_Mode              = SPI_Mode_Slave;
@@ -288,11 +319,28 @@ void osdCoreInit(void)
 	draw_buffer_mask  = buffer0_mask;
 	disp_buffer_level = buffer1_level;
 	disp_buffer_mask  = buffer1_mask;
-	memset(disp_buffer_mask, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
-	memset(disp_buffer_level, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
-	memset(draw_buffer_mask, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
-	memset(draw_buffer_level, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
+//	write_buffer_tele = buffer_tele_write;
+//	trans_buffer_tele = buffer_tele_trans;
+//	switch_buffer_tele = buffer_tele_switch;
+    memset((uint8_t *)draw_buffer_mask, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
+    memset((uint8_t *)draw_buffer_level, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
+    memset((uint8_t *)disp_buffer_level, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
+    memset((uint8_t *)disp_buffer_mask, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
+//	for (int i = 0; i < BUFFER_HEIGHT * BUFFER_WIDTH; i++)
+//    {
+//	    disp_buffer_mask[i] = 0;
+//	    disp_buffer_level[i] = 0;
+//	    draw_buffer_mask[i] = 0;
+//	    draw_buffer_level[i] = 0;
+//    }
 	
+//	for (int i = 0; i < TELEM_LINES * BUFFER_WIDTH; i++)
+//    {
+//	    write_buffer_tele[i] = 0;
+//	    trans_buffer_tele[i] = 0;
+//	    switch_buffer_tele[i] = 1;
+//    }
+
     /* Configure DMA interrupt */
 	nvic.NVIC_IRQChannel = OSD_MASK_DMA_IRQ;
   	nvic.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST;
@@ -398,6 +446,11 @@ void EXTI1_IRQHandler()
 		// Get ready for the first line
 		active_line = 0;
 
+//#ifdef TELEMETRY_ENABLE
+//		TIM5->CNT = 0xffff - TELEM_START_LINE;
+//		TIM_Cmd(TIM5, ENABLE);
+//#endif
+
 		// Set the number of lines to wait until we start clocking out pixels
 		LINE_COUNTER_TIMER->CNT = 0xffff - (pios_video_type_cfg_act->graphics_line_start + y_offset);
 		TIM_Cmd(LINE_COUNTER_TIMER, ENABLE);
@@ -423,12 +476,30 @@ void TIM4_IRQHandler(void)
 
 		// Hack: The timing for the first line is critical, so we output it again
 		active_line = 0;
+		cur_trans_mode = trans_osd;
 
 		// Get ready to count the remaining lines
 		LINE_COUNTER_TIMER->CNT = pios_video_type_cfg_act->graphics_line_start + y_offset;
 		TIM_Cmd(LINE_COUNTER_TIMER, ENABLE);
 	}
 }
+
+//#ifdef TELEMETRY_ENABLE
+//
+//void TIM5_IRQHandler(void)
+//{
+//    if(TIM_GetITStatus(TIM5, TIM_IT_Update) && (active_line == 0))
+//    {
+//        // Clear the interrupt flag
+//        TIM5->SR &= ~TIM_SR_UIF;
+//
+//        cur_trans_mode = trans_tele;
+//
+//        // Prepare the first line
+//        prepare_line();
+//    }
+//}
+//#endif
 
 void PIOS_VIDEO_DMA_Handler(void);
 void DMA2_Stream3_IRQHandler(void) __attribute__((alias("PIOS_VIDEO_DMA_Handler")));
@@ -462,7 +533,14 @@ void PIOS_VIDEO_DMA_Handler(void)
 		OSD_MASK_SPI->CR1 &= (uint16_t)~SPI_CR1_SPE;
 		OSD_LEVEL_SPI->CR1 &= (uint16_t)~SPI_CR1_SPE;
 
-		if (active_line < pios_video_type_cfg_act->graphics_hight_real) { // lines existing
+		uint16_t maxlines = 0;
+		if(cur_trans_mode == trans_tele){
+		    maxlines = TELEM_LINES;
+		}
+		else if(cur_trans_mode == trans_osd){
+		    maxlines = pios_video_type_cfg_act->graphics_hight_real;
+		}
+		if (active_line < maxlines) { // lines existing
 			prepare_line();
 		} else { // last line completed
 			// Clear the DMA interrupt flags
@@ -477,6 +555,12 @@ void PIOS_VIDEO_DMA_Handler(void)
 			// Stop DMA
 			OSD_MASK_DMA->CR  &= ~(uint32_t)DMA_SxCR_EN;
 			OSD_LEVEL_DMA->CR &= ~(uint32_t)DMA_SxCR_EN;
+
+//			active_line = 0;
+//			cur_trans_mode = trans_idle;
+
+//			//disable the telemetry counter
+//			TIM_Cmd(TIM5, DISABLE);
 		}
 	}
 }
@@ -495,6 +579,10 @@ static void swap_buffers(void)
 
 	SWAP_BUFFS(tmp, disp_buffer_mask, draw_buffer_mask);
 	SWAP_BUFFS(tmp, disp_buffer_level, draw_buffer_level);
+
+//#ifdef TELEMETRY_ENABLE
+//	SWAP_BUFFS(tmp, trans_buffer_tele, write_buffer_tele);
+//#endif
 }
 
 /**
@@ -512,8 +600,15 @@ static inline void prepare_line(void)
 	DMA1->HIFCR |= DMA_FLAG_TCIF4 | DMA_FLAG_HTIF4 | DMA_FLAG_FEIF4 | DMA_FLAG_TEIF4 | DMA_FLAG_DMEIF4;
 	
 	// Load new line
-	OSD_MASK_DMA->M0AR  = (uint32_t)&disp_buffer_mask[buf_offset];
-	OSD_LEVEL_DMA->M0AR = (uint32_t)&disp_buffer_level[buf_offset];
+//	if(cur_trans_mode == trans_tele){
+//	    OSD_MASK_DMA->M0AR  = (uint32_t)&switch_buffer_tele[buf_offset];
+//	    OSD_LEVEL_DMA->M0AR = (uint32_t)&trans_buffer_tele[buf_offset];
+//	}
+//	else if(cur_trans_mode == trans_osd){
+	    OSD_MASK_DMA->M0AR  = (uint32_t)&disp_buffer_mask[buf_offset];
+	    OSD_LEVEL_DMA->M0AR = (uint32_t)&disp_buffer_level[buf_offset];
+//	}
+
 	// Set length
 	OSD_MASK_DMA->NDTR  = (uint16_t)pios_video_type_cfg_act->dma_buffer_length;
 	OSD_LEVEL_DMA->NDTR = (uint16_t)pios_video_type_cfg_act->dma_buffer_length;

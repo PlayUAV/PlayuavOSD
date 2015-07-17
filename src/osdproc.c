@@ -52,6 +52,25 @@ float convert_distance;
 const char * dist_unit = METRIC_DIST;
 const char * spd_unit = METRIC_SPEED;
 
+#ifdef DEV_TEST
+//extern uint8_t *write_buffer_tele;
+void dev_test(void)
+{
+//    sprintf(write_buffer_tele,"time = %d lat = %0.2f lon = %0.2f", 1, 2.0f, 3.3f);
+//    uint32_t data_size = TELEM_LINES * BUFFER_WIDTH;
+//    uint32_t len = strlen ((char*)write_buffer_tele) +1;
+//    memset (write_buffer_tele + len, 0, data_size - len);
+
+    //just draw some on the screen
+    char* tmp_str1 = "";
+    tmp_str1 = "OSD Telemetry test";
+    write_string(tmp_str1, 10, 20,0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0,SIZE_TO_FONT[0]);
+
+    write_circle_outlined(100, 100, 30, 0, 1, 0, 1);
+    drawBox(140, 30, 180, 60);
+}
+#endif
+
 void do_converts(void)
 {
 	if (eeprom_buffer.params.Units_mode == 1)
@@ -90,6 +109,11 @@ void vTaskOSD(void *pvParameters)
 		xSemaphoreTake(onScreenDisplaySemaphore, portMAX_DELAY);
 		
 		clearGraphics();
+
+#ifdef DEV_TEST
+		dev_test();
+		return;
+#endif
 
 		RenderScreen();
 	}
