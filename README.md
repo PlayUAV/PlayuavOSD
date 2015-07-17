@@ -17,8 +17,8 @@ The firmware can be built with ARM GCC. It is highly recommended using PX4 Toolc
 After the toolchain installing, start the app "PX4 Console". Then change to the directory where the source code stored and enter the command:make
 
 Note:
-The bin file can be flash to chip directly. The start address is 0x8004000. Address before 0x8004000 used for bootloader.
-The hex flle generated from the playuavosd.bin file with "px_mkfw.py", can be used with the config tool.
+The playuavosd.bin can be flashed to chip directly. The start address is 0x8004000. Address before 0x8004000 used for bootloader.
+The playuavosd.hex can be used with the OSD config tool. It is automatically generated during the make process.
 
 Contact Us
 ==========
