@@ -51,7 +51,7 @@ void board_init(void)
 							RCC_AHB1Periph_BKPSRAM, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1 | RCC_APB2Periph_TIM1 | RCC_APB2Periph_SYSCFG, ENABLE);
     RCC_APB1PeriphClockCmd( RCC_APB1Periph_SPI2 | RCC_APB1Periph_SPI3 | RCC_APB1Periph_TIM2 |
-							RCC_APB1Periph_TIM3 | RCC_APB1Periph_TIM4 | RCC_APB1Periph_PWR, ENABLE);
+							RCC_APB1Periph_TIM3 | RCC_APB1Periph_TIM4 | RCC_APB1Periph_TIM5 | RCC_APB1Periph_PWR, ENABLE);
 
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);

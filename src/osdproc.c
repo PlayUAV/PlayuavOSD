@@ -52,15 +52,19 @@ float convert_distance;
 const char * dist_unit = METRIC_DIST;
 const char * spd_unit = METRIC_SPEED;
 
-#ifdef DEV_TEST
-//extern uint8_t *write_buffer_tele;
+extern uint8_t *write_buffer_tele;
+
 void dev_test(void)
 {
-//    sprintf(write_buffer_tele,"time = %d lat = %0.2f lon = %0.2f", 1, 2.0f, 3.3f);
-//    uint32_t data_size = TELEM_LINES * BUFFER_WIDTH;
-//    uint32_t len = strlen ((char*)write_buffer_tele) +1;
-//    memset (write_buffer_tele + len, 0, data_size - len);
-
+#ifdef TELEMETRY_ENABLE     
+    char telem_buffer[100];
+    sprintf(telem_buffer,"lat = %0.2f lon = %0.2f", 120.0f, 33.3f);
+    uint32_t data_size = TELEM_LINES * BUFFER_WIDTH;
+    uint32_t len = strlen (telem_buffer) +1;
+    memcpy(write_buffer_tele, telem_buffer, len);
+    memset(write_buffer_tele + len ,0,data_size - len  );
+#endif
+    
     //just draw some on the screen
     char* tmp_str1 = "";
     tmp_str1 = "OSD Telemetry test";
@@ -69,7 +73,6 @@ void dev_test(void)
     write_circle_outlined(100, 100, 30, 0, 1, 0, 1);
     drawBox(140, 30, 180, 60);
 }
-#endif
 
 void do_converts(void)
 {
@@ -101,19 +104,14 @@ void vTaskOSD(void *pvParameters)
     uav2D_init();
 
 	osdCoreInit();
-	osdVideoSetXOffset(eeprom_buffer.params.osd_offsetX);
-	osdVideoSetYOffset(eeprom_buffer.params.osd_offsetY);
-	
+//	osdVideoSetXOffset(eeprom_buffer.params.osd_offsetX);
+//	osdVideoSetYOffset(eeprom_buffer.params.osd_offsetY);
+
 	for(;;)
 	{
 		xSemaphoreTake(onScreenDisplaySemaphore, portMAX_DELAY);
 		
 		clearGraphics();
-
-#ifdef DEV_TEST
-		dev_test();
-		return;
-#endif
 
 		RenderScreen();
 	}
@@ -129,6 +127,8 @@ void RenderScreen(void)
 
     do_converts();
 
+    dev_test();
+    return;
 //  DJI_test();
 //  return;
     if(current_panel > eeprom_buffer.params.Max_panels)
