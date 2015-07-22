@@ -1,5 +1,6 @@
 EXECUTABLE=PlayuavOSD.elf
 TARGETBIN=PlayuavOSD.bin
+TARGETHEX=PlayuavOSD.hex
 
 CC=arm-none-eabi-gcc
 AS=arm-none-eabi-as
@@ -114,7 +115,7 @@ $(EXECUTABLE): $(SRC) $(STARTUP)
 	$(CC) $(CFLAGS) $^ -lm -lc -lnosys -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -o $@
 
 objcopy:
-	@python -u px_mkfw.py --image $(TARGETBIN) > playuavosd.hex
+	@python -u px_mkfw.py --image $(TARGETBIN) > $(TARGETHEX)
 	
 clean:
-	rm -f $(TARGETBIN) $(EXECUTABLE) $(SRC:.c=.lst)
+	rm -f $(TARGETBIN) $(EXECUTABLE) $(TARGETHEX) $(SRC:.c=.lst)
