@@ -96,7 +96,6 @@ SRC += $(STM32_USB_DEVICE_SRC)
 STARTUP = ./$(STMLIBSDIR)/CMSIS/ST/STM32F4xx/Source/Templates/gcc_ride7/startup_stm32f40xx.s
 
 DEFS  = -DUSE_STDPERIPH_DRIVER -DSTM32F4XX -DHSE_VALUE=8000000
-DEFS += -DTELEMETRY_ENABLE
 
 MCU = cortex-m4
 MCFLAGS = -mcpu=$(MCU) -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -std=gnu99		   
