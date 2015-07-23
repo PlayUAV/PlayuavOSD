@@ -77,7 +77,7 @@ enum Trans_mode {
     trans_osd = 2,
 };
 
-#define TELEM_START_LINE    10
-#define TELEM_LINES         2
+#define TELEM_START_LINE    11
+#define TELEM_LINES         8
 
 #endif

@@ -55,23 +55,21 @@ const char * spd_unit = METRIC_SPEED;
 extern uint8_t *write_buffer_tele;
 
 void dev_test(void)
-{
-#ifdef TELEMETRY_ENABLE     
+{    
     char telem_buffer[100];
     sprintf(telem_buffer,"lat = %0.2f lon = %0.2f", 120.0f, 33.3f);
     uint32_t data_size = TELEM_LINES * BUFFER_WIDTH;
     uint32_t len = strlen (telem_buffer) +1;
     memcpy(write_buffer_tele, telem_buffer, len);
     memset(write_buffer_tele + len ,0,data_size - len  );
-#endif
     
     //just draw some on the screen
     char* tmp_str1 = "";
-    tmp_str1 = "OSD Telemetry test";
+    tmp_str1 = "PlayuavOSD Telemetry test";
     write_string(tmp_str1, 10, 20,0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0,SIZE_TO_FONT[0]);
 
-    write_circle_outlined(100, 100, 30, 0, 1, 0, 1);
-    drawBox(140, 30, 180, 60);
+//    write_circle_outlined(100, 100, 30, 0, 1, 0, 1);
+//    drawBox(140, 30, 180, 60);
 }
 
 void do_converts(void)
