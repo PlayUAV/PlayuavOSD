@@ -1,7 +1,7 @@
 #ifndef __MATH3D_H_
 #define __MATH3D_H_
 
-#include "Board.h"
+#include "board.h"
 
 #define XPI	3.141592653589793f					//3.14159265358979323846
 // some math macros
