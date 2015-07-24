@@ -14,7 +14,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "Led.h"
+#include "led.h"
 
 GPIO_TypeDef* GPIO_PORT[LEDn] = {LED_GREEN_GPIO_PORT, LED_BLUE_GPIO_PORT};
 const uint16_t GPIO_PIN[LEDn] = {LED_GREEN_PIN, LED_BLUE_PIN};

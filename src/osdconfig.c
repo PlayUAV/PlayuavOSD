@@ -15,7 +15,7 @@
  */
  
 #include "osdconfig.h"
-#include "Board.h"
+#include "board.h"
 #include "usbd_cdc_core.h"
 #include "usbd_usr.h"
 #include "usbd_desc.h"

@@ -14,8 +14,10 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "Board.h"
-#include "Led.h"
+#include "board.h"
+
+#include "led.h"
+#include "uavtalk.h"
 #include "osdproc.h"
 #include "osdcore.h"
 #include "osdmavlink.h"
@@ -25,7 +27,6 @@
 #include "osdconfig.h"
 #include "math3d.h"
 #include "osdvar.h"
-#include "uavTalk.h"
 
 void vTaskHeartBeat(void *pvParameters);
 void vTask10HZ(void *pvParameters);
