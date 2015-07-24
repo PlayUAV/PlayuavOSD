@@ -16,8 +16,8 @@
 
 #include "board.h"
 
-#include "../inc/led.h"
-#include "../inc/uavtalk.h"
+#include "led.h"
+#include "uavtalk.h"
 #include "osdproc.h"
 #include "osdcore.h"
 #include "osdmavlink.h"
