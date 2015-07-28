@@ -14,6 +14,11 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
  
+/*
+ * Many thanks to:
+ * Reference code of project: MinimOSD - arducam-osd
+ * https://code.google.com/p/arducam-osd/wiki/minimosd
+ */
 #include "osdmavlink.h"
 #include "osdvar.h"
 

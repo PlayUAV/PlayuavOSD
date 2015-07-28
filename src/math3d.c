@@ -13,6 +13,11 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+/*
+ * Many thanks to:
+ * Reference code of book: <Tricks of the 3D Game Programming Gurus-Advanced 3D Graphics and Rasterization>
+ * Written by Andre LaMothe(Author)
+ */
 #include "math3d.h"
 
 float my_cos_look[361]; // 1 extra element so we can store 0-360 inclusive

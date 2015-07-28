@@ -13,6 +13,12 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+
+/*
+ * Many thanks to:
+ * Reference code of project:Tau Labs - Brain FPV Flight Controller
+ * https://github.com/BrainFPV/TauLabs
+ */
 #include "graphengine.h"
 #include "osdcore.h"
 #include "fonts.h"
