@@ -1,5 +1,6 @@
 EXECUTABLE=PlayuavOSD.elf
 TARGETBIN=PlayuavOSD.bin
+TARGETHEX=PlayuavOSD.hex
 
 CC=arm-none-eabi-gcc
 AS=arm-none-eabi-as
@@ -51,8 +52,8 @@ STM32_USB_DEVICE_SRC =	$(USBDEVICELIB)/Class/cdc/src/usbd_cdc_core.c \
 SRC  = ./src/main.c
 SRC += ./src/system_stm32f4xx.c
 SRC += ./src/stm32f4xx_it.c
-SRC += ./src/Board.c
-SRC += ./src/Led.c
+SRC += ./src/board.c
+SRC += ./src/led.c
 SRC += ./src/spi.c
 SRC += ./src/usart2.c
 SRC += ./src/osdvar.c
@@ -69,7 +70,7 @@ SRC += ./src/osdcore.c
 SRC += ./src/osdmavlink.c
 SRC += ./src/osdproc.c
 SRC += ./src/UAVObj.c
-SRC += ./src/uavTalk.c
+SRC += ./src/uavtalk.c
 SRC += ./src/usb_bsp.c
 SRC += ./src/usbd_cdc_vcp.c
 SRC += ./src/usbd_desc.c
@@ -114,7 +115,7 @@ $(EXECUTABLE): $(SRC) $(STARTUP)
 	$(CC) $(CFLAGS) $^ -lm -lc -lnosys -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -o $@
 
 objcopy:
-	@python -u px_mkfw.py --image $(TARGETBIN) > playuavosd.hex
+	@python -u px_mkfw.py --image $(TARGETBIN) > $(TARGETHEX)
 	
 clean:
-	rm -f $(TARGETBIN) $(EXECUTABLE) $(SRC:.c=.lst)
+	rm -f $(TARGETBIN) $(EXECUTABLE) $(TARGETHEX) $(SRC:.c=.lst)

@@ -108,6 +108,6 @@ if args.image != None:
 	desc['image'] = base64.b64encode(zlib.compress(bytes,9)).decode('utf-8')
 
 #print(json.dumps(desc, indent=4))
-f = open("playuavosd.hex","wb")
+f = open("PlayuavOSD.hex","wb")
 f.write(json.dumps(desc, indent=4))
 f.close()
