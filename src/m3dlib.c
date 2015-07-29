@@ -14,9 +14,9 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 /*
- * Many thanks to:
- * Reference code of book: <Tricks of the 3D Game Programming Gurus-Advanced 3D Graphics and Rasterization>
- * Written by Andre LaMothe(Author)
+ * With Grateful Acknowledgements to the books writen by Andre LaMothe:
+ * <Tricks of the 3D Game Programming Gurus-Advanced 3D Graphics and Rasterization>
+ * <Tricks of the Windows Game Programming Gurus>
  */
 #include "m3dlib.h"
 

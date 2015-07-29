@@ -14,8 +14,8 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 /*
- * Reference code of Tau Labs - Brain FPV Flight Controller
- * https://github.com/BrainFPV/TauLabs
+ * With Grateful Acknowledgements to the projects:
+ * Tau Labs - Brain FPV Flight Controller(https://github.com/BrainFPV/TauLabs)
  */
 /* Standard includes. */
 #include <stdbool.h>

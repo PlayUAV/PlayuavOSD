@@ -1,6 +1,5 @@
-# PlayuavOSD
-A Graphics OSD for FPV, Compatible with most FC. 
-
+Acknowledgments
+============
 It is created by integrating a variety of excellent open-source projects. Many thanks to the developers for their efforts and dedication.
 
 * MinimOSD - arducam-osd (https://code.google.com/p/arducam-osd/)
@@ -9,7 +8,7 @@ It is created by integrating a variety of excellent open-source projects. Many t
  
 * minoposd - an implementation of OpenPilot UAVTalk on MinimOSD(https://code.google.com/p/minoposd/)
  
-* The 3D code come from the book "Tricks of the 3D Game Programming Gurus-Advanced 3D Graphics and Rasterization"
+* Books "Tricks of the 3D Game Programming Gurus-Advanced 3D Graphics and Rasterization"
   and "Tricks of the Windows Game Programming Gurus". Both written by Andre LaMothe(Author)
 
 Introduction

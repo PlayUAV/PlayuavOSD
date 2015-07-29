@@ -15,9 +15,8 @@
  */
 
 /*
- * Many thanks to:
- * Reference code of project:Tau Labs - Brain FPV Flight Controller
- * https://github.com/BrainFPV/TauLabs
+ * With Grateful Acknowledgements to the projects:
+ * Tau Labs - Brain FPV Flight Controller(https://github.com/BrainFPV/TauLabs)
  */
 #include "graphengine.h"
 #include "osdcore.h"

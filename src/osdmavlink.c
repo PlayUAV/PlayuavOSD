@@ -13,12 +13,12 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*
- * Many thanks to:
- * Reference code of project: MinimOSD - arducam-osd
- * https://code.google.com/p/arducam-osd/wiki/minimosd
+ * With Grateful Acknowledgements to the projects:
+ * MinimOSD - arducam-osd Controller(https://code.google.com/p/arducam-osd/)
  */
+
 #include "osdmavlink.h"
 #include "osdvar.h"
 
