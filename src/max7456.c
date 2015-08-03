@@ -16,7 +16,7 @@
 
 #include "max7456.h" 
 #include "spi.h"
-
+#include "osdconfig.h"
 
 u8 	max7456_startCol = 0;
 u8 	max7456_startRow = 0;
@@ -35,7 +35,7 @@ void SPI_MAX7456_init(void)
 
 	SPI1_Init();
 	
-	SPI_MAX7456_detectMode();
+	SPI_MAX7456_setMode((int)eeprom_buffer.params.video_mode);
 	
 	MAX7456_CS_LOW();
 
@@ -81,7 +81,7 @@ void SPI_MAX7456_control(u8 ctrl)
 			SPI1_TransferByte(MAX7456_DISABLE_display | max7456_videoMode);
 			break;
 		case 1:
-			SPI1_TransferByte((MAX7456_ENABLE_display_vert | max7456_videoMode) | MAX7456_SYNC_autosync); 
+			SPI1_TransferByte((MAX7456_ENABLE_display_vert | max7456_videoMode) | MAX7456_SYNC_autosync);
 			break;
 	}
 	MAX7456_CS_HIGH();
@@ -102,7 +102,7 @@ void SPI_MAX7456_detectMode(void)
 //	{
 //		SPI_MAX7456_setMode(0);
 //	}
-	SPI_MAX7456_setMode(1);
+	SPI_MAX7456_setMode(0);
 }
 
 void SPI_MAX7456_setMode(int mode)

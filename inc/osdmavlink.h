@@ -3,7 +3,7 @@
 
 // mavlink error - anonymous unions are only supported in --gun mode, 
 // or when enable with #pragma anon_unions 
-//#pragma anon_unions
+#pragma anon_unions
 
 #include "board.h"
 #include "usart2.h"

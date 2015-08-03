@@ -1,5 +1,6 @@
 #ifndef __MATH3D_H_
 #define __MATH3D_H_
+#pragma anon_unions
 
 #include "board.h"
 

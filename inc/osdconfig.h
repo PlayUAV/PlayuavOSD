@@ -246,6 +246,7 @@ typedef union{
         uint16_t osd_offsetX;
 
         uint16_t firmware_ver;
+        uint16_t video_mode;
 //		//below is unused. if add a param, reduce one item here
 //		uint16_t unused[EERROM_SIZE/2 - 104];
 	}params;

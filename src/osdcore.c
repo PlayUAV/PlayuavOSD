@@ -51,7 +51,7 @@ static const struct pios_video_type_boundary pios_video_type_boundary_pal = {
 
 static const struct pios_video_type_cfg pios_video_type_cfg_ntsc = {
 	.graphics_hight_real   = 240,   // Real visible lines
-	.graphics_column_start = 130,   // First visible OSD column (after Hsync)
+	.graphics_column_start = 105,   // First visible OSD column (after Hsync)
 	.graphics_line_start   = 16,    // First visible OSD line
 	.dma_buffer_length     = 45,    // DMA buffer length in bytes (graphics_right / 8 + 1)
 	.period = 11,

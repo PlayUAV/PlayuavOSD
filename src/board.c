@@ -24,7 +24,6 @@
 #include "max7456.h"
 #include "usart2.h"
 #include "osdconfig.h"
-#include "osdconfig.h"
 #include "math3d.h"
 #include "osdvar.h"
 
@@ -104,12 +103,12 @@ void board_init(void)
 	GPIO_Init(GPIOA, &gpio);
 	GPIO_SetBits(GPIOA,GPIO_Pin_15);
 
-    SPI_MAX7456_init();
-
     Build_Sin_Cos_Tables();
 
     LoadParams();
     checkDefaultParam();
+
+    SPI_MAX7456_init();
 
     atti_mp_scale = (float)eeprom_buffer.params.Atti_mp_scale_real + (float)eeprom_buffer.params.Atti_mp_scale_frac * 0.01;
     atti_3d_scale = (float)eeprom_buffer.params.Atti_3D_scale_real + (float)eeprom_buffer.params.Atti_3D_scale_frac * 0.01;
@@ -308,6 +307,27 @@ void checkDefaultParam()
         eeprom_buffer.params.osd_offsetX = 0;
     }
 
+    if (eeprom_buffer.params.osd_offsetX > 20) {
+        eeprom_buffer.params.osd_offsetX = 20;
+        bNeedUpdateFlash = true;
+    }
+    if (eeprom_buffer.params.osd_offsetX <-20) {
+        eeprom_buffer.params.osd_offsetX = -20;
+        bNeedUpdateFlash = true;
+    }
+    if (eeprom_buffer.params.osd_offsetY > 20) {
+        eeprom_buffer.params.osd_offsetY = 20;
+        bNeedUpdateFlash = true;
+    }
+    if (eeprom_buffer.params.osd_offsetY <-20) {
+        eeprom_buffer.params.osd_offsetY = -20;
+        bNeedUpdateFlash = true;
+    }
+
+    if (eeprom_buffer.params.firmware_ver != 6) {
+        eeprom_buffer.params.firmware_ver = 6;
+        bNeedUpdateFlash = true;
+    }
 
     bool ret = false;
     if(bNeedUpdateFlash)
