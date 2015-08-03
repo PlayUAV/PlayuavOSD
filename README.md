@@ -33,4 +33,4 @@ The playuavosd.hex can be used with the OSD config tool. It is automatically gen
 Contact Us
 ==========
 
-The home page of PlayuavOSD is http://www.playuav.com
+The home page of PlayuavOSD is http://en.playuav.com
