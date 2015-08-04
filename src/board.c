@@ -332,7 +332,6 @@ void checkDefaultParam()
     bool ret = false;
     if(bNeedUpdateFlash)
     {
-        eeprom_buffer.params.firmware_ver = 5;
         ret = StoreParams();
         if(!ret)
         {
