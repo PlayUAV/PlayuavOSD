@@ -32,6 +32,7 @@ u32 armed_start_time = 0;
 float osd_vbat_A = 0.0f;                 // Battery A voltage in milivolt
 int16_t osd_curr_A = 0;                 // Battery A current
 int8_t osd_battery_remaining_A = 0;    // 0 to 100 <=> 0 to 1000
+int32_t osd_battery_consumed_in_mah = 0;
 
 float osd_pitch = 0.0f;                  // pitch from DCM
 float osd_roll = 0.0f;                   // roll from DCM

@@ -144,10 +144,17 @@ void RenderScreen(void)
     }
     if(eeprom_buffer.params.BattConsumed_en && bShownAtPanle(eeprom_buffer.params.BattConsumed_panel))
     {
-        sprintf(tmp_str, "%d/", osd_battery_remaining_A);
-        write_string(tmp_str, eeprom_buffer.params.BattConsumed_posX, eeprom_buffer.params.BattConsumed_posY,
-                     0, 0, TEXT_VA_TOP, eeprom_buffer.params.BattConsumed_align, 0,
-                     SIZE_TO_FONT[eeprom_buffer.params.BattConsumed_fontsize]);
+    	if (eeprom_buffer.params.BattConsumed_InMah){
+    		sprintf(tmp_str, "%dmAh", osd_battery_consumed_in_mah);
+    		    		        write_string(tmp_str, eeprom_buffer.params.BattConsumed_posX, eeprom_buffer.params.BattConsumed_posY,
+    		    		                     0, 0, TEXT_VA_TOP, eeprom_buffer.params.BattConsumed_align, 0,
+    		    		                     SIZE_TO_FONT[eeprom_buffer.params.BattConsumed_fontsize]);
+    	}else{
+    		sprintf(tmp_str, "%d/", osd_battery_remaining_A);
+    		        write_string(tmp_str, eeprom_buffer.params.BattConsumed_posX, eeprom_buffer.params.BattConsumed_posY,
+    		                     0, 0, TEXT_VA_TOP, eeprom_buffer.params.BattConsumed_align, 0,
+    		                     SIZE_TO_FONT[eeprom_buffer.params.BattConsumed_fontsize]);
+    	}
     }
 
 

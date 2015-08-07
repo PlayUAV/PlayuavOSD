@@ -45,6 +45,7 @@ typedef union{
 		uint16_t BattConsumed_posY;
 		uint16_t BattConsumed_fontsize;
 		uint16_t BattConsumed_align;		
+		uint16_t BattConsumed_InMah;
 		
 		uint16_t FlightMode_en;
 		uint16_t FlightMode_panel;
