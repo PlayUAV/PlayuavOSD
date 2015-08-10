@@ -343,7 +343,9 @@ void RenderScreen(void)
         int rssi = osd_rssi;
         x = eeprom_buffer.params.RSSI_posX;
         y = eeprom_buffer.params.RSSI_posY;
-        if(eeprom_buffer.params.RSSI_raw_en != 0)
+
+        //0:percentage 1:raw
+        if(eeprom_buffer.params.RSSI_raw_en == 0)
         {
             uint16_t rssiMin = eeprom_buffer.params.RSSI_min;
             uint16_t rssiMax = eeprom_buffer.params.RSSI_max;
