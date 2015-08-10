@@ -170,6 +170,11 @@ void parseMavlink(void)
                         osd_windSpeed = mavlink_msg_wind_get_speed(&msg); //m/s
                     }
                     break;
+                case MAVLINK_MSG_ID_BATTERY_STATUS:
+                	{
+                		osd_battery_consumed_in_mah = mavlink_msg_battery_status_get_current_consumed(&msg);
+                	}
+                break;
                 default:
                     //Do nothing
                     break;

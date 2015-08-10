@@ -20,6 +20,7 @@ extern u32      armed_start_time;
 extern float        osd_vbat_A;                 // Battery A voltage in milivolt
 extern int16_t      osd_curr_A;                 // Battery A current
 extern int8_t       osd_battery_remaining_A;    // 0 to 100 <=> 0 to 1000
+extern int32_t 		osd_battery_consumed_in_mah;// Consumed current in mAh
 
 extern float       osd_pitch;                  // pitch from DCM
 extern float       osd_roll;                   // roll from DCM
