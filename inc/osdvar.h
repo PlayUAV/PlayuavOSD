@@ -5,25 +5,27 @@
 
 
 /////////////////////////////////////////////////////////////////////////
-extern u8       mavbeat;
-extern u32      lastMAVBeat;
-extern u32      lastWritePanel;
-extern u8       waitingMAVBeats;
-extern u8       apm_mav_type;
-extern u8       apm_mav_system;
-extern u8       apm_mav_component;
-extern u8       enable_mav_request;
-extern u32      sys_start_time;
-extern u32      heatbeat_start_time;
-extern u32      armed_start_time;
+extern uint8_t      mavbeat;
+extern uint32_t     lastMAVBeat;
+extern uint32_t     lastWritePanel;
+extern uint8_t      waitingMAVBeats;
+extern uint8_t      apm_mav_type;
+extern uint8_t      apm_mav_system;
+extern uint8_t      apm_mav_component;
+extern uint8_t      enable_mav_request;
+extern uint32_t     sys_start_time;
+extern uint32_t     heatbeat_start_time;
+extern uint32_t     armed_start_time;
+
 /////////////////////////////////////////////////////////////////////////
 extern float        osd_vbat_A;                 // Battery A voltage in milivolt
 extern int16_t      osd_curr_A;                 // Battery A current
 extern int8_t       osd_battery_remaining_A;    // 0 to 100 <=> 0 to 1000
+extern float        osd_curr_consumed_mah;      // total current drawn since startup in amp-hours
 
-extern float       osd_pitch;                  // pitch from DCM
-extern float       osd_roll;                   // roll from DCM
-extern float       osd_yaw;                    // relative heading form DCM
+extern float        osd_pitch;                  // pitch from DCM
+extern float        osd_roll;                   // roll from DCM
+extern float        osd_yaw;                    // relative heading form DCM
 extern float        osd_heading;                // ground course heading from GPS
 
 extern float        osd_lat;                    // latidude
@@ -44,6 +46,7 @@ extern float        osd_downVelocity;            // ground speed
 extern uint16_t     osd_throttle;               // throtle
 extern float        osd_alt;                    // altitude
 extern float        osd_climb;
+extern float        osd_total_trip_dist;        //total trip distance since startup, calculated in meter
 
 extern float        nav_roll; // Current desired roll in degrees
 extern float        nav_pitch; // Current desired pitch in degrees
@@ -79,15 +82,15 @@ extern uint32_t     osd_home_bearing;
 extern uint8_t      osd_alt_cnt;              // counter for stable osd_alt
 extern float        osd_alt_prev;             // previous altitude
 
-extern float osd_windSpeed;
-extern float osd_windDir;
+extern float        osd_windSpeed;
+extern float        osd_windDir;
 
 extern volatile uint8_t     current_panel;
 
-extern float atti_mp_scale;
-extern float atti_3d_scale;
-extern uint32_t atti_3d_min_clipX;
-extern uint32_t atti_3d_max_clipX;
-extern uint32_t atti_3d_min_clipY;
-extern uint32_t atti_3d_max_clipY;
+extern float        atti_mp_scale;
+extern float        atti_3d_scale;
+extern uint32_t     atti_3d_min_clipX;
+extern uint32_t     atti_3d_max_clipX;
+extern uint32_t     atti_3d_min_clipY;
+extern uint32_t     atti_3d_max_clipY;
 #endif

@@ -35,6 +35,7 @@ u32 armed_start_time = 0;
 float osd_vbat_A = 0.0f;                 // Battery A voltage in milivolt
 int16_t osd_curr_A = 0;                 // Battery A current
 int8_t osd_battery_remaining_A = 0;    // 0 to 100 <=> 0 to 1000
+float osd_curr_consumed_mah = 0;
 
 float osd_pitch = 0.0f;                  // pitch from DCM
 float osd_roll = 0.0f;                   // roll from DCM
@@ -59,6 +60,7 @@ float osd_downVelocity = 0.0f;
 uint16_t osd_throttle = 0;               // throtle
 float osd_alt = 0.0f;                    // altitude
 float osd_climb = 0.0f;
+float osd_total_trip_dist = 0;
 
 float nav_roll = 0.0f; // Current desired roll in degrees
 float nav_pitch = 0.0f; // Current desired pitch in degrees

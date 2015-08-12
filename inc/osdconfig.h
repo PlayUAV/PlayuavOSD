@@ -39,12 +39,12 @@ typedef union{
 		uint16_t BattCurrent_fontsize;
 		uint16_t BattCurrent_align;			
 		
-		uint16_t BattConsumed_en;
-		uint16_t BattConsumed_panel;
-		uint16_t BattConsumed_posX;
-		uint16_t BattConsumed_posY;
-		uint16_t BattConsumed_fontsize;
-		uint16_t BattConsumed_align;		
+		uint16_t BattRemaining_en;
+		uint16_t BattRemaining_panel;
+		uint16_t BattRemaining_posX;
+		uint16_t BattRemaining_posY;
+		uint16_t BattRemaining_fontsize;
+		uint16_t BattRemaining_align;
 		
 		uint16_t FlightMode_en;
 		uint16_t FlightMode_panel;
@@ -245,8 +245,28 @@ typedef union{
         uint16_t osd_offsetY;
         uint16_t osd_offsetX;
 
+        /*from firmware version 6*/
         uint16_t firmware_ver;
         uint16_t video_mode;
+
+        /*from firmware version 7*/
+        uint16_t Speed_scale_posY;
+        uint16_t Alt_Scale_posY;
+
+        uint16_t BattConsumed_en;          // total current drawn since startup in amp-hours
+        uint16_t BattConsumed_panel;
+        uint16_t BattConsumed_posX;
+        uint16_t BattConsumed_posY;
+        uint16_t BattConsumed_fontsize;
+        uint16_t BattConsumed_align;
+
+        uint16_t TotalTripDist_en;          // total trip distance since startup, calculated in meter
+        uint16_t TotalTripDist_panel;
+        uint16_t TotalTripDist_posX;
+        uint16_t TotalTripDist_posY;
+        uint16_t TotalTripDist_fontsize;
+        uint16_t TotalTripDist_align;
+
 //		//below is unused. if add a param, reduce one item here
 //		uint16_t unused[EERROM_SIZE/2 - 104];
 	}params;

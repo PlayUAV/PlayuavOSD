@@ -165,6 +165,12 @@ void vTask10HZ(void *pvParameters)
         {
             vTaskDelay( 100 / portTICK_RATE_MS );
 
+            // calculate osd_curr_consumed_mah(simulation)
+            osd_curr_consumed_mah += (osd_curr_A * 0.00027777778f);
+
+            // calculate osd_total_trip_dist(simulation)
+            if (osd_groundspeed > 1.0f) osd_total_trip_dist += (osd_groundspeed * 0.1f);
+
             //trigger video switch
             if(eeprom_buffer.params.PWM_Video_en)
             {
@@ -326,6 +332,25 @@ void checkDefaultParam()
 
     if (eeprom_buffer.params.firmware_ver != 6) {
         eeprom_buffer.params.firmware_ver = 6;
+        bNeedUpdateFlash = true;
+    }
+
+    if (eeprom_buffer.params.firmware_ver < 7) {
+        eeprom_buffer.params.firmware_ver = 7;
+        eeprom_buffer.params.Speed_scale_posY = 133;
+        eeprom_buffer.params.Alt_Scale_posY = 133;
+        eeprom_buffer.params.BattConsumed_en = 1;
+        eeprom_buffer.params.BattConsumed_panel = 1;
+        eeprom_buffer.params.BattConsumed_posX = 350;
+        eeprom_buffer.params.BattConsumed_posY = 34;
+        eeprom_buffer.params.BattConsumed_fontsize = 0;
+        eeprom_buffer.params.BattConsumed_align = 2;
+        eeprom_buffer.params.TotalTripDist_en = 1;
+        eeprom_buffer.params.TotalTripDist_panel = 1;
+        eeprom_buffer.params.TotalTripDist_posX = 350;
+        eeprom_buffer.params.TotalTripDist_posY = 210;
+        eeprom_buffer.params.TotalTripDist_fontsize = 0;
+        eeprom_buffer.params.TotalTripDist_align = 2;
         bNeedUpdateFlash = true;
     }
 

@@ -170,6 +170,15 @@ void parseMavlink(void)
                         osd_windSpeed = mavlink_msg_wind_get_speed(&msg); //m/s
                     }
                     break;
+/*
+                // will be used in the future. See Samuel's PR:https://github.com/PlayUAV/PlayuavOSD/pull/13
+                // Noticed: the type of variable in this message is int32_t. Currently we use float type to simulate.
+                case MAVLINK_MSG_ID_BATTERY_STATUS:
+                   {
+                       osd_battery_consumed_in_mah = mavlink_msg_battery_status_get_current_consumed(&msg);
+                   }
+                   break;
+*/
                 default:
                     //Do nothing
                     break;

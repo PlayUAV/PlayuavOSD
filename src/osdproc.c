@@ -43,16 +43,20 @@ uint8_t last_warn_type = 0;
 int32_t last_warn_time = 0;
 char* warn_str = "";
 
-const char METRIC_SPEED[] = "kmh";
-const char METRIC_DIST[] = "m";
+const char METRIC_SPEED[] = "KM/H";         //kilometer per hour
+const char METRIC_DIST_SHORT[] = "M";       //meter
+const char METRIC_DIST_LONG[] = "KM";       //kilometer
 
-const char IMPERIAL_SPEED[] = "mh";
-const char IMPERIAL_DIST[] = "f";
+const char IMPERIAL_SPEED[] = "M/H";        //mile per hour
+const char IMPERIAL_DIST_SHORT[] = "F";     //feet
+const char IMPERIAL_DIST_LONG[] = "M";      //mile
 
 // Unit conversion constants
-float convert_speed;
-float convert_distance;
-const char * dist_unit = METRIC_DIST;
+float convert_speed = 0.0f;
+float convert_distance = 0.0f;
+float convert_distance_divider = 0.0f;
+const char * dist_unit_short = METRIC_DIST_SHORT;
+const char * dist_unit_long = METRIC_DIST_LONG;
 const char * spd_unit = METRIC_SPEED;
 
 void do_converts(void)
@@ -61,14 +65,18 @@ void do_converts(void)
 	{
 		convert_distance = 2.23f;
 		convert_speed = 3.28f;
-		dist_unit = IMPERIAL_DIST;
+		convert_distance_divider = 5280.0f; // feet in a mile
+		dist_unit_short = IMPERIAL_DIST_SHORT;
+		dist_unit_long = IMPERIAL_DIST_LONG;
 		spd_unit = IMPERIAL_SPEED;
 	}
 	else
 	{
 		convert_distance = 1.0f;
 		convert_speed = 3.6f;
-		dist_unit = METRIC_DIST;
+		convert_distance_divider = 1000.0f;
+		dist_unit_short = METRIC_DIST_SHORT;
+		dist_unit_long = METRIC_DIST_LONG;
 		spd_unit = METRIC_SPEED;
 	}
 }
@@ -114,181 +122,235 @@ void RenderScreen(void)
         current_panel = 1;
 
     // mode
-    if(eeprom_buffer.params.FlightMode_en && bShownAtPanle(eeprom_buffer.params.FlightMode_panel))
-    {
-        draw_flight_mode(eeprom_buffer.params.FlightMode_posX, eeprom_buffer.params.FlightMode_posY,
-                         0, 0, TEXT_VA_TOP, eeprom_buffer.params.FlightMode_align, 0,
+    if (eeprom_buffer.params.FlightMode_en==1 && bShownAtPanle(eeprom_buffer.params.FlightMode_panel)) {
+        draw_flight_mode(eeprom_buffer.params.FlightMode_posX,
+                         eeprom_buffer.params.FlightMode_posY, 0, 0, TEXT_VA_TOP,
+                         eeprom_buffer.params.FlightMode_align, 0,
                          SIZE_TO_FONT[eeprom_buffer.params.FlightMode_fontsize]);
     }
 
     // arming status
-    if(eeprom_buffer.params.Arm_en && bShownAtPanle(eeprom_buffer.params.Arm_panel))
-    {
-        tmp_str1 = motor_armed? "ARMED" : "DISARMED";
-        write_string(tmp_str1, eeprom_buffer.params.Arm_posX, eeprom_buffer.params.Arm_posY,
-                     0, 0, TEXT_VA_TOP, eeprom_buffer.params.Arm_align, 0,
+    if (eeprom_buffer.params.Arm_en==1 && bShownAtPanle(eeprom_buffer.params.Arm_panel)) {
+        tmp_str1 = motor_armed ? "ARMED" : "DISARMED";
+        write_string(tmp_str1, eeprom_buffer.params.Arm_posX,
+                     eeprom_buffer.params.Arm_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.Arm_align, 0,
                      SIZE_TO_FONT[eeprom_buffer.params.Arm_fontsize]);
     }
 
     //Battery
-    if(eeprom_buffer.params.BattVolt_en && bShownAtPanle(eeprom_buffer.params.BattVolt_panel))
-    {
-        sprintf(tmp_str, "%0.1fV", (double)osd_vbat_A);
-        write_string(tmp_str, eeprom_buffer.params.BattVolt_posX, eeprom_buffer.params.BattVolt_posY,
-                     0, 0, TEXT_VA_TOP, eeprom_buffer.params.BattVolt_align, 0,
+    if (eeprom_buffer.params.BattVolt_en==1 && bShownAtPanle(eeprom_buffer.params.BattVolt_panel)) {
+        sprintf(tmp_str, "%0.1fV", (double) osd_vbat_A);
+        write_string(tmp_str, eeprom_buffer.params.BattVolt_posX,
+                     eeprom_buffer.params.BattVolt_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.BattVolt_align, 0,
                      SIZE_TO_FONT[eeprom_buffer.params.BattVolt_fontsize]);
     }
-    if(eeprom_buffer.params.BattCurrent_en && bShownAtPanle(eeprom_buffer.params.BattCurrent_panel))
-    {
-        sprintf(tmp_str, "%0.1fA", (double)(osd_curr_A*0.01));
-        write_string(tmp_str, eeprom_buffer.params.BattCurrent_posX, eeprom_buffer.params.BattCurrent_posY,
-                     0, 0, TEXT_VA_TOP, eeprom_buffer.params.BattCurrent_align, 0,
+    if (eeprom_buffer.params.BattCurrent_en==1 && bShownAtPanle(eeprom_buffer.params.BattCurrent_panel)) {
+        sprintf(tmp_str, "%0.1fA", (double) (osd_curr_A * 0.01));
+        write_string(tmp_str, eeprom_buffer.params.BattCurrent_posX,
+                     eeprom_buffer.params.BattCurrent_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.BattCurrent_align, 0,
                      SIZE_TO_FONT[eeprom_buffer.params.BattCurrent_fontsize]);
     }
-    if(eeprom_buffer.params.BattConsumed_en && bShownAtPanle(eeprom_buffer.params.BattConsumed_panel))
-    {
+    if (eeprom_buffer.params.BattRemaining_en==1 && bShownAtPanle(eeprom_buffer.params.BattRemaining_panel)) {
         sprintf(tmp_str, "%d/", osd_battery_remaining_A);
-        write_string(tmp_str, eeprom_buffer.params.BattConsumed_posX, eeprom_buffer.params.BattConsumed_posY,
-                     0, 0, TEXT_VA_TOP, eeprom_buffer.params.BattConsumed_align, 0,
+        write_string(tmp_str, eeprom_buffer.params.BattRemaining_posX,
+                     eeprom_buffer.params.BattRemaining_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.BattRemaining_align, 0,
+                     SIZE_TO_FONT[eeprom_buffer.params.BattRemaining_fontsize]);
+    }
+    if (eeprom_buffer.params.BattConsumed_en==1 && bShownAtPanle(eeprom_buffer.params.BattConsumed_panel)) {
+        sprintf(tmp_str, "%dmah", (int)osd_curr_consumed_mah);
+        write_string(tmp_str, eeprom_buffer.params.BattConsumed_posX,
+                     eeprom_buffer.params.BattConsumed_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.BattConsumed_align, 0,
                      SIZE_TO_FONT[eeprom_buffer.params.BattConsumed_fontsize]);
     }
 
-
     //altitude
-    if(eeprom_buffer.params.Alt_Scale_en  && bShownAtPanle(eeprom_buffer.params.Alt_Scale_panle))
-    {
-        hud_draw_vertical_scale(osd_alt * convert_distance, 100, eeprom_buffer.params.Alt_Scale_align,eeprom_buffer.params.Alt_Scale_posX, GRAPHICS_Y_MIDDLE, 120, 10, 20, 5, 8, 11, 10000, 0);
+    if (eeprom_buffer.params.Alt_Scale_en==1 && bShownAtPanle(eeprom_buffer.params.Alt_Scale_panle)) {
+        hud_draw_vertical_scale(osd_alt * convert_distance, 60,
+                eeprom_buffer.params.Alt_Scale_align,
+                eeprom_buffer.params.Alt_Scale_posX,
+                eeprom_buffer.params.Alt_Scale_posY, 72, 10, 20, 5, 8, 11,
+                10000, 0);
     }
 
-    if(eeprom_buffer.params.TALT_en  && bShownAtPanle(eeprom_buffer.params.TALT_panel))
-    {
+    if (eeprom_buffer.params.TALT_en==1 && bShownAtPanle(eeprom_buffer.params.TALT_panel)) {
         float tmp = osd_alt * convert_distance;
-        sprintf(tmp_str, "ALT: %d%s", (int)tmp, dist_unit);
+        if (tmp < convert_distance_divider){
+            sprintf(tmp_str, "ALT: %d%s", (int) tmp, dist_unit_short);
+        }
+        else{
+            sprintf(tmp_str, "ALT: %0.2f%s", (double) (tmp / convert_distance_divider), dist_unit_long);
+        }
 
         //sprintf(tmp_str, "ALT:%i", (int)osd_alt);
-        write_string(tmp_str, eeprom_buffer.params.TALT_posX, eeprom_buffer.params.TALT_posY,
-                     0, 0, TEXT_VA_TOP, eeprom_buffer.params.TALT_align, 0,
+        write_string(tmp_str, eeprom_buffer.params.TALT_posX,
+                     eeprom_buffer.params.TALT_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.TALT_align, 0,
                      SIZE_TO_FONT[eeprom_buffer.params.TALT_fontsize]);
     }
 
     //speed
-    if(eeprom_buffer.params.Speed_scale_en && bShownAtPanle(eeprom_buffer.params.Speed_scale_panel))
-    {
-        hud_draw_vertical_scale(osd_groundspeed * convert_speed, 50, eeprom_buffer.params.Speed_scale_align,  eeprom_buffer.params.Speed_scale_posX, GRAPHICS_Y_MIDDLE, 120, 10, 20, 5, 8, 11, 100, 0);
+    if (eeprom_buffer.params.Speed_scale_en==1 && bShownAtPanle(eeprom_buffer.params.Speed_scale_panel)) {
+        hud_draw_vertical_scale(osd_groundspeed * convert_speed, 60,
+                eeprom_buffer.params.Speed_scale_align,
+                eeprom_buffer.params.Speed_scale_posX,
+                eeprom_buffer.params.Speed_scale_posY, 72, 10, 20, 5, 8, 11,
+                100, 0);
     }
 
-    if(eeprom_buffer.params.TSPD_en && bShownAtPanle(eeprom_buffer.params.TSPD_panel))
-    {
+    if (eeprom_buffer.params.TSPD_en==1 && bShownAtPanle(eeprom_buffer.params.TSPD_panel)) {
         float tmp = osd_groundspeed * convert_speed;
-        sprintf(tmp_str, "SPD:%d%s", (int)tmp, spd_unit);
-        write_string(tmp_str, eeprom_buffer.params.TSPD_posX, eeprom_buffer.params.TSPD_posY,
-                     0, 0, TEXT_VA_TOP, eeprom_buffer.params.TSPD_align, 0,
+        sprintf(tmp_str, "SPD:%d%s", (int) tmp, spd_unit);
+        write_string(tmp_str, eeprom_buffer.params.TSPD_posX,
+                     eeprom_buffer.params.TSPD_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.TSPD_align, 0,
                      SIZE_TO_FONT[eeprom_buffer.params.TSPD_fontsize]);
     }
 
     //uav attitude
-    if(eeprom_buffer.params.Atti_3D_en && bShownAtPanle(eeprom_buffer.params.Atti_3D_panel))
+    if(eeprom_buffer.params.Atti_3D_en==1 && bShownAtPanle(eeprom_buffer.params.Atti_3D_panel)){
         hud_draw_uav3d();
+    }
 
-    if(eeprom_buffer.params.Atti_mp_en && bShownAtPanle(eeprom_buffer.params.Atti_mp_panel))
+    if(eeprom_buffer.params.Atti_mp_en==1 && bShownAtPanle(eeprom_buffer.params.Atti_mp_panel)){
         hud_draw_uav2d();
+    }
 
     // throttle with percent
-    if(eeprom_buffer.params.Throt_en && bShownAtPanle(eeprom_buffer.params.Throt_panel))
+    if(eeprom_buffer.params.Throt_en==1 && bShownAtPanle(eeprom_buffer.params.Throt_panel)){
         hud_draw_throttle();
+    }
 
     //GPS
-    if(eeprom_buffer.params.GpsStatus_en && bShownAtPanle(eeprom_buffer.params.GpsStatus_panel))
-    {
-        switch(osd_fix_type)
-        {
-            case NO_GPS:
-            case NO_FIX:
-                sprintf(tmp_str, "NOFIX");
-                break;
-            case GPS_OK_FIX_2D:
-                sprintf(tmp_str, "FIX2D-%d", (int)osd_satellites_visible);
-                break;
-            case GPS_OK_FIX_3D:
-                sprintf(tmp_str, "FIX3D-%d", (int)osd_satellites_visible);
-                break;
-            case GPS_OK_FIX_3D_DGPS:
-                sprintf(tmp_str, "FIXD3D-%d", (int)osd_satellites_visible);
-                break;
-            default:
-                sprintf(tmp_str, "NOGPS");
+    if (eeprom_buffer.params.GpsStatus_en==1 && bShownAtPanle(eeprom_buffer.params.GpsStatus_panel)) {
+        switch (osd_fix_type) {
+        case NO_GPS:
+        case NO_FIX:
+            sprintf(tmp_str, "NOFIX");
+            break;
+        case GPS_OK_FIX_2D:
+            sprintf(tmp_str, "FIX2D-%d", (int) osd_satellites_visible);
+            break;
+        case GPS_OK_FIX_3D:
+            sprintf(tmp_str, "FIX3D-%d", (int) osd_satellites_visible);
+            break;
+        case GPS_OK_FIX_3D_DGPS:
+            sprintf(tmp_str, "FIXD3D-%d", (int) osd_satellites_visible);
+            break;
+        default:
+            sprintf(tmp_str, "NOGPS");
+            break;
         }
-        write_string(tmp_str, eeprom_buffer.params.GpsStatus_posX, eeprom_buffer.params.GpsStatus_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.GpsStatus_align, 0, SIZE_TO_FONT[eeprom_buffer.params.GpsStatus_fontsize]);
+        write_string(tmp_str, eeprom_buffer.params.GpsStatus_posX,
+                     eeprom_buffer.params.GpsStatus_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.GpsStatus_align, 0,
+                     SIZE_TO_FONT[eeprom_buffer.params.GpsStatus_fontsize]);
     }
-    if(eeprom_buffer.params.GpsHDOP_en && bShownAtPanle(eeprom_buffer.params.GpsHDOP_panel))
-    {
-        sprintf(tmp_str, "HDOP:%0.2f", (double)osd_hdop/100.0f);
-        write_string(tmp_str,eeprom_buffer.params.GpsHDOP_posX, eeprom_buffer.params.GpsHDOP_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.GpsHDOP_align, 0, SIZE_TO_FONT[eeprom_buffer.params.GpsHDOP_fontsize]);
+
+    if (eeprom_buffer.params.GpsHDOP_en==1 && bShownAtPanle(eeprom_buffer.params.GpsHDOP_panel)) {
+        sprintf(tmp_str, "HDOP:%0.2f", (double) osd_hdop / 100.0f);
+        write_string(tmp_str, eeprom_buffer.params.GpsHDOP_posX,
+                     eeprom_buffer.params.GpsHDOP_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.GpsHDOP_align, 0,
+                     SIZE_TO_FONT[eeprom_buffer.params.GpsHDOP_fontsize]);
     }
-    if(eeprom_buffer.params.GpsLat_en && bShownAtPanle(eeprom_buffer.params.GpsLat_panle))
-    {
-        sprintf(tmp_str, "%0.5f", (double)osd_lat / 10000000.0f);
-        write_string(tmp_str,eeprom_buffer.params.GpsLat_posX, eeprom_buffer.params.GpsLat_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.GpsLat_align, 0, SIZE_TO_FONT[eeprom_buffer.params.GpsLat_fontsize]);
+
+    if (eeprom_buffer.params.GpsLat_en==1 && bShownAtPanle(eeprom_buffer.params.GpsLat_panle)) {
+        sprintf(tmp_str, "%0.5f", (double) osd_lat / 10000000.0f);
+        write_string(tmp_str, eeprom_buffer.params.GpsLat_posX,
+                     eeprom_buffer.params.GpsLat_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.GpsLat_align, 0,
+                     SIZE_TO_FONT[eeprom_buffer.params.GpsLat_fontsize]);
     }
-    if(eeprom_buffer.params.GpsLon_en && bShownAtPanle(eeprom_buffer.params.GpsLon_panel))
-    {
-        sprintf(tmp_str, "%0.5f", (double)osd_lon / 10000000.0f);
-        write_string(tmp_str, eeprom_buffer.params.GpsLon_posX, eeprom_buffer.params.GpsLon_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.GpsLon_align, 0, SIZE_TO_FONT[eeprom_buffer.params.GpsLon_fontsize]);
+    if (eeprom_buffer.params.GpsLon_en==1 && bShownAtPanle(eeprom_buffer.params.GpsLon_panel)) {
+        sprintf(tmp_str, "%0.5f", (double) osd_lon / 10000000.0f);
+        write_string(tmp_str, eeprom_buffer.params.GpsLon_posX,
+                     eeprom_buffer.params.GpsLon_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.GpsLon_align, 0,
+                     SIZE_TO_FONT[eeprom_buffer.params.GpsLon_fontsize]);
     }
 
     //GPS2
-    if(eeprom_buffer.params.Gps2Status_en && bShownAtPanle(eeprom_buffer.params.Gps2Status_panel))
-    {
-        switch(osd_fix_type2)
-        {
-            case NO_GPS:
-            case NO_FIX:
-                sprintf(tmp_str, "NOFIX");
-                break;
-            case GPS_OK_FIX_2D:
-                sprintf(tmp_str, "FIX2D-%d", (int)osd_satellites_visible2);
-                break;
-            case GPS_OK_FIX_3D:
-                sprintf(tmp_str, "FIX3D-%d", (int)osd_satellites_visible2);
-                break;
-            case GPS_OK_FIX_3D_DGPS:
-                sprintf(tmp_str, "FIXD3D-%d", (int)osd_satellites_visible2);
-                break;
-            default:
-                sprintf(tmp_str, "NOGPS");
+    if (eeprom_buffer.params.Gps2Status_en==1 && bShownAtPanle(eeprom_buffer.params.Gps2Status_panel)) {
+        switch (osd_fix_type2) {
+        case NO_GPS:
+        case NO_FIX:
+            sprintf(tmp_str, "NOFIX");
+            break;
+        case GPS_OK_FIX_2D:
+            sprintf(tmp_str, "FIX2D-%d", (int) osd_satellites_visible2);
+            break;
+        case GPS_OK_FIX_3D:
+            sprintf(tmp_str, "FIX3D-%d", (int) osd_satellites_visible2);
+            break;
+        case GPS_OK_FIX_3D_DGPS:
+            sprintf(tmp_str, "FIXD3D-%d", (int) osd_satellites_visible2);
+            break;
+        default:
+            sprintf(tmp_str, "NOGPS");
+            break;
         }
-        write_string(tmp_str, eeprom_buffer.params.Gps2Status_posX, eeprom_buffer.params.Gps2Status_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.Gps2Status_align, 0, SIZE_TO_FONT[eeprom_buffer.params.Gps2Status_fontsize]);
+        write_string(tmp_str, eeprom_buffer.params.Gps2Status_posX,
+                     eeprom_buffer.params.Gps2Status_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.Gps2Status_align, 0,
+                     SIZE_TO_FONT[eeprom_buffer.params.Gps2Status_fontsize]);
     }
-    if(eeprom_buffer.params.Gps2HDOP_en && bShownAtPanle(eeprom_buffer.params.Gps2HDOP_panel))
-    {
-        sprintf(tmp_str, "HDOP:%0.2f", (double)osd_hdop2/100.0f);
-        write_string(tmp_str,eeprom_buffer.params.Gps2HDOP_posX, eeprom_buffer.params.Gps2HDOP_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.Gps2HDOP_align, 0, SIZE_TO_FONT[eeprom_buffer.params.Gps2HDOP_fontsize]);
+    if (eeprom_buffer.params.Gps2HDOP_en==1 && bShownAtPanle(eeprom_buffer.params.Gps2HDOP_panel)) {
+        sprintf(tmp_str, "HDOP:%0.2f", (double) osd_hdop2 / 100.0f);
+        write_string(tmp_str, eeprom_buffer.params.Gps2HDOP_posX,
+                     eeprom_buffer.params.Gps2HDOP_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.Gps2HDOP_align, 0,
+                     SIZE_TO_FONT[eeprom_buffer.params.Gps2HDOP_fontsize]);
     }
-    if(eeprom_buffer.params.Gps2Lat_en && bShownAtPanle(eeprom_buffer.params.Gps2Lat_panel))
-    {
-        sprintf(tmp_str, "%0.5f", (double)osd_lat2 / 10000000.0f);
-        write_string(tmp_str,eeprom_buffer.params.Gps2Lat_posX, eeprom_buffer.params.Gps2Lat_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.Gps2Lat_align, 0, SIZE_TO_FONT[eeprom_buffer.params.Gps2Lat_fontsize]);
+    if (eeprom_buffer.params.Gps2Lat_en==1 && bShownAtPanle(eeprom_buffer.params.Gps2Lat_panel)) {
+        sprintf(tmp_str, "%0.5f", (double) osd_lat2 / 10000000.0f);
+        write_string(tmp_str, eeprom_buffer.params.Gps2Lat_posX,
+                     eeprom_buffer.params.Gps2Lat_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.Gps2Lat_align, 0,
+                     SIZE_TO_FONT[eeprom_buffer.params.Gps2Lat_fontsize]);
     }
-    if(eeprom_buffer.params.Gps2Lon_en && bShownAtPanle(eeprom_buffer.params.Gps2Lon_panel))
-    {
-        sprintf(tmp_str, "%0.5f", (double)osd_lon2 / 10000000.0f);
-        write_string(tmp_str, eeprom_buffer.params.Gps2Lon_posX, eeprom_buffer.params.Gps2Lon_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.Gps2Lon_align, 0, SIZE_TO_FONT[eeprom_buffer.params.Gps2Lon_fontsize]);
+    if (eeprom_buffer.params.Gps2Lon_en==1 && bShownAtPanle(eeprom_buffer.params.Gps2Lon_panel)) {
+        sprintf(tmp_str, "%0.5f", (double) osd_lon2 / 10000000.0f);
+        write_string(tmp_str, eeprom_buffer.params.Gps2Lon_posX,
+                     eeprom_buffer.params.Gps2Lon_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.Gps2Lon_align, 0,
+                     SIZE_TO_FONT[eeprom_buffer.params.Gps2Lon_fontsize]);
+    }
+
+    // total trip distance since startup
+    if (eeprom_buffer.params.TotalTripDist_en==1 && bShownAtPanle(eeprom_buffer.params.TotalTripDist_panel)) {
+        float tmp = osd_total_trip_dist * convert_distance;
+        if (tmp < convert_distance_divider){
+            sprintf(tmp_str, "%d%s", (int) tmp, dist_unit_short);
+        }
+        else{
+            sprintf(tmp_str, "%0.2f%s", (double) (tmp / convert_distance_divider), dist_unit_long);
+        }
+        write_string(tmp_str, eeprom_buffer.params.TotalTripDist_posX,
+                     eeprom_buffer.params.TotalTripDist_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.TotalTripDist_align, 0,
+                     SIZE_TO_FONT[eeprom_buffer.params.TotalTripDist_fontsize]);
     }
 
     // time
-    if(!last_motor_armed && motor_armed){
+    if (!last_motor_armed && motor_armed) {
         armed_start_time = GetSystimeMS();
     }
-    if(!motor_armed) armed_start_time = 0;
-    if(eeprom_buffer.params.Time_en && bShownAtPanle(eeprom_buffer.params.Time_panel))
-    {
+
+    if (!motor_armed){
+        armed_start_time = 0;
+    }
+
+    if (eeprom_buffer.params.Time_en==1 && bShownAtPanle(eeprom_buffer.params.Time_panel)) {
         time_now = GetSystimeMS() - sys_start_time;
 
-        if(eeprom_buffer.params.Time_type == 1){
+        if (eeprom_buffer.params.Time_type == 1) {
             time_now = heatbeat_start_time ? (GetSystimeMS() - heatbeat_start_time) : 0;
-        }
-        else if(eeprom_buffer.params.Time_type == 2){
-
+        } else if (eeprom_buffer.params.Time_type == 2) {
             time_now = armed_start_time ? (GetSystimeMS() - armed_start_time) : 0;
         }
 
@@ -296,13 +358,16 @@ void RenderScreen(void)
         if (tmp_int16 == 0) {
             tmp_int1 = time_now / 60000; // minutes
             tmp_int2 = (time_now / 1000) - 60 * tmp_int1; // seconds
-            sprintf(tmp_str, "%02d:%02d", (int)tmp_int1, (int)tmp_int2);
+            sprintf(tmp_str, "%02d:%02d", (int) tmp_int1, (int) tmp_int2);
         } else {
             tmp_int1 = time_now / 60000 - 60 * tmp_int16; // minutes
             tmp_int2 = (time_now / 1000) - 60 * tmp_int1 - 3600 * tmp_int16; // seconds
-            sprintf(tmp_str, "%02d:%02d:%02d", (int)tmp_int16, (int)tmp_int1, (int)tmp_int2);
+            sprintf(tmp_str, "%02d:%02d:%02d", (int) tmp_int16, (int) tmp_int1, (int) tmp_int2);
         }
-        write_string(tmp_str, eeprom_buffer.params.Time_posX, eeprom_buffer.params.Time_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.Time_align, 0, SIZE_TO_FONT[eeprom_buffer.params.Time_fontsize]);
+        write_string(tmp_str, eeprom_buffer.params.Time_posX,
+                eeprom_buffer.params.Time_posY, 0, 0, TEXT_VA_TOP,
+                eeprom_buffer.params.Time_align, 0,
+                SIZE_TO_FONT[eeprom_buffer.params.Time_fontsize]);
     }
 
     //draw Compass, homedir, homedist, waypointdir, waypointdist
@@ -311,8 +376,7 @@ void RenderScreen(void)
     int x = 5;
     int y = 220;
     //Vertical Speed(climb rate) in m/s
-    if(eeprom_buffer.params.ClimbRate_en && bShownAtPanle(eeprom_buffer.params.ClimbRate_panel))
-    {
+    if (eeprom_buffer.params.ClimbRate_en==1 && bShownAtPanle(eeprom_buffer.params.ClimbRate_panel)) {
         int arrlen = 6;
         x = eeprom_buffer.params.ClimbRate_posX;
         y = eeprom_buffer.params.ClimbRate_posY;
@@ -322,60 +386,58 @@ void RenderScreen(void)
         if (eeprom_buffer.params.ClimbRate_fontsize != 0)
             arrlen += 2;
 
-
-        if(osd_climb > 0.0f) //ascent
-        {
-            write_vline_lm(x, y-arrlen, y+arrlen, 1, 1);
-            write_line_outlined(x-3, y-arrlen+3, x, y-arrlen, 2, 2, 0, 1);
-            write_line_outlined(x+3, y-arrlen+3, x, y-arrlen, 2, 2, 0, 1);
-        }
-        else if(osd_climb < 0.0f) //descent
-        {
-            write_vline_lm(x, y-arrlen, y+arrlen, 1, 1);
-            write_line_outlined(x-3, y+arrlen-3, x, y+arrlen, 2, 2, 0, 1);
-            write_line_outlined(x+3, y+arrlen-3, x, y+arrlen, 2, 2, 0, 1);
+        if (osd_climb > 0.0f) //ascent
+                {
+            write_vline_lm(x, y - arrlen, y + arrlen, 1, 1);
+            write_line_outlined(x - 3, y - arrlen + 3, x, y - arrlen, 2, 2, 0, 1);
+            write_line_outlined(x + 3, y - arrlen + 3, x, y - arrlen, 2, 2, 0, 1);
+        } else if (osd_climb < 0.0f) //descent
+                {
+            write_vline_lm(x, y - arrlen, y + arrlen, 1, 1);
+            write_line_outlined(x - 3, y + arrlen - 3, x, y + arrlen, 2, 2, 0, 1);
+            write_line_outlined(x + 3, y + arrlen - 3, x, y + arrlen, 2, 2, 0, 1);
         }
     }
 
     //RSSI
-    if(eeprom_buffer.params.RSSI_en && bShownAtPanle(eeprom_buffer.params.RSSI_panel))
-    {
+    if (eeprom_buffer.params.RSSI_en==1 && bShownAtPanle(eeprom_buffer.params.RSSI_panel)) {
         int rssi = osd_rssi;
         x = eeprom_buffer.params.RSSI_posX;
         y = eeprom_buffer.params.RSSI_posY;
 
         //0:percentage 1:raw
-        if(eeprom_buffer.params.RSSI_raw_en == 0)
-        {
+        if (eeprom_buffer.params.RSSI_raw_en == 0) {
             uint16_t rssiMin = eeprom_buffer.params.RSSI_min;
             uint16_t rssiMax = eeprom_buffer.params.RSSI_max;
-            if (rssiMin < 0) rssiMin = 0;
-            if (rssiMax > 255) rssiMax = 255;
+            if (rssiMin < 0)
+                rssiMin = 0;
+            if (rssiMax > 255)
+                rssiMax = 255;
 
             if ((rssiMax - rssiMin) > 0)
-                rssi = (int)((float)(rssi - rssiMin)/(float)(rssiMax -rssiMin)*100.0f);
+                rssi = (int) ((float) (rssi - rssiMin) / (float) (rssiMax - rssiMin) * 100.0f);
 
-            if(rssi < 0)
+            if (rssi < 0)
                 rssi = 0;
         }
         sprintf(tmp_str, "RSSI:%d/", rssi);
-        write_string(tmp_str, x, y, 0, 0, TEXT_VA_MIDDLE, eeprom_buffer.params.RSSI_align, 0, SIZE_TO_FONT[eeprom_buffer.params.RSSI_fontsize]);
+        write_string(tmp_str, x, y, 0, 0, TEXT_VA_MIDDLE,
+                eeprom_buffer.params.RSSI_align, 0,
+                SIZE_TO_FONT[eeprom_buffer.params.RSSI_fontsize]);
     }
 
     //tip which panel are the current panel for 3 secs
-    if(last_panel != current_panel)
-    {
+    if (last_panel != current_panel) {
         last_panel = current_panel;
         new_panel_start_time = GetSystimeMS();
     }
-    if((GetSystimeMS() - new_panel_start_time) < 3000)
-    {
-        sprintf(tmp_str, "P:%d", (int)current_panel);
-        write_string(tmp_str, GRAPHICS_X_MIDDLE, 210, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[1]);
+    if ((GetSystimeMS() - new_panel_start_time) < 3000) {
+        sprintf(tmp_str, "P:%d", (int) current_panel);
+        write_string(tmp_str, GRAPHICS_X_MIDDLE, 210, 0, 0, TEXT_VA_TOP,
+                TEXT_HA_CENTER, 0, SIZE_TO_FONT[1]);
     }
 
-    if(eeprom_buffer.params.Wind_en && bShownAtPanle(eeprom_buffer.params.Wind_panel))
-    {
+    if (eeprom_buffer.params.Wind_en==1 && bShownAtPanle(eeprom_buffer.params.Wind_panel)) {
         hud_draw_wind();
     }
 
@@ -616,29 +678,37 @@ void hud_draw_CWH(void)
         //DIR to Home
         dstlon = (osd_home_lon - osd_lon); //OffSet_X
         dstlat = (osd_home_lat - osd_lat) * scaleLongUp; //OffSet Y
-        osd_home_bearing = 90 + (atan2(dstlat, -dstlon) * R2D); //absolut home direction
+        osd_home_bearing = 270 + (atan2(dstlat, -dstlon) * R2D); //absolut home direction
         osd_home_bearing = (osd_home_bearing+360)%360;
     }
 
     //distance
-    if(eeprom_buffer.params.CWH_home_dist_en && bShownAtPanle(eeprom_buffer.params.CWH_home_dist_panel)){
+    if(eeprom_buffer.params.CWH_home_dist_en==1 && bShownAtPanle(eeprom_buffer.params.CWH_home_dist_panel)){
         float tmp = osd_home_distance * convert_distance;
-        sprintf(tmp_str, "%s%d%s", " H:", (int)tmp, dist_unit);
+        if (tmp < convert_distance_divider)
+            sprintf(tmp_str, "H: %d%s", (int)tmp, dist_unit_short);
+        else
+            sprintf(tmp_str, "H: %0.2f%s", (double)(tmp / convert_distance_divider), dist_unit_long);
+
         write_string(tmp_str, eeprom_buffer.params.CWH_home_dist_posX, eeprom_buffer.params.CWH_home_dist_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.CWH_home_dist_align, 0, SIZE_TO_FONT[eeprom_buffer.params.CWH_home_dist_fontsize]);
     }
     if((wp_number != 0) &&(eeprom_buffer.params.CWH_wp_dist_en) && bShownAtPanle(eeprom_buffer.params.CWH_wp_dist_panel)){
         float tmp = wp_dist * convert_distance;
-        sprintf(tmp_str, "%s%d%s", "WP:", (int)tmp, dist_unit);
+        if (tmp < convert_distance_divider)
+            sprintf(tmp_str, "WP: %d%s", (int)tmp, dist_unit_short);
+        else
+            sprintf(tmp_str, "WP: %0.2f%s", (double)(tmp / convert_distance_divider), dist_unit_long);
+
         write_string(tmp_str, eeprom_buffer.params.CWH_wp_dist_posX, eeprom_buffer.params.CWH_wp_dist_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.CWH_wp_dist_align, 0, SIZE_TO_FONT[eeprom_buffer.params.CWH_wp_dist_fontsize]);
     }
 
     //direction - map-like mode
-    if(eeprom_buffer.params.CWH_Nmode_en && bShownAtPanle(eeprom_buffer.params.CWH_Nmode_panel)){
+    if(eeprom_buffer.params.CWH_Nmode_en==1 && bShownAtPanle(eeprom_buffer.params.CWH_Nmode_panel)){
         hud_draw_head_wp_home();
     }
 
     //direction - scale mode
-    if(eeprom_buffer.params.CWH_Tmode_en && bShownAtPanle(eeprom_buffer.params.CWH_Tmode_panel)){
+    if(eeprom_buffer.params.CWH_Tmode_en==1 && bShownAtPanle(eeprom_buffer.params.CWH_Tmode_panel)){
         hud_draw_linear_compass(osd_heading, 0, 120, 180, GRAPHICS_X_MIDDLE, eeprom_buffer.params.CWH_Tmode_posY, 15, 30, 5, 8, 0);
     }
 
@@ -805,8 +875,10 @@ void hud_draw_linear_compass(int v, int home_dir, int range, int width, int x, i
  */
 // #define VERTICAL_SCALE_BRUTE_FORCE_BLANK_OUT
 #define VERTICAL_SCALE_FILLED_NUMBER
-void hud_draw_vertical_scale(int v, int range, int halign, int x, int y, int height, int mintick_step, int majtick_step, int mintick_len, int majtick_len,
-                             int boundtick_len, __attribute__((unused)) int max_val, int flags)
+void hud_draw_vertical_scale(int v, int range, int halign, int x, int y,
+        int height, int mintick_step, int majtick_step, int mintick_len,
+        int majtick_len, int boundtick_len, __attribute__((unused)) int max_val,
+        int flags)
 {
     char temp[15];
     struct FontEntry font_info;
@@ -955,7 +1027,7 @@ void hud_draw_head_wp_home()
     posY = eeprom_buffer.params.CWH_Nmode_posY;
     r = eeprom_buffer.params.CWH_Nmode_radius;
     write_circle_outlined(posX, posY, r, 0, 1, 0, 1);
-    write_string("N", posX, posY - r, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
+//    write_string("N", posX, posY - r, 0, 0, TEXT_VA_TOP, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
 
     //draw heading
     POLYGON2D suav;
@@ -977,16 +1049,18 @@ void hud_draw_head_wp_home()
     // the home only shown when the distance above 2m
     if(((int32_t)osd_home_distance > 2))
     {
-        float homeCX = posX - (eeprom_buffer.params.CWH_Nmode_home_radius)*Fast_Sin(osd_home_bearing);
-        float homeCY = posY + (eeprom_buffer.params.CWH_Nmode_home_radius)*Fast_Cos(osd_home_bearing);
+        float homeCX = posX + (eeprom_buffer.params.CWH_Nmode_home_radius)*Fast_Sin(osd_home_bearing);
+        float homeCY = posY - (eeprom_buffer.params.CWH_Nmode_home_radius)*Fast_Cos(osd_home_bearing);
         write_string("H", homeCX, homeCY, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
     }
 
     //draw waypoint
     if((wp_number != 0) && (wp_dist > 2))
     {
-        float wpCX = posX - (eeprom_buffer.params.CWH_Nmode_wp_radius)*Fast_Sin(wp_target_bearing);
-        float wpCY = posY + (eeprom_buffer.params.CWH_Nmode_wp_radius)*Fast_Cos(wp_target_bearing);
+        //format bearing
+        wp_target_bearing = (wp_target_bearing + 360)%360;
+        float wpCX = posX + (eeprom_buffer.params.CWH_Nmode_wp_radius)*Fast_Sin(wp_target_bearing);
+        float wpCY = posY - (eeprom_buffer.params.CWH_Nmode_wp_radius)*Fast_Cos(wp_target_bearing);
         sprintf(tmp_str, "%d", (int)wp_number);
         write_string(tmp_str, wpCX, wpCY, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
     }
@@ -1041,37 +1115,37 @@ void hud_draw_warnning(void)
     uint8_t warning[]={0, 0, 0, 0, 0, 0};
 
     //no GPS fix!
-    if( eeprom_buffer.params.Alarm_GPS_status_en && (osd_fix_type < GPS_OK_FIX_3D)) {
+    if( eeprom_buffer.params.Alarm_GPS_status_en==1 && (osd_fix_type < GPS_OK_FIX_3D)) {
         haswarn = true;
         warning[0] = 1;
     }
 
     //low batt
-    if( eeprom_buffer.params.Alarm_low_batt_en && (osd_battery_remaining_A < eeprom_buffer.params.Alarm_low_batt)) {
+    if( eeprom_buffer.params.Alarm_low_batt_en==1 && (osd_battery_remaining_A < eeprom_buffer.params.Alarm_low_batt)) {
         haswarn = true;
         warning[1] = 1;
     }
 
     //under speed
-    if( eeprom_buffer.params.Alarm_low_speed_en && (osd_groundspeed < eeprom_buffer.params.Alarm_low_speed)) {
+    if( eeprom_buffer.params.Alarm_low_speed_en==1 && (osd_groundspeed < eeprom_buffer.params.Alarm_low_speed)) {
         haswarn = true;
         warning[2] = 1;
     }
 
     //over speed
-    if( eeprom_buffer.params.Alarm_over_speed_en && (osd_groundspeed > eeprom_buffer.params.Alarm_over_speed)) {
+    if( eeprom_buffer.params.Alarm_over_speed_en==1 && (osd_groundspeed > eeprom_buffer.params.Alarm_over_speed)) {
         haswarn = true;
         warning[3] = 1;
     }
 
     //under altitude
-    if( eeprom_buffer.params.Alarm_low_alt_en && (osd_alt < eeprom_buffer.params.Alarm_low_alt)) {
+    if( eeprom_buffer.params.Alarm_low_alt_en==1 && (osd_alt < eeprom_buffer.params.Alarm_low_alt)) {
         haswarn = true;
         warning[4] = 1;
     }
 
     //over altitude
-    if( eeprom_buffer.params.Alarm_over_alt_en && (osd_alt > eeprom_buffer.params.Alarm_over_alt)) {
+    if( eeprom_buffer.params.Alarm_over_alt_en==1 && (osd_alt > eeprom_buffer.params.Alarm_over_alt)) {
         haswarn = true;
         warning[5] = 1;
     }
