@@ -330,7 +330,7 @@ void checkDefaultParam()
         bNeedUpdateFlash = true;
     }
 
-    if (eeprom_buffer.params.firmware_ver != 6) {
+    if (eeprom_buffer.params.firmware_ver < 6) {
         eeprom_buffer.params.firmware_ver = 6;
         bNeedUpdateFlash = true;
     }
