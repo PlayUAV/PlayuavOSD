@@ -658,7 +658,7 @@ void hud_draw_CWH(void)
     char tmp_str[100] = { 0 };
     float dstlon, dstlat, dstsqrt;
 
-    if(osd_got_home == 0 && osd_fix_type > 1){
+    if((osd_got_home == 0) && (motor_armed) && (osd_fix_type > 1)){
         osd_home_lat = osd_lat;
         osd_home_lon = osd_lon;
         osd_got_home = 1;
@@ -1046,16 +1046,18 @@ void hud_draw_head_wp_home()
                         suav.vlist_trans[2].x+suav.x0,suav.vlist_trans[2].y+suav.y0, 2, 2, 0, 1);
 
     // draw home
-    // the home only shown when the distance above 2m
-    if(((int32_t)osd_home_distance > 2))
+    // the home only shown when the distance above 1m
+    if(((int32_t)osd_home_distance > 1))
     {
-        float homeCX = posX + (eeprom_buffer.params.CWH_Nmode_home_radius)*Fast_Sin(osd_home_bearing);
-        float homeCY = posY - (eeprom_buffer.params.CWH_Nmode_home_radius)*Fast_Cos(osd_home_bearing);
-        write_string("H", homeCX, homeCY, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
+        // osd_home_bearing is degree and has been normalized, here just convert to radian
+        float homeAZ_R = osd_home_bearing * D2R;
+        float homeCX = posX + (eeprom_buffer.params.CWH_Nmode_home_radius)*Fast_Sin(homeAZ_R);
+        float homeCY = posY - (eeprom_buffer.params.CWH_Nmode_home_radius)*Fast_Cos(homeAZ_R);
+        write_string("H", homeCX, homeCY, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
     }
 
     //draw waypoint
-    if((wp_number != 0) && (wp_dist > 2))
+    if((wp_number != 0) && (wp_dist > 1))
     {
         //format bearing
         wp_target_bearing = (wp_target_bearing + 360)%360;
