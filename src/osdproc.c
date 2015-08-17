@@ -665,9 +665,11 @@ void hud_draw_CWH(void)
     }
     else if(osd_got_home == 1){
         // shrinking factor for longitude going to poles direction
-        float rads = fabs(osd_home_lat) * D2R;
-        double scaleLongDown = Fast_Cos(rads);
-        double scaleLongUp   = 1.0f/Fast_Cos(rads);
+//        float rads = fabs(osd_home_lat) * D2R;
+//        double scaleLongDown = Fast_Cos(rads);
+//        double scaleLongUp   = 1.0f/Fast_Cos(rads);
+        double scaleLongDown = Fast_Cos(fabs(osd_home_lat));
+        double scaleLongUp   = 1.0f/Fast_Cos(fabs(osd_home_lat));
 
         //DST to Home
         dstlat = fabs(osd_home_lat - osd_lat) * 111319.5f;
@@ -1049,10 +1051,8 @@ void hud_draw_head_wp_home()
     // the home only shown when the distance above 1m
     if(((int32_t)osd_home_distance > 1))
     {
-        // osd_home_bearing is degree and has been normalized, here just convert to radian
-        float homeAZ_R = osd_home_bearing * D2R;
-        float homeCX = posX + (eeprom_buffer.params.CWH_Nmode_home_radius)*Fast_Sin(homeAZ_R);
-        float homeCY = posY - (eeprom_buffer.params.CWH_Nmode_home_radius)*Fast_Cos(homeAZ_R);
+        float homeCX = posX + (eeprom_buffer.params.CWH_Nmode_home_radius)*Fast_Sin(osd_home_bearing);
+        float homeCY = posY - (eeprom_buffer.params.CWH_Nmode_home_radius)*Fast_Cos(osd_home_bearing);
         write_string("H", homeCX, homeCY, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
     }
 
