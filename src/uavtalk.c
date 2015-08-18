@@ -363,8 +363,8 @@ void parseUAVTalk(void)
                                         // In OPOSD:
                                         // chanx_raw     used for menu navigation (Roll/pitch)
                                         // osd_chanx_raw used for panel navigation (Accessory)
-                    chan1_raw		= uavtalk_get_int16(&msg, MANUALCONTROLCOMMAND_OBJ_CHANNEL_1);
-					chan2_raw		= uavtalk_get_int16(&msg, MANUALCONTROLCOMMAND_OBJ_CHANNEL_2);
+                    osd_chan1_raw	= uavtalk_get_int16(&msg, MANUALCONTROLCOMMAND_OBJ_CHANNEL_1);
+					osd_chan2_raw	= uavtalk_get_int16(&msg, MANUALCONTROLCOMMAND_OBJ_CHANNEL_2);
 					osd_chan5_raw	= uavtalk_get_int16(&msg, MANUALCONTROLCOMMAND_OBJ_CHANNEL_4);
 					osd_chan6_raw	= uavtalk_get_int16(&msg, MANUALCONTROLCOMMAND_OBJ_CHANNEL_6);
 					osd_chan7_raw	= uavtalk_get_int16(&msg, MANUALCONTROLCOMMAND_OBJ_CHANNEL_7);
