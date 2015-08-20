@@ -59,8 +59,6 @@ const char * dist_unit_short = METRIC_DIST_SHORT;
 const char * dist_unit_long = METRIC_DIST_LONG;
 const char * spd_unit = METRIC_SPEED;
 
-//void RC_chan_test(void);
-
 void do_converts(void)
 {
 	if (eeprom_buffer.params.Units_mode == 1)
@@ -118,8 +116,7 @@ void RenderScreen(void)
 
     do_converts();
 
-//  DJI_test();
-//    RC_chan_test();
+//    DJI_test();
 //    return;
 
     if(current_panel > eeprom_buffer.params.Max_panels)
@@ -1253,75 +1250,3 @@ void DJI_test(void)
     hud_draw_linear_compass(osd_heading, osd_home_bearing, 120, 180, GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE+80, 15, 30, 5, 8, 0);
 }
 
-/* 
- * NIY -  used in the future
-void RC_chan_test(void)
-{
-    char tmp_str[50] = { 0 };
-    sprintf(tmp_str, "ch1:%u", chan1_test_raw);
-    write_string(tmp_str, 50, 20, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]); 
-    sprintf(tmp_str, "ch1:%u", osd_chan1_raw);
-    write_string(tmp_str, 150, 20, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "ch2:%u", chan2_test_raw);
-    write_string(tmp_str, 50, 30, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    sprintf(tmp_str, "ch2:%u", osd_chan2_raw);
-    write_string(tmp_str, 150, 30, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "ch3:%u", chan3_test_raw);
-    write_string(tmp_str, 50, 40, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "ch4:%u", chan4_test_raw);
-    write_string(tmp_str, 50, 50, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "ch5:%u", chan5_test_raw);
-    write_string(tmp_str, 50, 60, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    sprintf(tmp_str, "ch5:%u", osd_chan5_raw);
-    write_string(tmp_str, 150, 60, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "ch6:%u", chan6_test_raw);
-    write_string(tmp_str, 50, 70, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    sprintf(tmp_str, "ch6:%u", osd_chan6_raw);
-    write_string(tmp_str, 150, 70, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "ch7:%u", chan7_test_raw);
-    write_string(tmp_str, 50, 80, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    sprintf(tmp_str, "ch7:%u", osd_chan7_raw);
-    write_string(tmp_str, 150, 80, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "ch8:%u", chan8_test_raw);
-    write_string(tmp_str, 50, 90, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    sprintf(tmp_str, "ch8:%u", osd_chan8_raw);
-    write_string(tmp_str, 150, 90, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-
-    sprintf(tmp_str, "ch9:%u", chan9_test_raw);
-    write_string(tmp_str, 50, 100, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "c10:%u", chan10_test_raw);
-    write_string(tmp_str, 50, 110, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "c11:%u", chan11_test_raw);
-    write_string(tmp_str, 50, 120, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "c12:%u", chan12_test_raw);
-    write_string(tmp_str, 50, 130, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "c13:%u", chan13_test_raw);
-    write_string(tmp_str, 50, 140, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "c14:%u", chan14_test_raw);
-    write_string(tmp_str, 50, 150, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "c15:%u", chan15_test_raw);
-    write_string(tmp_str, 50, 160, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "c16:%u", chan16_test_raw);
-    write_string(tmp_str, 50, 170, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "c17:%u", chan17_test_raw);
-    write_string(tmp_str, 50, 180, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-    
-    sprintf(tmp_str, "c18:%u", chan18_test_raw);
-    write_string(tmp_str, 50, 190, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-}
-*/

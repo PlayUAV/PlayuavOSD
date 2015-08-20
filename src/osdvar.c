@@ -79,12 +79,23 @@ bool motor_armed = false;
 bool last_motor_armed = false;
 uint8_t base_mode = 0;
 
-int16_t osd_chan1_raw = 0;
-int16_t osd_chan2_raw = 0;
-uint16_t osd_chan5_raw = 1000;
-uint16_t osd_chan6_raw = 1000;
-uint16_t osd_chan7_raw = 1000;
-uint16_t osd_chan8_raw = 1000;
+bool osd_chan_cnt_above_eight = false;
+uint16_t osd_chan1_raw = 0;
+uint16_t osd_chan2_raw = 0;
+uint16_t osd_chan3_raw = 0;
+uint16_t osd_chan4_raw = 0;
+uint16_t osd_chan5_raw = 0;
+uint16_t osd_chan6_raw = 0;
+uint16_t osd_chan7_raw = 0;
+uint16_t osd_chan8_raw = 0;
+uint16_t osd_chan9_raw = 0;
+uint16_t osd_chan10_raw = 0;
+uint16_t osd_chan11_raw = 0;
+uint16_t osd_chan12_raw = 0;
+uint16_t osd_chan13_raw = 0;
+uint16_t osd_chan14_raw = 0;
+uint16_t osd_chan15_raw = 0;
+uint16_t osd_chan16_raw = 0;
 uint8_t osd_rssi = 0; //raw value from mavlink
 
 uint8_t osd_got_home = 0;               // tels if got home position or not
@@ -107,25 +118,3 @@ uint32_t atti_3d_min_clipX = 0;
 uint32_t atti_3d_max_clipX = 0;
 uint32_t atti_3d_min_clipY = 0;
 uint32_t atti_3d_max_clipY = 0;
-
-/* 
- * NIY -  used in the future
-int16_t      chan1_test_raw = 0;
-int16_t      chan2_test_raw = 0;
-int16_t      chan3_test_raw = 0;
-int16_t      chan4_test_raw = 0;
-int16_t      chan5_test_raw = 0;
-int16_t      chan6_test_raw = 0;
-int16_t      chan7_test_raw = 0;
-int16_t      chan8_test_raw = 0;
-int16_t      chan9_test_raw = 0;
-int16_t      chan10_test_raw = 0;
-int16_t      chan11_test_raw = 0;
-int16_t      chan12_test_raw = 0;
-int16_t      chan13_test_raw = 0;
-int16_t      chan14_test_raw = 0;
-int16_t      chan15_test_raw = 0;
-int16_t      chan16_test_raw = 0;
-int16_t      chan17_test_raw = 0;
-int16_t      chan18_test_raw = 0;
-*/
