@@ -125,3 +125,7 @@ objcopy:
 	
 clean:
 	rm -f $(TARGETBIN) $(EXECUTABLE) $(TARGETHEX) $(SRC:.c=.lst)
+
+upload: $(TARGETBIN) 
+	st-flash write $(TARGETBIN) 0x8004000
+
