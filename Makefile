@@ -2,9 +2,15 @@ EXECUTABLE=PlayuavOSD.elf
 TARGETBIN=PlayuavOSD.bin
 TARGETHEX=PlayuavOSD.hex
 
-CC=arm-none-eabi-gcc
-AS=arm-none-eabi-as
-CP=arm-none-eabi-objcopy
+#CC=arm-none-eabi-gcc
+#AS=arm-none-eabi-as
+#CP=arm-none-eabi-objcopy
+
+TOOLCHAIN_PATH = /opt/gcc-arm-none-eabi-4_7-2013q2/bin
+
+CC=$(TOOLCHAIN_PATH)/arm-none-eabi-gcc
+AS=$(TOOLCHAIN_PATH)/arm-none-eabi-as
+CP=$(TOOLCHAIN_PATH)/arm-none-eabi-objcopy
 
 BIN  = $(CP) -O binary -S
 DEFS = -DUSE_STDPERIPH_DRIVER -DSTM32F4XX -DHSE_VALUE=8000000
