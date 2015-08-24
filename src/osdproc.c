@@ -116,8 +116,9 @@ void RenderScreen(void)
 
     do_converts();
 
-//  DJI_test();
-//  return;
+//    DJI_test();
+//    return;
+
     if(current_panel > eeprom_buffer.params.Max_panels)
         current_panel = 1;
 
@@ -1248,3 +1249,4 @@ void DJI_test(void)
 
     hud_draw_linear_compass(osd_heading, osd_home_bearing, 120, 180, GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE+80, 15, 30, 5, 8, 0);
 }
+

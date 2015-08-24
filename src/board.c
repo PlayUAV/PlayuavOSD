@@ -213,6 +213,14 @@ void triggerVideo(void)
 	else if(eeprom_buffer.params.PWM_Video_ch == 6) video_ch_raw = osd_chan6_raw;
 	else if(eeprom_buffer.params.PWM_Video_ch == 7) video_ch_raw = osd_chan7_raw;
 	else if(eeprom_buffer.params.PWM_Video_ch == 8) video_ch_raw = osd_chan8_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 9) video_ch_raw = osd_chan9_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 10) video_ch_raw = osd_chan10_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 11) video_ch_raw = osd_chan11_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 12) video_ch_raw = osd_chan12_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 13) video_ch_raw = osd_chan13_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 14) video_ch_raw = osd_chan14_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 15) video_ch_raw = osd_chan15_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 16) video_ch_raw = osd_chan16_raw;
 
 	if((video_ch_raw > eeprom_buffer.params.PWM_Video_value))
 	{
@@ -249,6 +257,14 @@ void triggerPanel(void)
 	else if(eeprom_buffer.params.PWM_Panel_ch == 6) panel_ch_raw = osd_chan6_raw;
 	else if(eeprom_buffer.params.PWM_Panel_ch == 7) panel_ch_raw = osd_chan7_raw;
 	else if(eeprom_buffer.params.PWM_Panel_ch == 8) panel_ch_raw = osd_chan8_raw;
+	else if(eeprom_buffer.params.PWM_Panel_ch == 9) panel_ch_raw = osd_chan9_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 10) panel_ch_raw = osd_chan10_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 11) panel_ch_raw = osd_chan11_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 12) panel_ch_raw = osd_chan12_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 13) panel_ch_raw = osd_chan13_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 14) panel_ch_raw = osd_chan14_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 15) panel_ch_raw = osd_chan15_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 16) panel_ch_raw = osd_chan16_raw;
 
 	if((panel_ch_raw > eeprom_buffer.params.PWM_Panel_value))
 	{

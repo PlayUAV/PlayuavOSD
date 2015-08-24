@@ -155,13 +155,40 @@ void parseMavlink(void)
                     break;
                 case MAVLINK_MSG_ID_RC_CHANNELS_RAW:
                     {
-                        chan1_raw = mavlink_msg_rc_channels_raw_get_chan1_raw(&msg);
-                        chan2_raw = mavlink_msg_rc_channels_raw_get_chan2_raw(&msg);
-                        osd_chan5_raw = mavlink_msg_rc_channels_raw_get_chan5_raw(&msg);
-                        osd_chan6_raw = mavlink_msg_rc_channels_raw_get_chan6_raw(&msg);
-                        osd_chan7_raw = mavlink_msg_rc_channels_raw_get_chan7_raw(&msg);
-                        osd_chan8_raw = mavlink_msg_rc_channels_raw_get_chan8_raw(&msg);
-                        osd_rssi = mavlink_msg_rc_channels_raw_get_rssi(&msg);
+                        if(!osd_chan_cnt_above_eight)
+                        {
+                            osd_chan1_raw = mavlink_msg_rc_channels_raw_get_chan1_raw(&msg);
+                            osd_chan2_raw = mavlink_msg_rc_channels_raw_get_chan2_raw(&msg);
+                            osd_chan3_raw = mavlink_msg_rc_channels_raw_get_chan3_raw(&msg);
+                            osd_chan4_raw = mavlink_msg_rc_channels_raw_get_chan4_raw(&msg);
+                            osd_chan5_raw = mavlink_msg_rc_channels_raw_get_chan5_raw(&msg);
+                            osd_chan6_raw = mavlink_msg_rc_channels_raw_get_chan6_raw(&msg);
+                            osd_chan7_raw = mavlink_msg_rc_channels_raw_get_chan7_raw(&msg);
+                            osd_chan8_raw = mavlink_msg_rc_channels_raw_get_chan8_raw(&msg);
+                            osd_rssi = mavlink_msg_rc_channels_raw_get_rssi(&msg);
+                        }
+                    }
+                    break;
+                case MAVLINK_MSG_ID_RC_CHANNELS:
+                    {
+                        osd_chan_cnt_above_eight = true;
+                        osd_chan1_raw = mavlink_msg_rc_channels_get_chan1_raw(&msg);
+                        osd_chan2_raw = mavlink_msg_rc_channels_get_chan2_raw(&msg);
+                        osd_chan3_raw = mavlink_msg_rc_channels_get_chan3_raw(&msg);
+                        osd_chan4_raw = mavlink_msg_rc_channels_get_chan4_raw(&msg);
+                        osd_chan5_raw = mavlink_msg_rc_channels_get_chan5_raw(&msg);
+                        osd_chan6_raw = mavlink_msg_rc_channels_get_chan6_raw(&msg);
+                        osd_chan7_raw = mavlink_msg_rc_channels_get_chan7_raw(&msg);
+                        osd_chan8_raw = mavlink_msg_rc_channels_get_chan8_raw(&msg);
+                        osd_chan9_raw = mavlink_msg_rc_channels_get_chan9_raw(&msg);
+                        osd_chan10_raw = mavlink_msg_rc_channels_get_chan10_raw(&msg);
+                        osd_chan11_raw = mavlink_msg_rc_channels_get_chan11_raw(&msg);
+                        osd_chan12_raw = mavlink_msg_rc_channels_get_chan12_raw(&msg);
+                        osd_chan13_raw = mavlink_msg_rc_channels_get_chan13_raw(&msg);
+                        osd_chan14_raw = mavlink_msg_rc_channels_get_chan14_raw(&msg);
+                        osd_chan15_raw = mavlink_msg_rc_channels_get_chan15_raw(&msg);
+                        osd_chan16_raw = mavlink_msg_rc_channels_get_chan16_raw(&msg);
+                        osd_rssi = mavlink_msg_rc_channels_get_rssi(&msg);
                     }
                     break;
                 case MAVLINK_MSG_ID_WIND:

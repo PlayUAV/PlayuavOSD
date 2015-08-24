@@ -65,12 +65,23 @@ extern bool         motor_armed;
 extern bool         last_motor_armed;
 extern uint8_t      base_mode;
 
-extern int16_t      chan1_raw;
-extern int16_t      chan2_raw;
+extern bool         osd_chan_cnt_above_eight;
+extern uint16_t     osd_chan1_raw;
+extern uint16_t     osd_chan2_raw;
+extern uint16_t     osd_chan3_raw;
+extern uint16_t     osd_chan4_raw;
 extern uint16_t     osd_chan5_raw;
 extern uint16_t     osd_chan6_raw;
 extern uint16_t     osd_chan7_raw;
 extern uint16_t     osd_chan8_raw;
+extern uint16_t     osd_chan9_raw;
+extern uint16_t     osd_chan10_raw;
+extern uint16_t     osd_chan11_raw;
+extern uint16_t     osd_chan12_raw;
+extern uint16_t     osd_chan13_raw;
+extern uint16_t     osd_chan14_raw;
+extern uint16_t     osd_chan15_raw;
+extern uint16_t     osd_chan16_raw;
 extern uint8_t      osd_rssi; //raw value from mavlink
 
 extern uint8_t      osd_got_home;               // tels if got home position or not
