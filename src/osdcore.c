@@ -573,6 +573,7 @@ static void swap_buffers(void)
 // called from LINE_COUNTER CCR1 irq
 static inline void start_telem_lines(void)
 {
+ #if 0
    //change mode of levelpin (PC2) to white output
    GPIOC->BSRRL  |= (1 << 2); // set the Port pin
    GPIOC->MODER = (GPIOC->MODER & ~( 2 << 4) ) | ( 1 << 4); // set PC2 mode to output
@@ -583,9 +584,11 @@ static inline void start_telem_lines(void)
    cur_trans_mode = trans_tele; 
    active_tele_line = 0;
    end_of_tele_lines = 0;
+   prepare_line();
+ #endif
    // disable CCR1 interrupt and enable CCR2 interrupt  
    LINE_COUNTER_TIMER->DIER = ( LINE_COUNTER_TIMER->DIER & ~( 1 << 1) ) | (1 << 2);
-   prepare_line();
+ 
 }
 
 // called from LINE_COUNTER CCR2 irq

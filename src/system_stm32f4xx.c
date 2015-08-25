@@ -139,8 +139,7 @@
 /*!< Uncomment the following line if you need to relocate your vector Table in
      Internal SRAM. */
 /* #define VECT_TAB_SRAM */
-//#define VECT_TAB_OFFSET  0x4000 /*!< Vector Table base offset field.This value must be a multiple of 0x200. */
-#define VECT_TAB_OFFSET  0x00
+#define VECT_TAB_OFFSET  0x4000 /*!< Vector Table base offset field.This value must be a multiple of 0x200. */
 
 /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
 #define PLL_M      8

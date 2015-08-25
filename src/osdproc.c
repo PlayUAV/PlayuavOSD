@@ -218,8 +218,8 @@ void RenderScreen(void)
 
     do_converts();
 
-    dev_test();
-    return;
+  //  dev_test();
+  //  return;
 //  DJI_test();
 //  return;
     if(current_panel > eeprom_buffer.params.Max_panels)
