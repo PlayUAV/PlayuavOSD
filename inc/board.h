@@ -39,7 +39,7 @@ void Delay_us(u32 nus);
 #define OSD_LEVEL_SPI 				SPI2
 
 #define LINE_COUNTER_TIMER			TIM4
-#define HSYNC_CAPTURE_TIMER			TIM2		//ch2->PA1
+#define HSYNC_CAPTURE_TIMER		TIM2		
 #define PIXEL_TIMER					TIM3
 
 #define USART1_RX_DMA				DMA2_Stream2
