@@ -79,5 +79,6 @@ enum Trans_mode {
 
 #define TELEM_START_LINE    8
 #define TELEM_LINES         12
+#define TELEM_BUFFER_WIDTH  12
 
 #endif

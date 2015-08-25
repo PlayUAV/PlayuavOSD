@@ -71,24 +71,37 @@ static const struct pios_video_type_cfg pios_video_type_cfg_pal = {
    so 
 */
 static const struct pios_video_type_cfg pios_video_type_telem = {
-	.graphics_hight_real   = 12,   // telem rows
-	.graphics_column_start = 10,   // first start bit(after HsyncRising ) == 5 usec == 10 cks
-	.graphics_line_start   = 4,    // First telem line
-	.dma_buffer_length     = 12,  // DMA buffer length in bytes
+	.graphics_hight_real   = TELEM_LINES,   // telem rows
+	.graphics_column_start = 0,   // uint8_t is too short for the value ( see below) !
+	.graphics_line_start   = TELEM_START_LINE,    // First telem line
+	.dma_buffer_length     = TELEM_BUFFER_WIDTH,  // DMA buffer length in bytes
 	.period = 42 -1,             // -->PIXEL_TIMER->ARR assumes 84 MHz clock (TIM3 on APB1) so gives 500 nsec period
 	.dc     = (42 / 2)-1,       // -->PIXEL_TIMER->CCR1 gives a duty cycle of 250 ns
 };
 
+/*
+   The telem buffer stores data bits in  serial stream format
+   as a stream of bits, each encoded byte consisting of { 1 start bit, 8 data bits and 1 stop bit}
+   Each bytes therefore takes 10 bits.
+   The data is output to the mask level spi pin, while the level stays at white
+   therefore video passthru gives a black level which represents a 'mark' data level
+   and video masked out gives a white level, which repesents a 'space' data level
+   
+*/
+static uint16_t const telem_graphics_hsync_capture_clks_start = 84 * 12; // 12 usec from Hsync first edge
+
 // Allocate buffers.
 // Must be allocated in one block, so it is in a struct.
 struct _buffers {
+
     uint8_t buffer0_level[BUFFER_HEIGHT * BUFFER_WIDTH];
     uint8_t buffer0_mask[BUFFER_HEIGHT * BUFFER_WIDTH];
     uint8_t buffer1_level[BUFFER_HEIGHT * BUFFER_WIDTH];
     uint8_t buffer1_mask[BUFFER_HEIGHT * BUFFER_WIDTH];  
-    uint8_t buffer_tele_write[TELEM_LINES * BUFFER_WIDTH];
-    uint8_t buffer_tele_trans[TELEM_LINES * BUFFER_WIDTH];
-    uint8_t buffer_tele_switch[TELEM_LINES * BUFFER_WIDTH];
+
+    uint8_t buffer_tele0[TELEM_LINES * TELEM_BUFFER_WIDTH];
+    uint8_t buffer_tele1[TELEM_LINES * TELEM_BUFFER_WIDTH];
+
 } buffers;
 
 // Remove the struct definition (makes it easier to write for).
@@ -96,18 +109,18 @@ struct _buffers {
 #define buffer0_mask  (buffers.buffer0_mask)
 #define buffer1_level (buffers.buffer1_level)
 #define buffer1_mask  (buffers.buffer1_mask)
-#define buffer_tele_write (buffers.buffer_tele_write)
-#define buffer_tele_trans (buffers.buffer_tele_trans)
-#define buffer_tele_switch (buffers.buffer_tele_switch)
+
+#define buffer_tele0 (buffers.buffer_tele0)
+#define buffer_tele1 (buffers.buffer_tele1)
 
 // Pointers to each of these buffers.
 uint8_t *draw_buffer_level;
 uint8_t *draw_buffer_mask;
 uint8_t *disp_buffer_level;
 uint8_t *disp_buffer_mask;
+
 uint8_t *write_buffer_tele;
 uint8_t *trans_buffer_tele;
-uint8_t *switch_buffer_tele;
 
 volatile uint8_t cur_trans_mode = trans_idle;
 
@@ -254,7 +267,7 @@ void osdCoreInit(void)
 	nvic.NVIC_IRQChannelSubPriority = 1;
 	nvic.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&nvic);
-   // incs the count at end of the line
+   // incs the count at start of drawn line
 	TIM_SelectInputTrigger(LINE_COUNTER_TIMER, TIM_TS_ITR1); // ITR1 for TIM4 is TIM2 (HSYNC_CAPTURE_TIMER sends TRGO on update)
    // ITR1 in SMCR
    
@@ -263,21 +276,21 @@ void osdCoreInit(void)
 
 	TIM_ITConfig(LINE_COUNTER_TIMER, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_CC3 | TIM_IT_CC4 | TIM_IT_COM | TIM_IT_Trigger | TIM_IT_Break, DISABLE);
 	
-
    // set  ccmr regs to outputs for match only
-    LINE_COUNTER_TIMER->CCMR1 = 0;
-    LINE_COUNTER_TIMER->CCMR2 = 0;
+   LINE_COUNTER_TIMER->CCMR1 = 0;
+   LINE_COUNTER_TIMER->CCMR2 = 0;
 
-    LINE_COUNTER_TIMER->CCR1 = TELEM_START_LINE;
-    LINE_COUNTER_TIMER->CCR2 = TELEM_START_LINE + TELEM_LINES;
-    LINE_COUNTER_TIMER->CCR3 = pios_video_type_cfg_act->graphics_line_start;
-    LINE_COUNTER_TIMER->CCR4 = pios_video_type_cfg_act->graphics_line_start + pios_video_type_cfg_act->graphics_hight_real;
+   // set up compare video row values for LINE_COUNTER compare irqs
+   LINE_COUNTER_TIMER->CCR1 = TELEM_START_LINE;
+   LINE_COUNTER_TIMER->CCR2 = TELEM_START_LINE + TELEM_LINES;
+   LINE_COUNTER_TIMER->CCR3 = pios_video_type_cfg_act->graphics_line_start;
+   LINE_COUNTER_TIMER->CCR4 = pios_video_type_cfg_act->graphics_line_start + pios_video_type_cfg_act->graphics_hight_real;
 
-    TIM_Cmd(LINE_COUNTER_TIMER, DISABLE);
+   TIM_Cmd(LINE_COUNTER_TIMER, DISABLE);
 
-    // init OSD mask SPI
-    SPI_StructInit(&spi);
-    spi.SPI_Mode              = SPI_Mode_Slave;
+   // init OSD mask SPI
+   SPI_StructInit(&spi);
+   spi.SPI_Mode              = SPI_Mode_Slave;
 	spi.SPI_Direction         = SPI_Direction_1Line_Tx;
 	spi.SPI_DataSize          = SPI_DataSize_8b;
 	spi.SPI_NSS               = SPI_NSS_Soft;
@@ -321,16 +334,17 @@ void osdCoreInit(void)
    draw_buffer_mask  = buffer0_mask;
    disp_buffer_level = buffer1_level;
    disp_buffer_mask  = buffer1_mask;
-   write_buffer_tele = buffer_tele_write;
-   trans_buffer_tele = buffer_tele_trans;
-   switch_buffer_tele = buffer_tele_switch;
+
+   write_buffer_tele = buffer_tele0;
+   trans_buffer_tele = buffer_tele1;
+
    memset(disp_buffer_mask, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
    memset(disp_buffer_level, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
    memset(draw_buffer_mask, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
    memset(draw_buffer_level, 0, BUFFER_HEIGHT * BUFFER_WIDTH);
-   memset(write_buffer_tele, 0, TELEM_LINES * BUFFER_WIDTH);
-   memset(trans_buffer_tele, 0, TELEM_LINES * BUFFER_WIDTH);
-   memset(switch_buffer_tele, 1, TELEM_LINES * BUFFER_WIDTH);
+
+   memset(write_buffer_tele, 0, TELEM_LINES * TELEM_BUFFER_WIDTH);
+   memset(trans_buffer_tele, 0, TELEM_LINES * TELEM_BUFFER_WIDTH);
 
     /* Configure DMA interrupt */
 	nvic.NVIC_IRQChannel = OSD_MASK_DMA_IRQ;
@@ -369,7 +383,7 @@ void osdCoreInit(void)
   	nvic.NVIC_IRQChannelCmd = ENABLE;
   	NVIC_Init(&nvic); 
 	
-	// Enable hsync interrupts
+	// Enable hsync interrupts for start and and of telemetry and osd lines
 	TIM_ITConfig(LINE_COUNTER_TIMER, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_CC3 | TIM_IT_CC4 | TIM_IT_Update, ENABLE);
 
 	// Enable the capture timer
@@ -481,8 +495,6 @@ void PIOS_VIDEO_DMA_Handler(void);
 void DMA2_Stream3_IRQHandler(void) __attribute__((alias("PIOS_VIDEO_DMA_Handler")));
 void DMA1_Stream4_IRQHandler(void) __attribute__((alias("PIOS_VIDEO_DMA_Handler")));
 
-
-
 static void wait_spi_complete_then_disable(SPI_TypeDef * spi_ptr)
 {
    for(;;){
@@ -503,14 +515,18 @@ static void wait_spi_complete_then_disable(SPI_TypeDef * spi_ptr)
  */
 void PIOS_VIDEO_DMA_Handler(void)
 {	
-   // level only
-   if( (cur_trans_mode == trans_tele ) && (DMA1->HISR & DMA_FLAG_TCIF4) ) {
-      wait_spi_complete_then_disable(OSD_LEVEL_SPI);
+   // mask only
+   if( (cur_trans_mode == trans_tele ) && (DMA2->LISR & DMA_FLAG_TCIF3) ) {
+      wait_spi_complete_then_disable(OSD_MASK_SPI);
       if (end_of_tele_lines){
-         DMA1->HIFCR |= DMA_FLAG_TCIF4;
+         DMA2->LIFCR |= DMA_FLAG_TCIF3;
          PIXEL_TIMER->CR1  &= (uint16_t) ~TIM_CR1_CEN;
 			PIXEL_TIMER->SMCR &= (uint16_t) ~TIM_SMCR_SMS;
-         OSD_LEVEL_DMA->CR &= ~(uint32_t)DMA_SxCR_EN;
+         OSD_MASK_DMA->CR &= ~(uint32_t)DMA_SxCR_EN;
+
+         GPIOC->BSRRH |= (1 << 2); // clear the Port level pin (PC2)
+         GPIOC->MODER  = (GPIOC->MODER & ~( 1 << 4) ) | ( 2 << 4); // set PC2 to  AF
+         // (Assume that the pre-programmed AF in AFRx has not changed)
          cur_trans_mode = trans_idle;
       }else{
          prepare_line();
@@ -554,12 +570,16 @@ static void swap_buffers(void)
    SWAP_BUFFS(tmp, trans_buffer_tele, write_buffer_tele);
 }
 
+// called from LINE_COUNTER CCR1 irq
 static inline void start_telem_lines(void)
 {
-   //TODO change mode of maskpin to output to level to output mask not video
+   //change mode of levelpin (PC2) to white output
+   GPIOC->BSRRL  |= (1 << 2); // set the Port pin
+   GPIOC->MODER = (GPIOC->MODER & ~( 2 << 4) ) | ( 1 << 4); // set PC2 mode to output
+   
    PIXEL_TIMER->CCR1 = pios_video_type_telem.dc;
    PIXEL_TIMER->ARR  = pios_video_type_telem.period;
-   HSYNC_CAPTURE_TIMER->ARR = 84U * 9U ; // start of telem data output
+   HSYNC_CAPTURE_TIMER->ARR = telem_graphics_hsync_capture_clks_start; // start of telem data output
    cur_trans_mode = trans_tele; 
    active_tele_line = 0;
    end_of_tele_lines = 0;
@@ -568,32 +588,35 @@ static inline void start_telem_lines(void)
    prepare_line();
 }
 
+// called from LINE_COUNTER CCR2 irq
 static inline void end_telem_lines(void)
 {
    // disable CCR2 interrupt and enable CCR3 interrupt 
    LINE_COUNTER_TIMER->DIER = ( LINE_COUNTER_TIMER->DIER & ~( 1 << 2) ) | (1 << 3);
+   // signal to DMA interrupt that we are done
    end_of_tele_lines = 1;
 }
 
+// called from LINE_COUNTER CCR3 irq
 static inline void start_osd_lines(void)
 {
-   // TODO change mode of maskpin back to spi
    PIXEL_TIMER->CCR1 = pios_video_type_cfg_act->dc;
    PIXEL_TIMER->ARR  = pios_video_type_cfg_act->period;
    HSYNC_CAPTURE_TIMER->ARR = pios_video_type_cfg_act->dc * (pios_video_type_cfg_act->graphics_column_start + x_offset);
    cur_trans_mode = trans_osd;
    active_line = 0;
    end_of_osd_lines = 0;
-   // disable CCR3 interrupt
-   // enable CCR4 interrupt 
+   // disable CCR3 interrupt and enable CCR4 interrupt 
    LINE_COUNTER_TIMER->DIER = ( LINE_COUNTER_TIMER->DIER & ~( 1 << 3) ) | (1 << 4);
    prepare_line();
 }
 
+// called from LINE_COUNTER CCR4 irq
 static inline void end_osd_lines(void)
 {
     // disable CCR4 interrupt
     LINE_COUNTER_TIMER->DIER &=  ~( 1 << 4) ;
+    // signal to DMA interrupt that we are done 
     end_of_osd_lines = 1;
 }
 
@@ -602,25 +625,28 @@ static inline void end_osd_lines(void)
  * Note: This function is called for every line (~13k times / s), so we use direct register access for
  * efficiency
  */
+ //  MASK  <-- SPI1_TX  on DMA2_Stream3.channel3
+ //  LEVEL <-- SPI2_TX on  DMA1_Stream4.channel0
 static inline void prepare_line(void)
 {
 	// Prepare next line DMA:
 	// Clear DMA interrupt flags
 	// Load new line
     if (cur_trans_mode == trans_tele) {
-        DMA1->HIFCR |= DMA_FLAG_TCIF4 | DMA_FLAG_HTIF4 | DMA_FLAG_FEIF4 | DMA_FLAG_TEIF4 | DMA_FLAG_DMEIF4;
-        uint32_t buf_offset = active_tele_line * pios_video_type_telem.dma_buffer_length;     
-        OSD_LEVEL_DMA->M0AR = (uint32_t) &trans_buffer_tele[buf_offset]; 
-        OSD_LEVEL_DMA->NDTR  = (uint16_t)  pios_video_type_telem.dma_buffer_length;   
+        DMA2->LIFCR |= DMA_FLAG_TCIF3 | DMA_FLAG_HTIF3 | DMA_FLAG_FEIF3 | DMA_FLAG_TEIF3 | DMA_FLAG_DMEIF3;
+        uint32_t const buf_offset = active_tele_line * TELEM_BUFFER_WIDTH;     
+        OSD_MASK_DMA->M0AR = (uint32_t) &trans_buffer_tele[buf_offset]; 
+        OSD_MASK_DMA->NDTR  = (uint16_t)  TELEM_BUFFER_WIDTH;   
         // Advance line counter
         active_tele_line++;
     } else if (cur_trans_mode == trans_osd) {
 	     DMA2->LIFCR |= DMA_FLAG_TCIF3 | DMA_FLAG_HTIF3 | DMA_FLAG_FEIF3 | DMA_FLAG_TEIF3 | DMA_FLAG_DMEIF3;
         DMA1->HIFCR |= DMA_FLAG_TCIF4 | DMA_FLAG_HTIF4 | DMA_FLAG_FEIF4 | DMA_FLAG_TEIF4 | DMA_FLAG_DMEIF4;
-        uint32_t buf_offset = active_line * BUFFER_WIDTH;
+        uint32_t const buf_offset = active_line * BUFFER_WIDTH;
+
         OSD_MASK_DMA->M0AR = (uint32_t) &disp_buffer_mask[buf_offset];
         OSD_LEVEL_DMA->M0AR = (uint32_t) &disp_buffer_level[buf_offset];
-        	// Set length
+
         OSD_MASK_DMA->NDTR  = (uint16_t)pios_video_type_cfg_act->dma_buffer_length;
         OSD_LEVEL_DMA->NDTR = (uint16_t)pios_video_type_cfg_act->dma_buffer_length;
         // Advance line counter
@@ -634,14 +660,14 @@ static inline void prepare_line(void)
 	PIXEL_TIMER->SMCR &= (uint16_t) ~TIM_SMCR_SMS;
 	PIXEL_TIMER->SMCR |= TIM_SlaveMode_Trigger;
 	// Enable SPI
-   OSD_LEVEL_SPI->CR1 |= SPI_CR1_SPE;
+   OSD_MASK_SPI->CR1  |= SPI_CR1_SPE;
    if ( cur_trans_mode == trans_osd){
-      OSD_MASK_SPI->CR1  |= SPI_CR1_SPE;
+      OSD_LEVEL_SPI->CR1 |= SPI_CR1_SPE; 
    }
 	// Enable DMA
-   OSD_LEVEL_DMA->CR |= (uint32_t)DMA_SxCR_EN;
+   OSD_MASK_DMA->CR  |= (uint32_t)DMA_SxCR_EN;
    if ( cur_trans_mode == trans_osd){
-      OSD_MASK_DMA->CR  |= (uint32_t)DMA_SxCR_EN;
+      OSD_LEVEL_DMA->CR |= (uint32_t)DMA_SxCR_EN;
    }
 }
 

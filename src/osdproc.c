@@ -54,21 +54,41 @@ const char * spd_unit = METRIC_SPEED;
 
 extern uint8_t *write_buffer_tele;
 
-void write_data ( uint8_t * ar)
+static void inline setbit(uint8_t* buf, uint32_t bit)
 {
-    uint32_t data_bytes_per_line = (BUFFER_WIDTH - 8)/10U;
+   uint32_t byte_index = bit/8;
+   uint8_t bit_pos = bit % 8;
+   buf[byte_index] |= ( 1 << bit_pos);
+}
 
+static inline void clearbit(uint8_t* buf, uint32_t bit)
+{
+   uint32_t byte_index = bit/8;
+   uint8_t bit_pos = bit % 8;
+   buf[byte_index] &= ~( 1 << bit_pos);
+}
+
+
+// should give 9
+#define  TELEM_DATA_BYTES_PER_LINE ((TELEM_BUFFER_WIDTH * 8U)/10U)
+
+#if 0
+// assumes that a 1 level in the array represents a mark state
+// That a zero level a space state
+// and ar has been set to all 1's ( mark state)
+void write_data ( uint8_t const * ar)
+{
    for ( uint32_t y = 0 ,yend = TELEM_LINES; y < yend; ++y){ // rows
-     // start of line mark state == transparent
-     uint32_t bit_offset = y * 8 * BUFFER_WIDTH + 4;
-     for ( uint32_t xbyte = 0, xend = data_bytes_per_line; xbyte < xend; ++xbyte){ // columns
+     // start of line mark state 
+     uint32_t bit_offset = y * 8 * TELEM_BUFFER_WIDTH + 3;
+     for ( uint32_t xbyte = 0, xend = TELEM_DATA_BYTES_PER_LINE; xbyte < xend; ++xbyte){ // columns
          // start bit
-         write_buffer_tele[bit_offset] = 0b0;
+         clearbit(write_buffer_tele,bit_offset);
          ++bit_offset;
          uint8_t const cur_val = *ar;
          for ( uint32_t bitpos = 0U; bitpos < 8U; ++bitpos){
             if( (cur_val & ( 1U << bitpos)) == 0U) {
-                write_buffer_tele[bit_offset] = 0b0;
+               clearbit(write_buffer_tele,bit_offset);
             }
             ++bit_offset;
          }
@@ -76,24 +96,52 @@ void write_data ( uint8_t * ar)
          ++bit_offset;
          ++ar;
       }
-      // rest of line transparent == mark state
+      // rest of line  == mark state
+   }
+}
+#else
+/*
+  Assumes that a 0 in ar represents a mark state
+  That a 1 represents a space state
+  and ar has been cleared to all 0's ( mark)
+*/
+void write_data ( uint8_t const * ar)
+{
+   for ( uint32_t y = 0 ,yend = TELEM_LINES; y < yend; ++y){ // rows
+     // start of line mark state 
+     uint32_t bit_offset = y * 8 * TELEM_BUFFER_WIDTH + 3;
+     for ( uint32_t xbyte = 0, xend = TELEM_DATA_BYTES_PER_LINE; xbyte < xend; ++xbyte){ // columns
+         // start bit
+         setbit(write_buffer_tele,bit_offset);
+         ++bit_offset;
+         uint8_t const cur_val = *ar;
+         for ( uint32_t bitpos = 0U; bitpos < 8U; ++bitpos){
+            if( (cur_val & ( 1U << bitpos)) == 0U) {
+               setbit(write_buffer_tele,bit_offset);
+            }
+            ++bit_offset;
+         }
+         // stop bit
+         ++bit_offset;
+         ++ar;
+      }
+      // rest of line mark state
    }
 }
 
-char telem_tx_buffer[TELEM_LINES * BUFFER_WIDTH] = { 0 };;
+#endif
+
+char telem_tx_buffer[TELEM_LINES * TELEM_DATA_BYTES_PER_LINE] = { 0 };;
 void write_telemetry_data(const char * buffer, size_t len)
 {
-
    if ( (buffer != NULL) && (len > 0)){
-       uint32_t data_size = TELEM_LINES * BUFFER_WIDTH;
-           uint32_t len = strlen (buffer) +1;
-           memcpy(telem_tx_buffer, buffer, len);
-           memset(telem_tx_buffer + len ,0,data_size - len  );
-      write_data((uint8_t *)telem_tx_buffer);
+       uint32_t data_size = TELEM_LINES * TELEM_DATA_BYTES_PER_LINE;
+       uint32_t len = strlen (buffer) +1;
+       memcpy(telem_tx_buffer, buffer, len);
+       memset(telem_tx_buffer + len ,0,data_size - len  );
+       write_data((uint8_t *)telem_tx_buffer);
    }
 }
-
-
 
 void dev_test(void)
 {    
