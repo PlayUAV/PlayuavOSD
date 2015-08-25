@@ -77,8 +77,9 @@ enum Trans_mode {
     trans_osd = 2,
 };
 
-#define TELEM_START_LINE    8
-#define TELEM_LINES         12
+// make sure this doesnt overlap OSD
+#define TELEM_START_LINE    9    // first row of telem
+#define TELEM_LINES         5   // num telem rows
 #define TELEM_BUFFER_WIDTH  12
 
 #endif

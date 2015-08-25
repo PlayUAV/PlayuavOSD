@@ -122,13 +122,13 @@ uint8_t *disp_buffer_mask;
 uint8_t *write_buffer_tele;
 uint8_t *trans_buffer_tele;
 
-volatile uint8_t cur_trans_mode = trans_idle;
+static volatile uint8_t cur_trans_mode = trans_idle;
 
 volatile uint16_t active_line = 0;
-volatile uint8_t  end_of_osd_lines = 0;
+static volatile uint8_t  end_of_osd_lines = false;
 
-volatile uint16_t active_tele_line = 0;
-volatile uint8_t  end_of_tele_lines = 0;
+static volatile uint16_t active_tele_line = 0;
+static volatile uint8_t  end_of_tele_lines = false;
 
 const struct pios_video_type_boundary *pios_video_type_boundary_act = &pios_video_type_boundary_pal;
 
@@ -384,7 +384,7 @@ void osdCoreInit(void)
   	NVIC_Init(&nvic); 
 	
 	// Enable hsync interrupts for start and and of telemetry and osd lines
-	TIM_ITConfig(LINE_COUNTER_TIMER, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_CC3 | TIM_IT_CC4 | TIM_IT_Update, ENABLE);
+//	TIM_ITConfig(LINE_COUNTER_TIMER, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_CC3 | TIM_IT_CC4 | TIM_IT_Update, ENABLE);
 
 	// Enable the capture timer
 	TIM_Cmd(HSYNC_CAPTURE_TIMER, ENABLE);
@@ -440,11 +440,12 @@ void EXTI1_IRQHandler()
 			xSemaphoreGiveFromISR(onScreenDisplaySemaphore, &xHigherPriorityTaskWoken);
 		}
 		
-      // enable CCR1 interrupt
-      LINE_COUNTER_TIMER->DIER |= (1 << 1) ; 
+ 
       LINE_COUNTER_TIMER->SR = 0U;
       // new frame so restart line count
       LINE_COUNTER_TIMER->CNT = 0U;
+           // enable CCR1 interrupt
+      LINE_COUNTER_TIMER->DIER |= (1 << 1) ; 
 		TIM_Cmd(LINE_COUNTER_TIMER, ENABLE);
 	}
 	
@@ -467,27 +468,21 @@ static inline void end_osd_lines(void);
 void TIM4_IRQHandler(void)
 {
    uint16_t const tim_sr = LINE_COUNTER_TIMER->SR & (0xF << 1);
-
    LINE_COUNTER_TIMER->SR = 0U;
-
-   switch( tim_sr){
-      case (1<<1): 
-         start_telem_lines();
-         break;
-      case (1<<2):   
+   if (tim_sr &(1<<1) ){
+       start_telem_lines();
+   }else{
+      if ( tim_sr & ( 1<< 2) ){
          end_telem_lines();
-         break;
-      case (1<<3):
-         start_osd_lines();
-         break;
-      case (1<<4):
-         end_osd_lines();
-         break;
-      case (1 << 0):
-         //Timer overflow .. no vsync?
-         break;
-      default:
-         break;
+      }else{
+         if ( tim_sr & ( 1<< 3) ){
+            start_osd_lines();
+         }else{
+            if ( tim_sr & ( 1<< 4) ){
+               end_osd_lines();
+            }
+         }
+      }
    }
 }
 
@@ -573,17 +568,19 @@ static void swap_buffers(void)
 // called from LINE_COUNTER CCR1 irq
 static inline void start_telem_lines(void)
 {
- #if 0
+
    //change mode of levelpin (PC2) to white output
-   GPIOC->BSRRL  |= (1 << 2); // set the Port pin
+
    GPIOC->MODER = (GPIOC->MODER & ~( 2 << 4) ) | ( 1 << 4); // set PC2 mode to output
-   
+   GPIOC->BSRRL  |= (1 << 2); // set the Port pin
+
    PIXEL_TIMER->CCR1 = pios_video_type_telem.dc;
    PIXEL_TIMER->ARR  = pios_video_type_telem.period;
    HSYNC_CAPTURE_TIMER->ARR = telem_graphics_hsync_capture_clks_start; // start of telem data output
    cur_trans_mode = trans_tele; 
    active_tele_line = 0;
    end_of_tele_lines = 0;
+#if 1
    prepare_line();
  #endif
    // disable CCR1 interrupt and enable CCR2 interrupt  
@@ -598,11 +595,13 @@ static inline void end_telem_lines(void)
    LINE_COUNTER_TIMER->DIER = ( LINE_COUNTER_TIMER->DIER & ~( 1 << 2) ) | (1 << 3);
    // signal to DMA interrupt that we are done
    end_of_tele_lines = 1;
+  
 }
 
 // called from LINE_COUNTER CCR3 irq
 static inline void start_osd_lines(void)
 {
+   GPIOC->MODER  = (GPIOC->MODER & ~( 1 << 4) ) | ( 2 << 4); // set PC2 to  AF
    PIXEL_TIMER->CCR1 = pios_video_type_cfg_act->dc;
    PIXEL_TIMER->ARR  = pios_video_type_cfg_act->period;
    HSYNC_CAPTURE_TIMER->ARR = pios_video_type_cfg_act->dc * (pios_video_type_cfg_act->graphics_column_start + x_offset);
