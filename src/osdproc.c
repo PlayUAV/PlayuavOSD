@@ -16,7 +16,7 @@
  
 #include "osdproc.h"
 #include "graphengine.h"
-#include "led.h"
+#include "Led.h"
 #include "osdcore.h"
 #include "osdvar.h"
 #include "fonts.h"

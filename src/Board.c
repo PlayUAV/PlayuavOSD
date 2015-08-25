@@ -14,7 +14,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "Board.h"
+#include "board.h"
 #include "Led.h"
 #include "osdproc.h"
 #include "osdcore.h"

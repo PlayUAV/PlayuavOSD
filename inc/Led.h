@@ -1,7 +1,7 @@
 #ifndef __LED_H
 #define __LED_H
 
-#include "Board.h"
+#include "board.h"
 
 typedef enum
 {
