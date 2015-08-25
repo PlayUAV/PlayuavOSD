@@ -72,7 +72,7 @@ static inline void clearbit(uint8_t* buf, uint32_t bit)
 #define  TELEM_DATA_BYTES_PER_LINE ((TELEM_BUFFER_WIDTH * 8U)/10U)
 
 #if 0
-// assumes that a 1 level in the low level video dma array represents a mark state
+// assumes that a 1 level in the low level video dma buffer write_buffer_tele represents a mark state
 // and a zero level a space state
 // and that ar length >= TELEM_LINES * TELEM_DATA_BYTES_PER_LINE
 void write_data ( uint8_t const * ar)
@@ -101,7 +101,7 @@ void write_data ( uint8_t const * ar)
 }
 #else
 /*
-  Assumes that a 0 in ar represents a mark state
+  Assumes that a 0 in the low level video dma buffer write_buffer_tele represents a mark state
   and a 1 represents a space state
   and that ar length >= TELEM_LINES * TELEM_DATA_BYTES_PER_LINE
 */
