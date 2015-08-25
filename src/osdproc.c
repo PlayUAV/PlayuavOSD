@@ -68,16 +68,16 @@ static inline void clearbit(uint8_t* buf, uint32_t bit)
    buf[byte_index] &= ~( 1 << bit_pos);
 }
 
-
-// should give 9
+// should be 9 bytes per line
 #define  TELEM_DATA_BYTES_PER_LINE ((TELEM_BUFFER_WIDTH * 8U)/10U)
 
 #if 0
-// assumes that a 1 level in the array represents a mark state
-// That a zero level a space state
-// and ar has been set to all 1's ( mark state)
+// assumes that a 1 level in the low level video dma array represents a mark state
+// and a zero level a space state
+// and that ar length >= TELEM_LINES * TELEM_DATA_BYTES_PER_LINE
 void write_data ( uint8_t const * ar)
 {
+   memset( write_buffer_tele,0xff, TELEM_LINES * TELEM_BUFFER_WIDTH);
    for ( uint32_t y = 0 ,yend = TELEM_LINES; y < yend; ++y){ // rows
      // start of line mark state 
      uint32_t bit_offset = y * 8 * TELEM_BUFFER_WIDTH + 3;
@@ -102,11 +102,13 @@ void write_data ( uint8_t const * ar)
 #else
 /*
   Assumes that a 0 in ar represents a mark state
-  That a 1 represents a space state
-  and ar has been cleared to all 0's ( mark)
+  and a 1 represents a space state
+  and that ar length >= TELEM_LINES * TELEM_DATA_BYTES_PER_LINE
 */
 void write_data ( uint8_t const * ar)
 {
+   // clear to all 0's
+   memset( write_buffer_tele,0, TELEM_LINES * TELEM_BUFFER_WIDTH);
    for ( uint32_t y = 0 ,yend = TELEM_LINES; y < yend; ++y){ // rows
      // start of line mark state 
      uint32_t bit_offset = y * 8 * TELEM_BUFFER_WIDTH + 3;
@@ -131,7 +133,11 @@ void write_data ( uint8_t const * ar)
 
 #endif
 
-char telem_tx_buffer[TELEM_LINES * TELEM_DATA_BYTES_PER_LINE] = { 0 };;
+// the user layer buffer
+// user can write 8 bit values for transmission here
+char telem_tx_buffer[TELEM_LINES * TELEM_DATA_BYTES_PER_LINE] = { 0 };
+
+// send it to be output via video
 void write_telemetry_data(const char * buffer, size_t len)
 {
    if ( (buffer != NULL) && (len > 0)){
@@ -146,11 +152,8 @@ void write_telemetry_data(const char * buffer, size_t len)
 void dev_test(void)
 {    
     char telem_buffer[100];
-    sprintf(telem_buffer,"asdfsadfdsafdsafdsafdsafdsafdsafdfdafdsafdsafdsafdsafdsafdsafdsafdsfdsafds");
-//    uint32_t data_size = TELEM_LINES * BUFFER_WIDTH;
-//    uint32_t len = strlen (telem_buffer) +1;
-//    memcpy(write_buffer_tele, telem_buffer, len);
-//    memset(write_buffer_tele + len ,0,data_size - len  );
+    sprintf(telem_buffer,"Hello via Video!!!");
+
     write_telemetry_data(telem_buffer, strlen(telem_buffer)+1);
     
     //just draw some on the screen
