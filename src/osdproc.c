@@ -169,7 +169,7 @@ void RenderScreen(void)
     do_converts();
 
     dev_test();
-    return;
+   // return;
 //---------------------------------------------------
 //  DJI_test();
 //  return;
