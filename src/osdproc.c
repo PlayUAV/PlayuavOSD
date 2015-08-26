@@ -218,10 +218,10 @@ void RenderScreen(void)
     int tmp_int1, tmp_int2;
     uint32_t time_now;
 
-//    do_converts();
+    do_converts();
 
-    dev_test();
-    return;
+   // dev_test();
+  //  return;
 //---------------------------
 //  DJI_test();
 //  return;

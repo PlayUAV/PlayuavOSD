@@ -340,7 +340,7 @@ void osdCoreInit(void)
    memset(write_buffer_tele, 0, TELEM_LINES * TELEM_BUFFER_WIDTH);
    memset(trans_buffer_tele, 0, TELEM_LINES * TELEM_BUFFER_WIDTH);
 
-   memset(buffers.buffer_tele_switch, 0x00, TELEM_BUFFER_WIDTH);
+   memset(buffers.buffer_tele_switch, 0xFF, TELEM_BUFFER_WIDTH);
 
     /* Configure DMA interrupt */
 	nvic.NVIC_IRQChannel = OSD_MASK_DMA_IRQ;
