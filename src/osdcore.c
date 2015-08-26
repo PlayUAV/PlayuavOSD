@@ -88,7 +88,7 @@ static const struct pios_video_type_cfg pios_video_type_telem = {
    and video masked out gives a white level, which repesents a 'space' data level
    
 */
-static uint16_t const telem_graphics_hsync_capture_clks_start = 84 * 10; // 12 usec from Hsync first edge
+static uint16_t const telem_graphics_hsync_capture_clks_start = 84 * 7; // 12 usec from Hsync first edge
 
 // Allocate buffers.
 // Must be allocated in one block, so it is in a struct.
@@ -346,14 +346,14 @@ void osdCoreInit(void)
 
    memset(write_buffer_tele, 0, TELEM_LINES * TELEM_BUFFER_WIDTH);
    memset(trans_buffer_tele, 0, TELEM_LINES * TELEM_BUFFER_WIDTH);
-   memset(buffers.buffer_tele_level,0x00,TELEM_BUFFER_WIDTH);
+   memset(buffers.buffer_tele_level,0xFF,TELEM_BUFFER_WIDTH);
 
-   buffers.buffer_tele_level[0] = 0x3F;
-   
-   for ( uint32_t i  = 1; i < (TELEM_BUFFER_WIDTH -1); i++){
-      buffers.buffer_tele_level[i] = 0xff;
-   }
-   buffers.buffer_tele_level[TELEM_BUFFER_WIDTH] = 0xFC;
+//   buffers.buffer_tele_level[0] = 0xFF;
+//   
+//   for ( uint32_t i  = 1; i < (TELEM_BUFFER_WIDTH -1); i++){
+//      buffers.buffer_tele_level[i] = 0xff;
+//   }
+//   buffers.buffer_tele_level[TELEM_BUFFER_WIDTH] = 0xFF;
    
     /* Configure DMA interrupt */
 	nvic.NVIC_IRQChannel = OSD_MASK_DMA_IRQ;
@@ -654,6 +654,8 @@ static inline void prepare_line(void)
         // Advance line counter
         active_tele_line++;
     } else if (cur_trans_mode == trans_osd) {
+        OSD_MASK_SPI->CR1  |= (1<<13);
+        OSD_LEVEL_SPI->CR1  |= (1<<13);
 	     DMA2->LIFCR |= DMA_FLAG_TCIF3 | DMA_FLAG_HTIF3 | DMA_FLAG_FEIF3 | DMA_FLAG_TEIF3 | DMA_FLAG_DMEIF3;
         DMA1->HIFCR |= DMA_FLAG_TCIF4 | DMA_FLAG_HTIF4 | DMA_FLAG_FEIF4 | DMA_FLAG_TEIF4 | DMA_FLAG_DMEIF4;
         uint32_t const buf_offset = active_line * BUFFER_WIDTH;
@@ -674,8 +676,7 @@ static inline void prepare_line(void)
 	PIXEL_TIMER->SMCR &= (uint16_t) ~TIM_SMCR_SMS;
 	PIXEL_TIMER->SMCR |= TIM_SlaveMode_Trigger;
 
-   OSD_MASK_SPI->CR1  |= (1<<13);
-   OSD_LEVEL_SPI->CR1  |= (1<<13);
+
 	// Enable SPI
    OSD_MASK_SPI->CR1  |= SPI_CR1_SPE;
    OSD_LEVEL_SPI->CR1 |= SPI_CR1_SPE; 
