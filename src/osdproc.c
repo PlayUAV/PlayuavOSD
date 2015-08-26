@@ -135,36 +135,29 @@ void write_data ( uint8_t const * ar)
 
 // the user layer buffer
 // user can write 8 bit values for transmission here
-static char telem_tx_buffer[TELEM_LINES * TELEM_DATA_BYTES_PER_LINE] = { 0 };
+char telem_tx_buffer[TELEM_LINES * TELEM_DATA_BYTES_PER_LINE] = { 0 };
 
 // send it to be output via video
-//void write_telemetry_data(const char * buffer, size_t len)
-void write_telemetry_data(void)
+void write_telemetry_data(uint8_t * buffer, size_t len)
 {
-    memset(telem_tx_buffer,0, TELEM_LINES * TELEM_DATA_BYTES_PER_LINE);
-    write_data((uint8_t *)telem_tx_buffer);
-//   if ( (buffer != NULL) && (len > 0)){
-//       uint32_t data_size = TELEM_LINES * TELEM_DATA_BYTES_PER_LINE;
-//       uint32_t len = strlen (buffer) +1;
-//       memcpy(telem_tx_buffer, buffer, len);
-//       memset(telem_tx_buffer + len ,0,data_size - len  );
-//       write_data((uint8_t *)telem_tx_buffer);
-//   }
+   if ( (buffer != NULL) && (len > 0)){
+       uint32_t const max_data_size = TELEM_LINES * TELEM_DATA_BYTES_PER_LINE;
+       uint32_t len_out = (len < max_data_size)? len: max_data_size;
+       memcpy(telem_tx_buffer, buffer, len_out);
+       uint32_t const rest = max_data_size - len_out;
+       if(rest){
+         memset(telem_tx_buffer + len_out ,0,rest );
+       }
+       write_data(telem_tx_buffer);
+   }
 }
 
 void dev_test(void)
 {    
-   
-    write_telemetry_data();
-   // write_telemetry_data(telem_buffer, strlen(telem_buffer)+1);
-    
-    //just draw some on the screen
-//    char* tmp_str1 = "";
-//    tmp_str1 = "Telemetry test ( All white)";
-//    write_string(tmp_str1, 0, 20,0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0,SIZE_TO_FONT[0]);
 
-//    write_circle_outlined(100, 100, 30, 0, 1, 0, 1);
-//    drawBox(140, 30, 180, 60);
+    memset (telem_tx_buffer,0, TELEM_LINES * TELEM_DATA_BYTES_PER_LINE);
+    write_telemetry_data(telem_tx_buffer,TELEM_LINES * TELEM_DATA_BYTES_PER_LINE );
+    
 }
 
 void do_converts(void)
@@ -220,9 +213,9 @@ void RenderScreen(void)
 
     do_converts();
 
-   // dev_test();
-  //  return;
-//---------------------------
+    dev_test();
+    return;
+//---------------------------------------------------
 //  DJI_test();
 //  return;
     if(current_panel > eeprom_buffer.params.Max_panels)
