@@ -111,8 +111,14 @@ char telem_tx_buffer[TELEM_LINES * TELEM_DATA_BYTES_PER_LINE] = { 0 };
 void dev_test(void)
 {    
     memset (telem_tx_buffer,0, TELEM_LINES * TELEM_DATA_BYTES_PER_LINE);
+
+    strcpy(telem_tx_buffer,"Hello World\n");
     write_data(telem_tx_buffer);
-    
+
+//    write_string("Telemetry test", 10,10,
+//                     0, 0, TEXT_VA_TOP, eeprom_buffer.params.Arm_align, 0,
+//                     SIZE_TO_FONT[eeprom_buffer.params.Arm_fontsize]);
+//    
 }
 
 void do_converts(void)
@@ -169,7 +175,7 @@ void RenderScreen(void)
     do_converts();
 
     dev_test();
-   // return;
+  //  return;
 //---------------------------------------------------
 //  DJI_test();
 //  return;

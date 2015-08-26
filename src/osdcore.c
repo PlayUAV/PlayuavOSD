@@ -222,6 +222,8 @@ void osdCoreInit(void)
 	TIM_SelectInputTrigger(HSYNC_CAPTURE_TIMER, TIM_TS_TI2FP2);
 	TIM_SelectMasterSlaveMode(HSYNC_CAPTURE_TIMER, TIM_MasterSlaveMode_Enable);
 	TIM_SelectOutputTrigger(HSYNC_CAPTURE_TIMER, TIM_TRGOSource_Update);
+   // ADD select bit7 of 
+   HSYNC_CAPTURE_TIMER->SMCR |= (1<<7);
 	
 	// Pixel timer: Outputs clock for SPI
 	gpio.GPIO_Pin   = GPIO_Pin_4;
@@ -259,7 +261,7 @@ void osdCoreInit(void)
 
 	/* Enable the TIM4 gloabal Interrupt */
 	nvic.NVIC_IRQChannel = TIM4_IRQn;
-	nvic.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST;
+	nvic.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH;
 	nvic.NVIC_IRQChannelSubPriority = 1;
 	nvic.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&nvic);
@@ -345,7 +347,7 @@ void osdCoreInit(void)
 
     /* Configure DMA interrupt */
 	nvic.NVIC_IRQChannel = OSD_MASK_DMA_IRQ;
-  	nvic.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST;
+  	nvic.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH;
   	nvic.NVIC_IRQChannelSubPriority = 0;
   	nvic.NVIC_IRQChannelCmd = ENABLE;
   	NVIC_Init(&nvic); 
@@ -375,7 +377,7 @@ void osdCoreInit(void)
   	EXTI_Init(&EXTI_InitStructure);
 	
 	nvic.NVIC_IRQChannel = EXTI1_IRQn;
-  	nvic.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST;
+  	nvic.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH;
   	nvic.NVIC_IRQChannelSubPriority = 0;
   	nvic.NVIC_IRQChannelCmd = ENABLE;
   	NVIC_Init(&nvic); 
