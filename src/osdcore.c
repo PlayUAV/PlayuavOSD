@@ -469,16 +469,16 @@ void TIM4_IRQHandler(void)
 {
    uint16_t const tim_sr = LINE_COUNTER_TIMER->SR & (0xF << 1);
    LINE_COUNTER_TIMER->SR = 0U;
-   if (tim_sr &(1<<1) ){
+   if ( tim_sr & ( 1 << 1 ) ){
        start_telem_lines();
    }else{
-      if ( tim_sr & ( 1<< 2) ){
+      if ( tim_sr & ( 1 << 2 ) ){
          end_telem_lines();
       }else{
-         if ( tim_sr & ( 1<< 3) ){
+         if ( tim_sr & ( 1 << 3 ) ){
             start_osd_lines();
          }else{
-            if ( tim_sr & ( 1<< 4) ){
+            if ( tim_sr & ( 1 << 4 ) ){
                end_osd_lines();
             }
          }
