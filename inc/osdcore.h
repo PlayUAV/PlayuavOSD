@@ -77,9 +77,10 @@ enum Trans_mode {
     trans_osd = 2,
 };
 
-// make sure this doesnt overlap OSD
-#define TELEM_START_LINE    9    // first row of telem
-#define TELEM_LINES         5   // num telem rows
-#define TELEM_BUFFER_WIDTH  12
+// make sure that (START_LINE + NUMLINES) < 16 so doesnt overlap OSD ( NTSC osd starts on line 16)
+// play safe to get in the  window for rx at the moment
+#define TELEM_START_LINE    9    // first row of telem 
+#define TELEM_LINES         5   // num telem rows 
+#define TELEM_BUFFER_WIDTH  12  // gives (12 *8) div 10 == 9 bytes of data per line
 
 #endif

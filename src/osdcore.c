@@ -124,7 +124,7 @@ uint8_t *trans_buffer_tele;
 
 static volatile uint8_t cur_trans_mode = trans_idle;
 
-volatile uint16_t active_line = 0;
+static volatile uint16_t active_line = 0;
 static volatile uint8_t  end_of_osd_lines = false;
 
 static volatile uint16_t active_tele_line = 0;
@@ -140,12 +140,7 @@ static int8_t y_offset = 0;
 static uint16_t num_video_lines = 0;
 static int8_t video_type_tmp = VIDEO_TYPE_PAL;
 static int8_t video_type_act = VIDEO_TYPE_NONE;
-static const struct pios_video_type_cfg *pios_video_type_cfg_act = &pios_video_type_cfg_pal;
-
-uint8_t black_pal = 30;
-uint8_t white_pal = 110;
-uint8_t black_ntsc = 10;
-uint8_t white_ntsc = 110;
+const struct pios_video_type_cfg *pios_video_type_cfg_act = &pios_video_type_cfg_pal;
 
 // Private functions
 static void swap_buffers(void);
@@ -153,53 +148,53 @@ static void prepare_line(void);
 
 void osdCoreInit(void)
 {
-    GPIO_InitTypeDef gpio;
-    TIM_TimeBaseInitTypeDef tim;
-    NVIC_InitTypeDef nvic;
-    DMA_InitTypeDef dma;
-    SPI_InitTypeDef spi;
-    TIM_OCInitTypeDef timoc;
-	EXTI_InitTypeDef EXTI_InitStructure;
+   GPIO_InitTypeDef gpio;
+   TIM_TimeBaseInitTypeDef tim;
+   NVIC_InitTypeDef nvic;
+   DMA_InitTypeDef dma;
+   SPI_InitTypeDef spi;
+   TIM_OCInitTypeDef timoc;
+   EXTI_InitTypeDef EXTI_InitStructure;
 
-    // OSD mask Pins
-    // PA6 == SOI1_MISO
-    GPIO_StructInit(&gpio);
-    gpio.GPIO_Pin = GPIO_Pin_6; // SPI1 MISO
-    gpio.GPIO_Mode = GPIO_Mode_AF;
-	gpio.GPIO_OType = GPIO_OType_PP;
-    gpio.GPIO_Speed = GPIO_Speed_50MHz;
-	gpio.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOA, &gpio);
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource6, GPIO_AF_SPI1);
-	
-    // PA5  == SPI1_SCK
-    GPIO_StructInit(&gpio);
-    gpio.GPIO_Pin = GPIO_Pin_5; // SPI1 CLK slave
-    gpio.GPIO_Mode = GPIO_Mode_AF;
-	gpio.GPIO_OType = GPIO_OType_PP;
-    gpio.GPIO_Speed = GPIO_Speed_100MHz;
-	gpio.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOA, &gpio);
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource5, GPIO_AF_SPI1);
-	
-	//OSD level pins
+   // OSD mask Pins
+   // PA6 == SOI1_MISO
+   GPIO_StructInit(&gpio);
+   gpio.GPIO_Pin = GPIO_Pin_6; // SPI1 MISO
+   gpio.GPIO_Mode = GPIO_Mode_AF;
+   gpio.GPIO_OType = GPIO_OType_PP;
+   gpio.GPIO_Speed = GPIO_Speed_50MHz;
+   gpio.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+   GPIO_Init(GPIOA, &gpio);
+   GPIO_PinAFConfig(GPIOA, GPIO_PinSource6, GPIO_AF_SPI1);
+
+   // PA5  == SPI1_SCK
+   GPIO_StructInit(&gpio);
+   gpio.GPIO_Pin = GPIO_Pin_5; // SPI1 CLK slave
+   gpio.GPIO_Mode = GPIO_Mode_AF;
+   gpio.GPIO_OType = GPIO_OType_PP;
+   gpio.GPIO_Speed = GPIO_Speed_100MHz;
+   gpio.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+   GPIO_Init(GPIOA, &gpio);
+   GPIO_PinAFConfig(GPIOA, GPIO_PinSource5, GPIO_AF_SPI1);
+
+   //OSD level pins
    // PC2 == SPI2_MISO
-	gpio.GPIO_Pin = GPIO_Pin_2; // SPI2_MISO
-    gpio.GPIO_Mode = GPIO_Mode_AF;
-	gpio.GPIO_OType = GPIO_OType_PP;
-    gpio.GPIO_Speed = GPIO_Speed_50MHz;
-	gpio.GPIO_PuPd  = GPIO_PuPd_UP;
-	GPIO_Init(GPIOC, &gpio);
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource2, GPIO_AF_SPI2);
-	
-    // PB13 == SPI2_SCK
-    gpio.GPIO_Pin = GPIO_Pin_13; // SPI2_SCK
-    gpio.GPIO_Mode = GPIO_Mode_AF;
-	gpio.GPIO_OType = GPIO_OType_PP;
-    gpio.GPIO_Speed = GPIO_Speed_100MHz;
-	gpio.GPIO_PuPd  = GPIO_PuPd_UP;
-	GPIO_Init(GPIOB, &gpio);
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource13, GPIO_AF_SPI2);
+   gpio.GPIO_Pin = GPIO_Pin_2; // SPI2_MISO
+   gpio.GPIO_Mode = GPIO_Mode_AF;
+   gpio.GPIO_OType = GPIO_OType_PP;
+   gpio.GPIO_Speed = GPIO_Speed_50MHz;
+   gpio.GPIO_PuPd  = GPIO_PuPd_UP;
+   GPIO_Init(GPIOC, &gpio);
+   GPIO_PinAFConfig(GPIOC, GPIO_PinSource2, GPIO_AF_SPI2);
+
+   // PB13 == SPI2_SCK
+   gpio.GPIO_Pin = GPIO_Pin_13; // SPI2_SCK
+   gpio.GPIO_Mode = GPIO_Mode_AF;
+   gpio.GPIO_OType = GPIO_OType_PP;
+   gpio.GPIO_Speed = GPIO_Speed_100MHz;
+   gpio.GPIO_PuPd  = GPIO_PuPd_UP;
+   GPIO_Init(GPIOB, &gpio);
+   GPIO_PinAFConfig(GPIOB, GPIO_PinSource13, GPIO_AF_SPI2);
 	
 	// HSYNC capture timer: Start counting at HSYNC and start pixel timer after at correct x-position
    // PB3 == TIM2_CH2  
@@ -490,7 +485,7 @@ void PIOS_VIDEO_DMA_Handler(void);
 void DMA2_Stream3_IRQHandler(void) __attribute__((alias("PIOS_VIDEO_DMA_Handler")));
 void DMA1_Stream4_IRQHandler(void) __attribute__((alias("PIOS_VIDEO_DMA_Handler")));
 
-static void wait_spi_complete_then_disable(SPI_TypeDef * spi_ptr)
+static inline void wait_spi_complete_then_disable(SPI_TypeDef * spi_ptr)
 {
    for(;;){
       uint16_t const sr = spi_ptr->SR;
@@ -580,7 +575,7 @@ static inline void start_telem_lines(void)
    cur_trans_mode = trans_tele; 
    active_tele_line = 0;
    end_of_tele_lines = 0;
-#if 1
+#if 0
    prepare_line();
  #endif
    // disable CCR1 interrupt and enable CCR2 interrupt  
