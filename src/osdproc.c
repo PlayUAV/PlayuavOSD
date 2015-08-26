@@ -56,50 +56,22 @@ extern uint8_t *write_buffer_tele;
 
 static void inline setbit(uint8_t* buf, uint32_t bit)
 {
-   uint32_t byte_index = bit/8;
-   uint8_t bit_pos = bit % 8;
-   buf[byte_index] |= ( 1 << bit_pos);
+   uint32_t byte_index = bit/8U;
+   uint8_t bit_pos = bit % 8U;
+   buf[byte_index] |= ( 1U << (7U-bit_pos));
 }
 
 static inline void clearbit(uint8_t* buf, uint32_t bit)
 {
-   uint32_t byte_index = bit/8;
-   uint8_t bit_pos = bit % 8;
-   buf[byte_index] &= ~( 1 << bit_pos);
+   uint32_t byte_index = bit/8U;
+   uint8_t bit_pos = bit % 8U;
+   buf[byte_index] &= ~( 1U << (7U- bit_pos));
 }
 
 // should be 9 bytes per line
 #define  TELEM_DATA_BYTES_PER_LINE ((TELEM_BUFFER_WIDTH * 8U)/10U)
 
-#if 0
-// assumes that a 1 level in the low level video dma buffer write_buffer_tele represents a mark state
-// and a zero level a space state
-// and that ar length >= TELEM_LINES * TELEM_DATA_BYTES_PER_LINE
-void write_data ( uint8_t const * ar)
-{
-   memset( write_buffer_tele,0xff, TELEM_LINES * TELEM_BUFFER_WIDTH);
-   for ( uint32_t y = 0 ,yend = TELEM_LINES; y < yend; ++y){ // rows
-     // start of line mark state 
-     uint32_t bit_offset = y * 8 * TELEM_BUFFER_WIDTH + 3;
-     for ( uint32_t xbyte = 0, xend = TELEM_DATA_BYTES_PER_LINE; xbyte < xend; ++xbyte){ // columns
-         // start bit
-         clearbit(write_buffer_tele,bit_offset);
-         ++bit_offset;
-         uint8_t const cur_val = *ar;
-         for ( uint32_t bitpos = 0U; bitpos < 8U; ++bitpos){
-            if( (cur_val & ( 1U << bitpos)) == 0U) {
-               clearbit(write_buffer_tele,bit_offset);
-            }
-            ++bit_offset;
-         }
-         // stop bit
-         ++bit_offset;
-         ++ar;
-      }
-      // rest of line  == mark state
-   }
-}
-#else
+
 /*
   Assumes that a 0 in the low level video dma buffer write_buffer_tele represents a mark state
   and a 1 represents a space state
@@ -107,11 +79,11 @@ void write_data ( uint8_t const * ar)
 */
 void write_data ( uint8_t const * ar)
 {
-   // clear to all 0's
+
    memset( write_buffer_tele,0, TELEM_LINES * TELEM_BUFFER_WIDTH);
    for ( uint32_t y = 0 ,yend = TELEM_LINES; y < yend; ++y){ // rows
      // start of line mark state 
-     uint32_t bit_offset = y * 8 * TELEM_BUFFER_WIDTH + 3;
+     uint32_t bit_offset = y * 8U * TELEM_BUFFER_WIDTH + 3U;
      for ( uint32_t xbyte = 0, xend = TELEM_DATA_BYTES_PER_LINE; xbyte < xend; ++xbyte){ // columns
          // start bit
          setbit(write_buffer_tele,bit_offset);
@@ -129,34 +101,17 @@ void write_data ( uint8_t const * ar)
       }
       // rest of line mark state
    }
-}
 
-#endif
+}
 
 // the user layer buffer
 // user can write 8 bit values for transmission here
 char telem_tx_buffer[TELEM_LINES * TELEM_DATA_BYTES_PER_LINE] = { 0 };
 
-// send it to be output via video
-void write_telemetry_data(uint8_t * buffer, size_t len)
-{
-   if ( (buffer != NULL) && (len > 0)){
-       uint32_t const max_data_size = TELEM_LINES * TELEM_DATA_BYTES_PER_LINE;
-       uint32_t len_out = (len < max_data_size)? len: max_data_size;
-       memcpy(telem_tx_buffer, buffer, len_out);
-       uint32_t const rest = max_data_size - len_out;
-       if(rest){
-         memset(telem_tx_buffer + len_out ,0,rest );
-       }
-       write_data(telem_tx_buffer);
-   }
-}
-
 void dev_test(void)
 {    
-
     memset (telem_tx_buffer,0, TELEM_LINES * TELEM_DATA_BYTES_PER_LINE);
-    write_telemetry_data(telem_tx_buffer,TELEM_LINES * TELEM_DATA_BYTES_PER_LINE );
+    write_data(telem_tx_buffer);
     
 }
 

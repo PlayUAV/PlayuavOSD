@@ -4,8 +4,6 @@
 #include "stm32f4xx_conf.h"
 #include "stm32f4xx.h"
 
-
-
 // PAL/NTSC specific boundary values
 struct pios_video_type_boundary {
 	uint16_t graphics_right;

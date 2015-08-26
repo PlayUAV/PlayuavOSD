@@ -88,7 +88,7 @@ static const struct pios_video_type_cfg pios_video_type_telem = {
    and video masked out gives a white level, which repesents a 'space' data level
    
 */
-static uint16_t const telem_graphics_hsync_capture_clks_start = 84 * 12; // 12 usec from Hsync first edge
+static uint16_t const telem_graphics_hsync_capture_clks_start = 84 * 10; // 12 usec from Hsync first edge
 
 // Allocate buffers.
 // Must be allocated in one block, so it is in a struct.
@@ -101,6 +101,7 @@ struct _buffers {
 
     uint8_t buffer_tele0[TELEM_LINES * TELEM_BUFFER_WIDTH];
     uint8_t buffer_tele1[TELEM_LINES * TELEM_BUFFER_WIDTH];
+    uint8_t buffer_tele_level[TELEM_BUFFER_WIDTH];
 
 } buffers;
 
@@ -345,7 +346,15 @@ void osdCoreInit(void)
 
    memset(write_buffer_tele, 0, TELEM_LINES * TELEM_BUFFER_WIDTH);
    memset(trans_buffer_tele, 0, TELEM_LINES * TELEM_BUFFER_WIDTH);
+   memset(buffers.buffer_tele_level,0x00,TELEM_BUFFER_WIDTH);
 
+   buffers.buffer_tele_level[0] = 0x3F;
+   
+   for ( uint32_t i  = 1; i < (TELEM_BUFFER_WIDTH -1); i++){
+      buffers.buffer_tele_level[i] = 0xff;
+   }
+   buffers.buffer_tele_level[TELEM_BUFFER_WIDTH] = 0xFC;
+   
     /* Configure DMA interrupt */
 	nvic.NVIC_IRQChannel = OSD_MASK_DMA_IRQ;
   	nvic.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGHEST;
@@ -511,16 +520,16 @@ static void wait_spi_complete_then_disable(SPI_TypeDef * spi_ptr)
 void PIOS_VIDEO_DMA_Handler(void)
 {	
    // mask only
-   if( (cur_trans_mode == trans_tele ) && (DMA2->LISR & DMA_FLAG_TCIF3) ) {
+   if( (cur_trans_mode == trans_tele ) && (DMA2->LISR & DMA_FLAG_TCIF3) && (DMA1->HISR & DMA_FLAG_TCIF4) ) {
       wait_spi_complete_then_disable(OSD_MASK_SPI);
+      wait_spi_complete_then_disable(OSD_LEVEL_SPI);
       if (end_of_tele_lines){
          DMA2->LIFCR |= DMA_FLAG_TCIF3;
+         DMA1->HIFCR |= DMA_FLAG_TCIF4;
          PIXEL_TIMER->CR1  &= (uint16_t) ~TIM_CR1_CEN;
 			PIXEL_TIMER->SMCR &= (uint16_t) ~TIM_SMCR_SMS;
          OSD_MASK_DMA->CR &= ~(uint32_t)DMA_SxCR_EN;
-
-         GPIOC->BSRRH |= (1 << 2); // clear the Port level pin (PC2)
-         GPIOC->MODER  = (GPIOC->MODER & ~( 1 << 4) ) | ( 2 << 4); // set PC2 to  AF
+         OSD_LEVEL_DMA->CR &= ~(uint32_t)DMA_SxCR_EN;
          // (Assume that the pre-programmed AF in AFRx has not changed)
          cur_trans_mode = trans_idle;
       }else{
@@ -570,9 +579,7 @@ static inline void start_telem_lines(void)
 {
 
    //change mode of levelpin (PC2) to white output
-
-   GPIOC->MODER = (GPIOC->MODER & ~( 2 << 4) ) | ( 1 << 4); // set PC2 mode to output
-   GPIOC->BSRRL  |= (1 << 2); // set the Port pin
+ 
 
    PIXEL_TIMER->CCR1 = pios_video_type_telem.dc;
    PIXEL_TIMER->ARR  = pios_video_type_telem.period;
@@ -580,9 +587,9 @@ static inline void start_telem_lines(void)
    cur_trans_mode = trans_tele; 
    active_tele_line = 0;
    end_of_tele_lines = 0;
-#if 1
+
    prepare_line();
- #endif
+
    // disable CCR1 interrupt and enable CCR2 interrupt  
    LINE_COUNTER_TIMER->DIER = ( LINE_COUNTER_TIMER->DIER & ~( 1 << 1) ) | (1 << 2);
  
@@ -635,10 +642,15 @@ static inline void prepare_line(void)
 	// Clear DMA interrupt flags
 	// Load new line
     if (cur_trans_mode == trans_tele) {
+        OSD_MASK_SPI->CR1  &= ~(1<<13);
+        OSD_LEVEL_SPI->CR1  &= ~(1<<13); 
         DMA2->LIFCR |= DMA_FLAG_TCIF3 | DMA_FLAG_HTIF3 | DMA_FLAG_FEIF3 | DMA_FLAG_TEIF3 | DMA_FLAG_DMEIF3;
+        DMA1->HIFCR |= DMA_FLAG_TCIF4 | DMA_FLAG_HTIF4 | DMA_FLAG_FEIF4 | DMA_FLAG_TEIF4 | DMA_FLAG_DMEIF4;
         uint32_t const buf_offset = active_tele_line * TELEM_BUFFER_WIDTH;     
         OSD_MASK_DMA->M0AR = (uint32_t) &trans_buffer_tele[buf_offset]; 
-        OSD_MASK_DMA->NDTR  = (uint16_t)  TELEM_BUFFER_WIDTH;   
+        OSD_LEVEL_DMA->M0AR = (uint32_t) buffers.buffer_tele_level; 
+        OSD_MASK_DMA->NDTR  = (uint16_t)  TELEM_BUFFER_WIDTH;  
+        OSD_LEVEL_DMA->NDTR = (uint16_t)  TELEM_BUFFER_WIDTH;
         // Advance line counter
         active_tele_line++;
     } else if (cur_trans_mode == trans_osd) {
@@ -661,16 +673,16 @@ static inline void prepare_line(void)
 	// Reset the SMS bits
 	PIXEL_TIMER->SMCR &= (uint16_t) ~TIM_SMCR_SMS;
 	PIXEL_TIMER->SMCR |= TIM_SlaveMode_Trigger;
+
+   OSD_MASK_SPI->CR1  |= (1<<13);
+   OSD_LEVEL_SPI->CR1  |= (1<<13);
 	// Enable SPI
    OSD_MASK_SPI->CR1  |= SPI_CR1_SPE;
-   if ( cur_trans_mode == trans_osd){
-      OSD_LEVEL_SPI->CR1 |= SPI_CR1_SPE; 
-   }
+   OSD_LEVEL_SPI->CR1 |= SPI_CR1_SPE; 
 	// Enable DMA
    OSD_MASK_DMA->CR  |= (uint32_t)DMA_SxCR_EN;
-   if ( cur_trans_mode == trans_osd){
-      OSD_LEVEL_DMA->CR |= (uint32_t)DMA_SxCR_EN;
-   }
+   OSD_LEVEL_DMA->CR |= (uint32_t)DMA_SxCR_EN;
+
 }
 
 uint16_t osdVideoGetLines(void)
