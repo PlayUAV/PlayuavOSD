@@ -41,6 +41,7 @@ void Delay_us(u32 nus);
 #define LINE_COUNTER_TIMER			TIM4
 #define HSYNC_CAPTURE_TIMER		TIM2		
 #define PIXEL_TIMER					TIM3
+#define SPI_CLOSE_DELAY_TIMER    TIM12
 
 #define USART1_RX_DMA				DMA2_Stream2
 #define USART1_RX_DMA_IRQ			DMA2_Stream2_IRQn

@@ -222,8 +222,39 @@ void osdCoreInit(void)
 	TIM_SelectInputTrigger(HSYNC_CAPTURE_TIMER, TIM_TS_TI2FP2);
 	TIM_SelectMasterSlaveMode(HSYNC_CAPTURE_TIMER, TIM_MasterSlaveMode_Enable);
 	TIM_SelectOutputTrigger(HSYNC_CAPTURE_TIMER, TIM_TRGOSource_Update);
-   // ADD select bit7 of 
+   
    HSYNC_CAPTURE_TIMER->SMCR |= (1<<7);
+
+   //SPI_CLOSE_DELAY_TIMER
+   // DMA provides an interrupt when last data is loaded to SPI DR regs
+   // but then need to wait until the data is transmitted and busy is done to close SPI
+   // Since we know how long it will take, use the timer
+   // to cause an interrupt to close the SPI
+   // rather than busy waiting in the DMA irq handler
+//   TIM_TimeBaseStructInit(&tim);
+//   tim.TIM_Period = 0xffff; // updated later
+//   tim.TIM_Prescaler = 0;
+//   tim.TIM_ClockDivision = 0;
+//   tim.TIM_CounterMode = TIM_CounterMode_Up;
+//   TIM_TimeBaseInit(SPI_CLOSE_DELAY_TIMER, &tim);
+//   TIM_SelectOnePulseMode(SPI_CLOSE_DELAY_TIMER, TIM_OPMode_Single);
+   
+  // TIM_Cmd(SPI_CLOSE_DELAY_TIMER, DISABLE);
+ ///  TIM_ITConfig(SPI_CLOSE_DELAY_TIMER,  TIM_IT_Update, ENABLE);
+   
+   SPI_CLOSE_DELAY_TIMER->CR1  = (1<< 3) | ( 1<<2) ;// One pulse mode
+   SPI_CLOSE_DELAY_TIMER->CR2 = 0;
+   SPI_CLOSE_DELAY_TIMER->CNT =0;
+   SPI_CLOSE_DELAY_TIMER->PSC =0;
+   SPI_CLOSE_DELAY_TIMER->CCR1 =0;
+   SPI_CLOSE_DELAY_TIMER->CCR2 =0;
+   SPI_CLOSE_DELAY_TIMER->ARR = 0xFFFF;
+   SPI_CLOSE_DELAY_TIMER->DIER = (1<< 0);
+   nvic.NVIC_IRQChannel = TIM8_BRK_TIM12_IRQn;
+	nvic.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH;
+	nvic.NVIC_IRQChannelSubPriority = 0;
+	nvic.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&nvic);
 	
 	// Pixel timer: Outputs clock for SPI
 	gpio.GPIO_Pin   = GPIO_Pin_4;
@@ -259,7 +290,6 @@ void osdCoreInit(void)
 	tim.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInit(LINE_COUNTER_TIMER, &tim);
 
-	/* Enable the TIM4 gloabal Interrupt */
 	nvic.NVIC_IRQChannel = TIM4_IRQn;
 	nvic.NVIC_IRQChannelPreemptionPriority = PIOS_IRQ_PRIO_HIGH;
 	nvic.NVIC_IRQChannelSubPriority = 1;
@@ -459,6 +489,9 @@ static void start_telem_lines(void)
    PIXEL_TIMER->CCR1 = pios_video_type_telem.dc;
    PIXEL_TIMER->ARR  = pios_video_type_telem.period;
    HSYNC_CAPTURE_TIMER->ARR = telem_graphics_hsync_capture_clks_start; // start of telem data output
+   SPI_CLOSE_DELAY_TIMER->ARR = (pios_video_type_telem.period +1) * 8 ;
+    SPI_CLOSE_DELAY_TIMER->SR = 0;
+   SPI_CLOSE_DELAY_TIMER->CNT = 0;
    cur_trans_mode = trans_tele; 
    active_line = 0;
    end_of_lines = 0;
@@ -482,6 +515,9 @@ static void start_osd_lines(void)
    PIXEL_TIMER->CCR1 = pios_video_type_cfg_act->dc;
    PIXEL_TIMER->ARR  = pios_video_type_cfg_act->period;
    HSYNC_CAPTURE_TIMER->ARR = pios_video_type_cfg_act->dc * (pios_video_type_cfg_act->graphics_column_start + x_offset);
+   SPI_CLOSE_DELAY_TIMER->SR = 0;
+   SPI_CLOSE_DELAY_TIMER->CNT = 0;
+   SPI_CLOSE_DELAY_TIMER->ARR = (pios_video_type_cfg_act->period + 1) * 8 ;
    cur_trans_mode = trans_osd;
    active_line = 0;
    end_of_lines = 0;
@@ -520,6 +556,7 @@ void TIM4_IRQHandler(void)
    }
 }
 
+
 void PIOS_VIDEO_DMA_Handler(void);
 void DMA2_Stream3_IRQHandler(void) __attribute__((alias("PIOS_VIDEO_DMA_Handler")));
 void DMA1_Stream4_IRQHandler(void) __attribute__((alias("PIOS_VIDEO_DMA_Handler")));
@@ -537,6 +574,33 @@ static void wait_spi_complete_then_disable(SPI_TypeDef * spi_ptr)
 
  //  MASK  <-- SPI1_TX  on DMA2_Stream3.channel3
  //  LEVEL <-- SPI2_TX on  DMA1_Stream4.channel0
+
+void TIM8_BRK_TIM12_IRQHandler(void)
+{
+   SPI_CLOSE_DELAY_TIMER->SR = 0;
+   SPI_CLOSE_DELAY_TIMER->CR1 &= ~(1<<0); // Kill!
+#if 1
+   // if timing is right these should be done!
+   wait_spi_complete_then_disable(OSD_MASK_SPI);
+   wait_spi_complete_then_disable(OSD_LEVEL_SPI);
+
+   if (end_of_lines){
+      DMA2->LIFCR |= DMA_FLAG_TCIF3;
+      DMA1->HIFCR |= DMA_FLAG_TCIF4;
+      PIXEL_TIMER->CR1  &= (uint16_t) ~TIM_CR1_CEN;
+      PIXEL_TIMER->SMCR &= (uint16_t) ~TIM_SMCR_SMS;
+      OSD_MASK_DMA->CR &= ~(uint32_t)DMA_SxCR_EN;
+      OSD_LEVEL_DMA->CR &= ~(uint32_t)DMA_SxCR_EN;
+      cur_trans_mode = trans_idle;
+   }else{
+      prepare_line();
+   }
+   // re-enable  DMA irq's
+  // OSD_MASK_DMA->CR |= (uint32_t)(1<<4); // (TCIE)
+  // OSD_LEVEL_DMA->CR |= (uint32_t)(1<<4); // (TCIE) 
+#endif
+   SPI_CLOSE_DELAY_TIMER->CNT = 0;
+}
 /**
  * DMA transfer complete interrupt handler
  * Note: This function is called for every line (~13k times / s), so we use direct register access for
@@ -544,6 +608,19 @@ static void wait_spi_complete_then_disable(SPI_TypeDef * spi_ptr)
  */
 void PIOS_VIDEO_DMA_Handler(void)
 {	
+
+#if 1
+    if( (DMA2->LISR & DMA_FLAG_TCIF3) && (DMA1->HISR & DMA_FLAG_TCIF4) ) {
+          DMA2->LIFCR |= DMA_FLAG_TCIF3;
+         DMA1->HIFCR |= DMA_FLAG_TCIF4;
+   // whichever caused irq disable both
+   // OSD_MASK_DMA->CR &= ~(uint32_t)(1<<4); // (TCIE)
+   // OSD_LEVEL_DMA->CR &= ~(uint32_t)(1<<4); // (TCIE)
+    // start delay timer
+     SPI_CLOSE_DELAY_TIMER->CNT = 0; 
+    SPI_CLOSE_DELAY_TIMER->CR1 |=(1 << 0) ; // (CEN)
+    }
+#else
    if( (DMA2->LISR & DMA_FLAG_TCIF3) && (DMA1->HISR & DMA_FLAG_TCIF4) ) {
       wait_spi_complete_then_disable(OSD_MASK_SPI);
       wait_spi_complete_then_disable(OSD_LEVEL_SPI);
@@ -559,6 +636,7 @@ void PIOS_VIDEO_DMA_Handler(void)
          prepare_line();
       }
    }
+#endif
 }
 
 /**
