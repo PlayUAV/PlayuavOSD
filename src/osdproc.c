@@ -79,8 +79,9 @@ static inline void clearbit(uint8_t* buf, uint32_t bit)
 */
 void write_data ( uint8_t const * ar)
 {
-
+   
    memset( write_buffer_tele,0, TELEM_LINES * TELEM_BUFFER_WIDTH);
+   taskENTER_CRITICAL();
    for ( uint32_t y = 0 ,yend = TELEM_LINES; y < yend; ++y){ // rows
      // start of line mark state 
      uint32_t bit_offset = y * 8U * TELEM_BUFFER_WIDTH + 3U;
@@ -100,27 +101,28 @@ void write_data ( uint8_t const * ar)
          ++ar;
       }
       // rest of line mark state
+      
    }
-
+   taskEXIT_CRITICAL();
 }
 
 // the user layer buffer
 // user can write 8 bit values for transmission here
-char telem_tx_buffer[TELEM_LINES * TELEM_DATA_BYTES_PER_LINE] = { 0 };
+// TODO change to uint8_t and test
+static char telem_tx_buffer[TELEM_LINES * TELEM_DATA_BYTES_PER_LINE] = { 0 };
 
 void dev_test(void)
 {    
-    memset (telem_tx_buffer,0, TELEM_LINES * TELEM_DATA_BYTES_PER_LINE);
+    
+   // memset (telem_tx_buffer,0, TELEM_LINES * TELEM_DATA_BYTES_PER_LINE);
 
-    char array[] = "Hi to Air OSD from PlayUAVOSD";
-    strcpy(telem_tx_buffer,array);
-    telem_tx_buffer[strlen(array)] = '\0';
+    uint32_t time_now = GetSystimeMS();
+    
+    snprintf(telem_tx_buffer,TELEM_LINES * TELEM_DATA_BYTES_PER_LINE,"PlayUAV time = %u",time_now);
+
     write_data(telem_tx_buffer);
-
-//    write_string("Telemetry test", 10,10,
-//                     0, 0, TEXT_VA_TOP, eeprom_buffer.params.Arm_align, 0,
-//                     SIZE_TO_FONT[eeprom_buffer.params.Arm_fontsize]);
-//    
+  
+   // write_string("Telemetry test", 0, 20, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);  
 }
 
 void do_converts(void)
