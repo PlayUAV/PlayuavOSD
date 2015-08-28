@@ -112,7 +112,9 @@ void dev_test(void)
 {    
     memset (telem_tx_buffer,0, TELEM_LINES * TELEM_DATA_BYTES_PER_LINE);
 
-    strcpy(telem_tx_buffer,"Hello World\n");
+    char array[] = "Hello World";
+    strcpy(telem_tx_buffer,array);
+    telem_tx_buffer[strlen(array)] = '\0';
     write_data(telem_tx_buffer);
 
 //    write_string("Telemetry test", 10,10,
@@ -175,7 +177,7 @@ void RenderScreen(void)
     do_converts();
 
     dev_test();
-  //  return;
+    return;
 //---------------------------------------------------
 //  DJI_test();
 //  return;

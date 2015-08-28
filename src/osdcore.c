@@ -595,11 +595,11 @@ void TIM8_BRK_TIM12_IRQHandler(void)
 void PIOS_VIDEO_DMA_Handler(void)
 {	
    if( (DMA2->LISR & DMA_FLAG_TCIF3) && (DMA1->HISR & DMA_FLAG_TCIF4) ) {
-       DMA2->LIFCR |= DMA_FLAG_TCIF3;
+      DMA2->LIFCR |= DMA_FLAG_TCIF3;
       DMA1->HIFCR |= DMA_FLAG_TCIF4;
 
-   SPI_CLOSE_DELAY_TIMER->CNT = 0; 
-   SPI_CLOSE_DELAY_TIMER->CR1 |=(1 << 0) ; // (CEN)
+      SPI_CLOSE_DELAY_TIMER->CNT = 0; 
+      SPI_CLOSE_DELAY_TIMER->CR1 |= (1 << 0) ; // (CEN)
    }
 }
 
