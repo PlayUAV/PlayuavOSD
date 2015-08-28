@@ -112,7 +112,7 @@ void dev_test(void)
 {    
     memset (telem_tx_buffer,0, TELEM_LINES * TELEM_DATA_BYTES_PER_LINE);
 
-    char array[] = "Hello World";
+    char array[] = "Hi to Air OSD from PlayUAVOSD";
     strcpy(telem_tx_buffer,array);
     telem_tx_buffer[strlen(array)] = '\0';
     write_data(telem_tx_buffer);
