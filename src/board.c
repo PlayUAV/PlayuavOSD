@@ -156,6 +156,8 @@ void vTaskHeartBeat(void *pvParameters)
 	{
 		LEDToggle(LED_GREEN);
 		vTaskDelay( 500 / portTICK_RATE_MS );
+        
+        
 	}
 }
 
@@ -200,6 +202,18 @@ void vTask10HZ(void *pvParameters)
                 waitingMAVBeats = 0;
                 lastMAVBeat = GetSystimeMS();
             }
+            
+            if(enable_mission_count_request == 1)
+            {
+                request_mission_count();
+                enable_mission_count_request = 0;
+            }
+
+            if(enable_mission_item_request == 1)
+            {
+                request_mission_item(current_mission_item_req_index);
+            }
+
         }
 }
 

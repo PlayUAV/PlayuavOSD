@@ -22,6 +22,7 @@
 #include "osdmavlink.h"
 #include "osdvar.h"
 
+#define MAX_STREAMS 6
 
 mavlink_system_t mavlink_system = {12,1,0,0}; //modified
 mavlink_message_t msg; 
@@ -32,7 +33,6 @@ uint8_t mavlink_requested = 0;
 extern xSemaphoreHandle onMavlinkSemaphore;
 extern uint8_t *mavlink_buffer_proc;
 
-#define MAX_STREAMS 6
 void request_mavlink_rates(void)
 {
     const u8 MAVStreams[MAX_STREAMS] = {MAV_DATA_STREAM_RAW_SENSORS,
@@ -53,6 +53,18 @@ void request_mavlink_rates(void)
             apm_mav_system, apm_mav_component,
             MAVStreams[i], MAVRates[i], 1);
     }
+}
+
+void request_mission_count(void)
+{
+    mavlink_msg_mission_request_list_send(MAVLINK_COMM_0, 
+                    apm_mav_system, apm_mav_component);
+}
+
+void request_mission_item(uint16_t index)
+{
+    mavlink_msg_mission_request_send(MAVLINK_COMM_0, 
+                    apm_mav_system, apm_mav_component, index);
 }
 
 void parseMavlink(void)
@@ -87,6 +99,11 @@ void parseMavlink(void)
                         lastMAVBeat = GetSystimeMS();
                         if(waitingMAVBeats == 1){
                             enable_mav_request = 1;
+                        }
+                        
+                        if((got_mission_counts == 0) && (enable_mission_count_request == 0))
+                        {
+                            enable_mission_count_request = 1;
                         }
                     }
                     break;
@@ -197,6 +214,54 @@ void parseMavlink(void)
                         osd_windSpeed = mavlink_msg_wind_get_speed(&msg); //m/s
                     }
                     break;
+
+                case MAVLINK_MSG_ID_MISSION_COUNT:
+                    {
+                        mission_counts = mavlink_msg_mission_count_get_count(&msg);                        
+                        got_mission_counts = 1;
+                        enable_mission_item_request = 1;
+                        current_mission_item_req_index = 0;
+                        wp_counts = 0;
+                    }
+                    break;
+                    
+                case MAVLINK_MSG_ID_MISSION_ITEM:
+                    {
+                        uint16_t seq, cmd;
+                        
+                        seq = mavlink_msg_mission_item_get_seq(&msg);
+                        cmd = mavlink_msg_mission_item_get_command(&msg);
+                        
+                        // received a packet, but not what we requested
+                        if(current_mission_item_req_index == seq)
+                        {
+                            //store the waypoints
+                            if((cmd == 16) && (wp_counts < MAX_WAYPOINTS))
+                            {
+                                
+                                wp_list[wp_counts].seq = seq;
+                                wp_list[wp_counts].cmd = cmd;
+                                
+                                wp_list[wp_counts].x = mavlink_msg_mission_item_get_x(&msg);
+                                wp_list[wp_counts].y = mavlink_msg_mission_item_get_y(&msg);
+                                wp_list[wp_counts].z = mavlink_msg_mission_item_get_z(&msg);
+
+                                wp_list[wp_counts].current = mavlink_msg_mission_item_get_current(&msg);
+                                wp_counts++;
+                            }
+                            
+                            current_mission_item_req_index++;
+                            if(current_mission_item_req_index >= mission_counts){
+                                enable_mission_item_request = 0;
+                                got_all_wps = 1;
+                            }
+                        }
+                        
+
+                        
+                    }
+                    break;
+
 /*
                 // will be used in the future. See Samuel's PR:https://github.com/PlayUAV/PlayuavOSD/pull/13
                 // Noticed: the type of variable in this message is int32_t. Currently we use float type to simulate.

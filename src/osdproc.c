@@ -25,6 +25,8 @@
 #include "fonts.h"
 #include "UAVObj.h"
 #include "osdconfig.h"
+#include "osdmavlink.h"
+#include "math3d.h"
 
 #define HUD_VSCALE_FLAG_CLEAR       1
 #define HUD_VSCALE_FLAG_NO_NEGATIVE 2
@@ -59,6 +61,8 @@ const char * dist_unit_short = METRIC_DIST_SHORT;
 const char * dist_unit_long = METRIC_DIST_LONG;
 const char * spd_unit = METRIC_SPEED;
 
+
+    
 void do_converts(void)
 {
 	if (eeprom_buffer.params.Units_mode == 1)
@@ -116,6 +120,7 @@ void RenderScreen(void)
 
     do_converts();
 
+//    draw_wps();
 //    DJI_test();
 //    return;
 
@@ -442,6 +447,12 @@ void RenderScreen(void)
         hud_draw_wind();
     }
 
+    //draw all waypoints
+    //if (eeprom_buffer.params.FlightMode_en==1 && bShownAtPanle(eeprom_buffer.params.FlightMode_panel)) {
+    if (bShownAtPanle(4)) {
+        draw_wps();
+    }
+    
     //warnning - should be displayed lastly in case not be covered by others
     hud_draw_warnning();
 }
@@ -1195,6 +1206,153 @@ void hud_draw_warnning(void)
         warn_str = "";
     }
 }
+
+void gen_overlay_rect(float lat, float lon, VECTOR4D_PTR vec)
+{
+    //left:vec.x  top:vec.y  right:vec.z  bottom:vec.w
+    if(lon < vec->x) vec->x = lon;
+    if(lat > vec->y) vec->y = lat;
+    if(lon > vec->z) vec->z = lon;
+    if(lat < vec->w) vec->w = lat;
+}
+
+VERTEX2DF gps_to_screen_pixel(float lat, float lon, float cent_lat, float cent_lon, 
+                              float rect_diagonal_half, float cent_x, float cent_y, float radius)
+{
+    float dstlon, dstlat, distance;
+    float scaleLongUp, scaleLongDown;
+    int dir = 0;
+    
+    VERTEX2DF point_ret;
+
+    scaleLongUp   = 1.0f/Fast_Cos(fabs(lat));
+    scaleLongDown = Fast_Cos(fabs(lat));
+    
+    dstlon = fabs(lon - cent_lon) * 111319.5f * scaleLongDown; 
+    dstlat = fabs(lat - cent_lat) * 111319.5f;
+    distance = sqrt(dstlat*dstlat + dstlon*dstlon);
+    
+    dstlon = (lon - cent_lon); 
+    dstlat = (lat - cent_lat) * scaleLongUp; 
+    dir = 270 + (atan2(dstlat, -dstlon) * R2D); 
+    dir = (dir+360)%360;
+    point_ret.x = cent_x + radius * Fast_Sin(dir) * distance / rect_diagonal_half;
+    point_ret.y = cent_y - radius * Fast_Cos(dir) * distance / rect_diagonal_half;
+    
+    return point_ret;
+}
+
+void draw_wps(void)
+{
+    if(got_all_wps == 0)
+        return;
+    
+    char tmp_str[50] = { 0 };
+    float uav_lat = osd_lat / 10000000.0f;
+    float uav_lon = osd_lon / 10000000.0f;
+    float home_lat = osd_home_lat / 10000000.0f;
+    float home_lon = osd_home_lon / 10000000.0f;
+    
+    float uav_x = 0.0f;
+    float uav_y = 0.0f;
+    
+    VECTOR4D rect;
+    rect.x = 999.0f;
+    rect.y = -999.0f;
+    rect.z = -999.0f;
+    rect.w = 999.0f;
+    
+    for(int i=1; i<wp_counts; i++)
+    {
+        gen_overlay_rect(wp_list[i].x, wp_list[i].y, &rect);
+    }
+    
+    if(osd_fix_type > 1){
+        gen_overlay_rect(uav_lat, uav_lon, &rect);
+    }
+    
+    if(osd_got_home > 1){
+        gen_overlay_rect(home_lat, home_lon, &rect);
+    }
+
+    float rect_half_height = fabs(rect.y - rect.w)/2;
+    float rect_half_width = fabs(rect.x - rect.z)/2;
+    float cent_lat = rect.w + rect_half_height;
+    float cent_lon = rect.x + rect_half_width;
+    uint32_t cent_x = GRAPHICS_X_MIDDLE;
+    uint32_t cent_y = GRAPHICS_Y_MIDDLE;
+    uint32_t radius = cent_y - 20;
+    
+    float dstlon, dstlat, scaleLongDown;
+    
+    VERTEX2DF wps_screen_point[wp_counts];
+    scaleLongDown = Fast_Cos(fabs(rect.y));
+    dstlon = fabs(rect.x - rect.z) * 111319.5f * scaleLongDown; 
+    dstlat = fabs(rect.y - rect.w) * 111319.5f;
+    float rect_diagonal_half = sqrt(dstlat*dstlat + dstlon*dstlon)/2;
+    
+    VERTEX2DF tmp_point;
+    for(int i=1; i<wp_counts; i++)
+    {
+        wps_screen_point[i] = gps_to_screen_pixel(wp_list[i].x, wp_list[i].y, cent_lat, cent_lon,
+                                              rect_diagonal_half, cent_x, cent_y, radius);
+    }
+    
+    if(osd_fix_type > 1){
+        tmp_point = gps_to_screen_pixel(uav_lat, uav_lon, cent_lat, cent_lon,
+                                              rect_diagonal_half, cent_x, cent_y, radius);
+        uav_x = tmp_point.x;
+        uav_y = tmp_point.y;
+    }
+    
+    if(osd_got_home > 1){
+        wps_screen_point[0] = gps_to_screen_pixel(home_lat, home_lon, cent_lat, cent_lon,
+                                              rect_diagonal_half, cent_x, cent_y, radius);
+    }
+    
+    //draw line
+    for(int i=1; i<wp_counts-1; i++)
+    {
+        write_line_outlined(wps_screen_point[i].x, wps_screen_point[i].y, wps_screen_point[i+1].x, wps_screen_point[i+1].y, 2, 2, 0, 1);
+    }
+    
+    if(osd_got_home == 1){
+        write_line_outlined(wps_screen_point[0].x, wps_screen_point[0].y, wps_screen_point[1].x, wps_screen_point[1].y, 2, 2, 0, 1);
+//        write_line_outlined(wps_screen_point[0].x, wps_screen_point[0].y, wps_screen_point[wp_counts-1].x, wps_screen_point[wp_counts-1].y, 2, 2, 0, 1);
+    }
+    
+    //draw number
+    for(int i=1; i<wp_counts; i++)
+    {
+        sprintf(tmp_str, "%d", wp_list[i].seq);
+        write_string(tmp_str, wps_screen_point[i].x, wps_screen_point[i].y, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[2]);
+    }
+
+    //draw home
+    if(osd_got_home == 1){
+        write_string("H", wps_screen_point[0].x, wps_screen_point[0].y, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[2]);
+    }
+    
+    if(osd_fix_type > 1){
+        //draw heading
+        POLYGON2D suav;
+        suav.state       = 1;
+        suav.num_verts   = 3;
+        suav.x0          = uav_x;
+        suav.y0          = uav_y;
+        VECTOR2D_INITXYZ(&(suav.vlist_local[0]), 0, -10);
+        VECTOR2D_INITXYZ(&(suav.vlist_local[1]), -5, 10);
+        VECTOR2D_INITXYZ(&(suav.vlist_local[2]), 5, 10);
+        Reset_Polygon2D(&suav);
+        Rotate_Polygon2D(&suav, osd_heading);
+        write_line_outlined(suav.vlist_trans[0].x+suav.x0, suav.vlist_trans[0].y+suav.y0,
+                            suav.vlist_trans[1].x+suav.x0,suav.vlist_trans[1].y+suav.y0, 2, 2, 0, 1);
+        write_line_outlined(suav.vlist_trans[0].x+suav.x0, suav.vlist_trans[0].y+suav.y0,
+                            suav.vlist_trans[2].x+suav.x0,suav.vlist_trans[2].y+suav.y0, 2, 2, 0, 1);
+    }
+}
+
+
 
 void DJI_test(void)
 {
