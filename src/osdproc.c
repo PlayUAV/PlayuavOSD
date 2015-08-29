@@ -184,7 +184,7 @@ void RenderScreen(void)
     }
 
     if (eeprom_buffer.params.TALT_en==1 && bShownAtPanle(eeprom_buffer.params.TALT_panel)) {
-        float tmp = osd_alt * convert_distance;
+        float tmp = (osd_alt - osd_home_alt) * convert_distance;
         if (tmp < convert_distance_divider){
             sprintf(tmp_str, "ALT: %d%s", (int) tmp, dist_unit_short);
         }
@@ -407,14 +407,32 @@ void RenderScreen(void)
 
     //RSSI
     if (eeprom_buffer.params.RSSI_en==1 && bShownAtPanle(eeprom_buffer.params.RSSI_panel)) {
-        int rssi = osd_rssi;
+        int rssi = (int)osd_rssi;
         x = eeprom_buffer.params.RSSI_posX;
         y = eeprom_buffer.params.RSSI_posY;
 
+        //Not from the MAVLINK, should take the RC channel PWM value.
+        if(eeprom_buffer.params.RSSI_type != 0)
+        {
+            if(eeprom_buffer.params.RSSI_type == 5) rssi = (int)osd_chan5_raw;
+            else if(eeprom_buffer.params.RSSI_type == 6) rssi = (int)osd_chan6_raw;
+            else if(eeprom_buffer.params.RSSI_type == 7) rssi = (int)osd_chan7_raw;
+            else if(eeprom_buffer.params.RSSI_type == 8) rssi = (int)osd_chan8_raw;
+            else if(eeprom_buffer.params.RSSI_type == 9) rssi = (int)osd_chan9_raw;
+            else if(eeprom_buffer.params.RSSI_type == 10) rssi = (int)osd_chan10_raw;
+            else if(eeprom_buffer.params.RSSI_type == 11) rssi = (int)osd_chan11_raw;
+            else if(eeprom_buffer.params.RSSI_type == 12) rssi = (int)osd_chan12_raw;
+            else if(eeprom_buffer.params.RSSI_type == 13) rssi = (int)osd_chan13_raw;
+            else if(eeprom_buffer.params.RSSI_type == 14) rssi = (int)osd_chan14_raw;
+            else if(eeprom_buffer.params.RSSI_type == 15) rssi = (int)osd_chan15_raw;
+            else if(eeprom_buffer.params.RSSI_type == 16) rssi = (int)osd_chan16_raw;
+        }
+
         //0:percentage 1:raw
-        if (eeprom_buffer.params.RSSI_raw_en == 0) {
+        if ((eeprom_buffer.params.RSSI_raw_en == 0) || (eeprom_buffer.params.RSSI_type != 0)) {
             uint16_t rssiMin = eeprom_buffer.params.RSSI_min;
             uint16_t rssiMax = eeprom_buffer.params.RSSI_max;
+
             if (rssiMin < 0)
                 rssiMin = 0;
             if (rssiMax > 255)
@@ -426,6 +444,8 @@ void RenderScreen(void)
             if (rssi < 0)
                 rssi = 0;
         }
+
+
         sprintf(tmp_str, "RSSI:%d/", rssi);
         write_string(tmp_str, x, y, 0, 0, TEXT_VA_MIDDLE,
                 eeprom_buffer.params.RSSI_align, 0,
@@ -673,13 +693,23 @@ void hud_draw_CWH(void)
     if((osd_got_home == 0) && (motor_armed) && (osd_fix_type > 1)){
         osd_home_lat = osd_lat;
         osd_home_lon = osd_lon;
+        osd_alt_cnt = 0;
         osd_got_home = 1;
     }
     else if(osd_got_home == 1){
+        // JRChange: osd_home_alt: check for stable osd_alt (must be stable for 75*40ms = 3s)
+        if (osd_alt_cnt < 75) {
+            if (fabs(osd_alt_prev - osd_alt) > 0.5) {
+                osd_alt_cnt = 0;
+                osd_alt_prev = osd_alt;
+            } else {
+                if (++osd_alt_cnt >= 75) {
+                    osd_home_alt = osd_alt; // take this stable osd_alt as osd_home_alt
+                }
+            }
+        }
+
         // shrinking factor for longitude going to poles direction
-//        float rads = fabs(osd_home_lat) * D2R;
-//        double scaleLongDown = Fast_Cos(rads);
-//        double scaleLongUp   = 1.0f/Fast_Cos(rads);
         double scaleLongDown = Fast_Cos(fabs(osd_home_lat));
         double scaleLongUp   = 1.0f/Fast_Cos(fabs(osd_home_lat));
 
