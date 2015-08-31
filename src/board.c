@@ -157,7 +157,7 @@ void vTaskHeartBeat(void *pvParameters)
 		LEDToggle(LED_GREEN);
 		vTaskDelay( 500 / portTICK_RATE_MS );
         
-        
+
 	}
 }
 

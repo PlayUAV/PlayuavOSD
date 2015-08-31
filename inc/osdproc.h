@@ -39,7 +39,7 @@ void hud_draw_throttle(void);
 void hud_draw_wind(void);
 void hud_draw_CWH(void);							 
 void hud_draw_head_wp_home(void);
-void draw_wps(void);
+void draw_map(void);
 	
 void DJI_test(void);							 
 
