@@ -15,7 +15,7 @@
  */
 
 #include "board.h"
-#include "Led.h"
+#include "led.h"
 #include "osdproc.h"
 #include "osdcore.h"
 #include "osdmavlink.h"
@@ -25,7 +25,7 @@
 #include "osdconfig.h"
 #include "math3d.h"
 #include "osdvar.h"
-#include "uavTalk.h"
+#include "uavtalk.h"
 
 void vTaskHeartBeat(void *pvParameters);
 void vTask10HZ(void *pvParameters);

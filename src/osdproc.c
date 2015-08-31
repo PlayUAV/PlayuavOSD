@@ -16,7 +16,7 @@
  
 #include "osdproc.h"
 #include "graphengine.h"
-#include "Led.h"
+#include "led.h"
 #include "osdcore.h"
 #include "osdvar.h"
 #include "fonts.h"
@@ -113,16 +113,23 @@ static char telem_tx_buffer[TELEM_LINES * TELEM_DATA_BYTES_PER_LINE] = { 0 };
 
 void dev_test(void)
 {    
-    
-   // memset (telem_tx_buffer,0, TELEM_LINES * TELEM_DATA_BYTES_PER_LINE);
+
+   // write_string("Telemetry test", 10, 20, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]); 
 
     uint32_t time_now = GetSystimeMS();
     
     snprintf(telem_tx_buffer,TELEM_LINES * TELEM_DATA_BYTES_PER_LINE,"PlayUAV time = %u",time_now);
 
     write_data(telem_tx_buffer);
+
+//    uint32_t numlines = 2;
+//   // uint32_t x = 100;
+//    uint32_t x = 220;
+//    for (uint32_t i = 0; i < numlines; i++){
+//       write_vline_lm(x+ i, 20, 200, 0, 1);
+//    }
   
-   // write_string("Telemetry test", 0, 20, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);  
+     
 }
 
 void do_converts(void)
@@ -179,7 +186,7 @@ void RenderScreen(void)
     do_converts();
 
     dev_test();
-    return;
+   // return;
 //---------------------------------------------------
 //  DJI_test();
 //  return;
