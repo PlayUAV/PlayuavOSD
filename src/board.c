@@ -15,17 +15,17 @@
  */
 
 #include "board.h"
+
 #include "led.h"
+#include "uavtalk.h"
 #include "osdproc.h"
 #include "osdcore.h"
 #include "osdmavlink.h"
 #include "max7456.h"
 #include "usart2.h"
 #include "osdconfig.h"
-#include "osdconfig.h"
 #include "math3d.h"
 #include "osdvar.h"
-#include "uavtalk.h"
 
 void vTaskHeartBeat(void *pvParameters);
 void vTask10HZ(void *pvParameters);
@@ -104,12 +104,12 @@ void board_init(void)
 	GPIO_Init(GPIOA, &gpio);
 	GPIO_SetBits(GPIOA,GPIO_Pin_15);
 
-    SPI_MAX7456_init();
-
     Build_Sin_Cos_Tables();
 
     LoadParams();
     checkDefaultParam();
+
+    SPI_MAX7456_init();
 
     atti_mp_scale = (float)eeprom_buffer.params.Atti_mp_scale_real + (float)eeprom_buffer.params.Atti_mp_scale_frac * 0.01;
     atti_3d_scale = (float)eeprom_buffer.params.Atti_3D_scale_real + (float)eeprom_buffer.params.Atti_3D_scale_frac * 0.01;
@@ -157,6 +157,8 @@ void vTaskHeartBeat(void *pvParameters)
 	{
 		LEDToggle(LED_GREEN);
 		vTaskDelay( 500 / portTICK_RATE_MS );
+        
+
 	}
 }
 
@@ -165,6 +167,12 @@ void vTask10HZ(void *pvParameters)
     for(;;)
         {
             vTaskDelay( 100 / portTICK_RATE_MS );
+
+            // calculate osd_curr_consumed_mah(simulation)
+            osd_curr_consumed_mah += (osd_curr_A * 0.00027777778f);
+
+            // calculate osd_total_trip_dist(simulation)
+            if (osd_groundspeed > 1.0f) osd_total_trip_dist += (osd_groundspeed * 0.1f);
 
             //trigger video switch
             if(eeprom_buffer.params.PWM_Video_en)
@@ -195,6 +203,18 @@ void vTask10HZ(void *pvParameters)
                 waitingMAVBeats = 0;
                 lastMAVBeat = GetSystimeMS();
             }
+            
+            if(enable_mission_count_request == 1)
+            {
+                request_mission_count();
+                enable_mission_count_request = 0;
+            }
+
+            if(enable_mission_item_request == 1)
+            {
+                request_mission_item(current_mission_item_req_index);
+            }
+
         }
 }
 
@@ -208,6 +228,14 @@ void triggerVideo(void)
 	else if(eeprom_buffer.params.PWM_Video_ch == 6) video_ch_raw = osd_chan6_raw;
 	else if(eeprom_buffer.params.PWM_Video_ch == 7) video_ch_raw = osd_chan7_raw;
 	else if(eeprom_buffer.params.PWM_Video_ch == 8) video_ch_raw = osd_chan8_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 9) video_ch_raw = osd_chan9_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 10) video_ch_raw = osd_chan10_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 11) video_ch_raw = osd_chan11_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 12) video_ch_raw = osd_chan12_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 13) video_ch_raw = osd_chan13_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 14) video_ch_raw = osd_chan14_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 15) video_ch_raw = osd_chan15_raw;
+	else if(eeprom_buffer.params.PWM_Video_ch == 16) video_ch_raw = osd_chan16_raw;
 
 	if((video_ch_raw > eeprom_buffer.params.PWM_Video_value))
 	{
@@ -244,6 +272,14 @@ void triggerPanel(void)
 	else if(eeprom_buffer.params.PWM_Panel_ch == 6) panel_ch_raw = osd_chan6_raw;
 	else if(eeprom_buffer.params.PWM_Panel_ch == 7) panel_ch_raw = osd_chan7_raw;
 	else if(eeprom_buffer.params.PWM_Panel_ch == 8) panel_ch_raw = osd_chan8_raw;
+	else if(eeprom_buffer.params.PWM_Panel_ch == 9) panel_ch_raw = osd_chan9_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 10) panel_ch_raw = osd_chan10_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 11) panel_ch_raw = osd_chan11_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 12) panel_ch_raw = osd_chan12_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 13) panel_ch_raw = osd_chan13_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 14) panel_ch_raw = osd_chan14_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 15) panel_ch_raw = osd_chan15_raw;
+    else if(eeprom_buffer.params.PWM_Panel_ch == 16) panel_ch_raw = osd_chan16_raw;
 
 	if((panel_ch_raw > eeprom_buffer.params.PWM_Panel_value))
 	{
@@ -308,11 +344,50 @@ void checkDefaultParam()
         eeprom_buffer.params.osd_offsetX = 0;
     }
 
+    if (eeprom_buffer.params.osd_offsetX > 20) {
+        eeprom_buffer.params.osd_offsetX = 20;
+        bNeedUpdateFlash = true;
+    }
+    if (eeprom_buffer.params.osd_offsetX <-20) {
+        eeprom_buffer.params.osd_offsetX = -20;
+        bNeedUpdateFlash = true;
+    }
+    if (eeprom_buffer.params.osd_offsetY > 20) {
+        eeprom_buffer.params.osd_offsetY = 20;
+        bNeedUpdateFlash = true;
+    }
+    if (eeprom_buffer.params.osd_offsetY <-20) {
+        eeprom_buffer.params.osd_offsetY = -20;
+        bNeedUpdateFlash = true;
+    }
+
+    if (eeprom_buffer.params.firmware_ver < 6) {
+        eeprom_buffer.params.firmware_ver = 6;
+        bNeedUpdateFlash = true;
+    }
+
+    if (eeprom_buffer.params.firmware_ver < 7) {
+        eeprom_buffer.params.firmware_ver = 7;
+        eeprom_buffer.params.Speed_scale_posY = 133;
+        eeprom_buffer.params.Alt_Scale_posY = 133;
+        eeprom_buffer.params.BattConsumed_en = 1;
+        eeprom_buffer.params.BattConsumed_panel = 1;
+        eeprom_buffer.params.BattConsumed_posX = 350;
+        eeprom_buffer.params.BattConsumed_posY = 34;
+        eeprom_buffer.params.BattConsumed_fontsize = 0;
+        eeprom_buffer.params.BattConsumed_align = 2;
+        eeprom_buffer.params.TotalTripDist_en = 1;
+        eeprom_buffer.params.TotalTripDist_panel = 1;
+        eeprom_buffer.params.TotalTripDist_posX = 350;
+        eeprom_buffer.params.TotalTripDist_posY = 210;
+        eeprom_buffer.params.TotalTripDist_fontsize = 0;
+        eeprom_buffer.params.TotalTripDist_align = 2;
+        bNeedUpdateFlash = true;
+    }
 
     bool ret = false;
     if(bNeedUpdateFlash)
     {
-        eeprom_buffer.params.firmware_ver = 5;
         ret = StoreParams();
         if(!ret)
         {

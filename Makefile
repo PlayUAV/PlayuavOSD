@@ -1,5 +1,6 @@
 EXECUTABLE=PlayuavOSD.elf
 TARGETBIN=PlayuavOSD.bin
+TARGETHEX=PlayuavOSD.hex
 
 CC=arm-none-eabi-gcc
 AS=arm-none-eabi-as
@@ -17,18 +18,23 @@ USBDEVICELIB = $(STMLIBSDIR)/STM32_USB_Device_Library
 USBHOSTLIB = $(STMLIBSDIR)/STM32_USB_HOST_Library
 MAVLINKDIR = ./lib/mavlink/v1.0
 
-INCLUDES = -I$(STMLIBSDIR)/CMSIS/Include/ \
-		   -I$(STMLIBSDIR)/CMSIS/ST/STM32F4xx/Include/ \
-		   -I$(STMSPINCDDIR)/ \
-		   -I$(FREERTOSDIR)/include    \
-           -I$(FREERTOSDIR)/portable/GCC/ARM_CM4F    \
-           -I$(MAVLINKDIR)    \
-           -I$(USBDEVICELIB)/Class/cdc/inc    \
-           -I$(USBDEVICELIB)/Core/inc    \
-           -I$(USBHOSTLIB)/Core/inc    \
-           -I$(USBOTGLIB)/inc    \
-		   -I./inc 
-		   
+STM32_INCLUDES = -I$(STMLIBSDIR)/CMSIS/Include/ \
+				 -I$(STMLIBSDIR)/CMSIS/ST/STM32F4xx/Include/ \
+				 -I$(STMSPINCDDIR)/ \
+				 -I$(FREERTOSDIR)/include    \
+          		 -I$(FREERTOSDIR)/portable/GCC/ARM_CM4F    \
+          		 -I$(MAVLINKDIR)    \
+          		 -I$(USBDEVICELIB)/Class/cdc/inc    \
+          		 -I$(USBDEVICELIB)/Core/inc    \
+          		 -I$(USBHOSTLIB)/Core/inc    \
+          		 -I$(USBOTGLIB)/inc    \
+				 -I./inc 
+OPTIMIZE       = -O0
+
+CFLAGS	= $(MCFLAGS)  $(OPTIMIZE)  $(DEFS) -I./ -I./ $(STM32_INCLUDES)  -Wl,-T,./linker/stm32_flash.ld
+AFLAGS	= $(MCFLAGS) 
+#-mapcs-float use float regs. small increase in code size
+
 STM32_USB_OTG_SRC = $(USBOTGLIB)/src/usb_dcd_int.c \
 					$(USBOTGLIB)/src/usb_core.c \
 					$(USBOTGLIB)/src/usb_dcd.c \
@@ -111,7 +117,7 @@ $(EXECUTABLE): $(SRC) $(STARTUP)
 	$(CC) $(CFLAGS) $^ -lm -lc -lnosys -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -o $@
 
 objcopy:
-	@python -u px_mkfw.py --image $(TARGETBIN) > playuavosd.hex
+	@python -u px_mkfw.py --image $(TARGETBIN) > $(TARGETHEX)
 	
 clean:
-	rm -f $(TARGETBIN) $(EXECUTABLE) $(SRC:.c=.lst)
+	rm -f $(TARGETBIN) $(EXECUTABLE) $(TARGETHEX) $(SRC:.c=.lst)

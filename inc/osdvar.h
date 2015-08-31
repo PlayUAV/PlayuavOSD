@@ -5,25 +5,27 @@
 
 
 /////////////////////////////////////////////////////////////////////////
-extern u8       mavbeat;
-extern u32      lastMAVBeat;
-extern u32      lastWritePanel;
-extern u8       waitingMAVBeats;
-extern u8       apm_mav_type;
-extern u8       apm_mav_system;
-extern u8       apm_mav_component;
-extern u8       enable_mav_request;
-extern u32      sys_start_time;
-extern u32      heatbeat_start_time;
-extern u32      armed_start_time;
+extern uint8_t      mavbeat;
+extern uint32_t     lastMAVBeat;
+extern uint32_t     lastWritePanel;
+extern uint8_t      waitingMAVBeats;
+extern uint8_t      apm_mav_type;
+extern uint8_t      apm_mav_system;
+extern uint8_t      apm_mav_component;
+extern uint8_t      enable_mav_request;
+extern uint32_t     sys_start_time;
+extern uint32_t     heatbeat_start_time;
+extern uint32_t     armed_start_time;
+
 /////////////////////////////////////////////////////////////////////////
 extern float        osd_vbat_A;                 // Battery A voltage in milivolt
 extern int16_t      osd_curr_A;                 // Battery A current
 extern int8_t       osd_battery_remaining_A;    // 0 to 100 <=> 0 to 1000
+extern float        osd_curr_consumed_mah;      // total current drawn since startup in amp-hours
 
-extern float       osd_pitch;                  // pitch from DCM
-extern float       osd_roll;                   // roll from DCM
-extern float       osd_yaw;                    // relative heading form DCM
+extern float        osd_pitch;                  // pitch from DCM
+extern float        osd_roll;                   // roll from DCM
+extern float        osd_yaw;                    // relative heading form DCM
 extern float        osd_heading;                // ground course heading from GPS
 
 extern float        osd_lat;                    // latidude
@@ -44,6 +46,7 @@ extern float        osd_downVelocity;            // ground speed
 extern uint16_t     osd_throttle;               // throtle
 extern float        osd_alt;                    // altitude
 extern float        osd_climb;
+extern float        osd_total_trip_dist;        //total trip distance since startup, calculated in meter
 
 extern float        nav_roll; // Current desired roll in degrees
 extern float        nav_pitch; // Current desired pitch in degrees
@@ -62,12 +65,23 @@ extern bool         motor_armed;
 extern bool         last_motor_armed;
 extern uint8_t      base_mode;
 
-extern int16_t      chan1_raw;
-extern int16_t      chan2_raw;
+extern bool         osd_chan_cnt_above_eight;
+extern uint16_t     osd_chan1_raw;
+extern uint16_t     osd_chan2_raw;
+extern uint16_t     osd_chan3_raw;
+extern uint16_t     osd_chan4_raw;
 extern uint16_t     osd_chan5_raw;
 extern uint16_t     osd_chan6_raw;
 extern uint16_t     osd_chan7_raw;
 extern uint16_t     osd_chan8_raw;
+extern uint16_t     osd_chan9_raw;
+extern uint16_t     osd_chan10_raw;
+extern uint16_t     osd_chan11_raw;
+extern uint16_t     osd_chan12_raw;
+extern uint16_t     osd_chan13_raw;
+extern uint16_t     osd_chan14_raw;
+extern uint16_t     osd_chan15_raw;
+extern uint16_t     osd_chan16_raw;
 extern uint8_t      osd_rssi; //raw value from mavlink
 
 extern uint8_t      osd_got_home;               // tels if got home position or not
@@ -79,15 +93,48 @@ extern uint32_t     osd_home_bearing;
 extern uint8_t      osd_alt_cnt;              // counter for stable osd_alt
 extern float        osd_alt_prev;             // previous altitude
 
-extern float osd_windSpeed;
-extern float osd_windDir;
+extern float        osd_windSpeed;
+extern float        osd_windDir;
 
 extern volatile uint8_t     current_panel;
 
-extern float atti_mp_scale;
-extern float atti_3d_scale;
-extern uint32_t atti_3d_min_clipX;
-extern uint32_t atti_3d_max_clipX;
-extern uint32_t atti_3d_min_clipY;
-extern uint32_t atti_3d_max_clipY;
+extern float        atti_mp_scale;
+extern float        atti_3d_scale;
+extern uint32_t     atti_3d_min_clipX;
+extern uint32_t     atti_3d_max_clipX;
+extern uint32_t     atti_3d_min_clipY;
+extern uint32_t     atti_3d_max_clipY;
+
+
+#define MAX_WAYPOINTS   20
+
+extern uint8_t got_mission_counts;
+extern uint8_t enable_mission_count_request;
+extern uint16_t mission_counts;
+extern uint8_t enable_mission_item_request;
+extern uint16_t current_mission_item_req_index;
+
+extern uint16_t wp_counts;
+extern uint8_t got_all_wps;
+// a self contained waypoint list
+typedef struct WAYPOINT_TYP
+{
+//	float para1;
+//    float para2;
+//    float para3;
+//    float para4;
+    
+    float x;
+    float y;
+    float z;
+                        
+    uint16_t seq;
+    uint16_t cmd;
+    
+//    uint8_t frame;
+    uint8_t current;
+//    uint8_t autocontinue;
+} WAYPOINT, *WAYPOINT_PTR;
+
+extern WAYPOINT wp_list[MAX_WAYPOINTS];
 #endif

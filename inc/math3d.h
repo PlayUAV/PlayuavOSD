@@ -1,8 +1,8 @@
 #ifndef __MATH3D_H_
 #define __MATH3D_H_
+#pragma anon_unions
 
 #include "board.h"
-#pragma anon_unions
 
 #define XPI	3.141592653589793f					//3.14159265358979323846
 // some math macros

@@ -13,7 +13,10 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
+/*
+ * With Grateful Acknowledgements to the projects:
+ * MinimOSD - arducam-osd Controller(https://code.google.com/p/arducam-osd/)
+ */
 #include "osdvar.h"
 
 /////////////////////////////////////////////////////////////////////////
@@ -32,6 +35,7 @@ u32 armed_start_time = 0;
 float osd_vbat_A = 0.0f;                 // Battery A voltage in milivolt
 int16_t osd_curr_A = 0;                 // Battery A current
 int8_t osd_battery_remaining_A = 0;    // 0 to 100 <=> 0 to 1000
+float osd_curr_consumed_mah = 0;
 
 float osd_pitch = 0.0f;                  // pitch from DCM
 float osd_roll = 0.0f;                   // roll from DCM
@@ -56,6 +60,7 @@ float osd_downVelocity = 0.0f;
 uint16_t osd_throttle = 0;               // throtle
 float osd_alt = 0.0f;                    // altitude
 float osd_climb = 0.0f;
+float osd_total_trip_dist = 0;
 
 float nav_roll = 0.0f; // Current desired roll in degrees
 float nav_pitch = 0.0f; // Current desired pitch in degrees
@@ -74,12 +79,23 @@ bool motor_armed = false;
 bool last_motor_armed = false;
 uint8_t base_mode = 0;
 
-int16_t chan1_raw = 0;
-int16_t chan2_raw = 0;
-uint16_t osd_chan5_raw = 1000;
-uint16_t osd_chan6_raw = 1000;
-uint16_t osd_chan7_raw = 1000;
-uint16_t osd_chan8_raw = 1000;
+bool osd_chan_cnt_above_eight = false;
+uint16_t osd_chan1_raw = 0;
+uint16_t osd_chan2_raw = 0;
+uint16_t osd_chan3_raw = 0;
+uint16_t osd_chan4_raw = 0;
+uint16_t osd_chan5_raw = 0;
+uint16_t osd_chan6_raw = 0;
+uint16_t osd_chan7_raw = 0;
+uint16_t osd_chan8_raw = 0;
+uint16_t osd_chan9_raw = 0;
+uint16_t osd_chan10_raw = 0;
+uint16_t osd_chan11_raw = 0;
+uint16_t osd_chan12_raw = 0;
+uint16_t osd_chan13_raw = 0;
+uint16_t osd_chan14_raw = 0;
+uint16_t osd_chan15_raw = 0;
+uint16_t osd_chan16_raw = 0;
 uint8_t osd_rssi = 0; //raw value from mavlink
 
 uint8_t osd_got_home = 0;               // tels if got home position or not
@@ -103,3 +119,13 @@ uint32_t atti_3d_max_clipX = 0;
 uint32_t atti_3d_min_clipY = 0;
 uint32_t atti_3d_max_clipY = 0;
 
+
+uint8_t got_mission_counts = 0;
+uint8_t enable_mission_count_request = 0;
+uint16_t mission_counts = 0;
+uint8_t enable_mission_item_request = 0;
+uint16_t current_mission_item_req_index = 0;
+
+uint16_t wp_counts = 0;
+uint8_t got_all_wps = 0;
+WAYPOINT wp_list[MAX_WAYPOINTS];
