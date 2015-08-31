@@ -7,11 +7,15 @@ AS=arm-none-eabi-as
 CP=arm-none-eabi-objcopy
 
 BIN  = $(CP) -O binary -S
+DEFS = -DUSE_STDPERIPH_DRIVER -DSTM32F4XX -DHSE_VALUE=8000000
 
+MCU = cortex-m4
+MCFLAGS = -mcpu=$(MCU) -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -std=gnu99
 STMLIBSDIR    = ./lib/STM32F4-Discovery_FW_V1.1.0/Libraries
 STMSPDDIR    = $(STMLIBSDIR)/STM32F4xx_StdPeriph_Driver
 STMSPSRCDDIR = $(STMSPDDIR)/src
 STMSPINCDDIR = $(STMSPDDIR)/inc
+#FREERTOSDIR = ./lib/FreeRTOS8.1.2/Source
 FREERTOSDIR = ./lib/FreeRTOSV8.2.0/FreeRTOS/Source
 USBOTGLIB = $(STMLIBSDIR)/STM32_USB_OTG_Driver
 USBDEVICELIB = $(STMLIBSDIR)/STM32_USB_Device_Library
@@ -29,7 +33,7 @@ STM32_INCLUDES = -I$(STMLIBSDIR)/CMSIS/Include/ \
           		 -I$(USBHOSTLIB)/Core/inc    \
           		 -I$(USBOTGLIB)/inc    \
 				 -I./inc 
-OPTIMIZE       = -O0
+OPTIMIZE       = -Os
 
 CFLAGS	= $(MCFLAGS)  $(OPTIMIZE)  $(DEFS) -I./ -I./ $(STM32_INCLUDES)  -Wl,-T,./linker/stm32_flash.ld
 AFLAGS	= $(MCFLAGS) 
@@ -101,12 +105,6 @@ SRC += $(STM32_USB_DEVICE_SRC)
 # List ASM source files here
 STARTUP = ./$(STMLIBSDIR)/CMSIS/ST/STM32F4xx/Source/Templates/gcc_ride7/startup_stm32f40xx.s
 
-DEFS  = -DUSE_STDPERIPH_DRIVER -DSTM32F4XX -DHSE_VALUE=8000000
-
-MCU = cortex-m4
-MCFLAGS = -mcpu=$(MCU) -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -std=gnu99		   
-OPTIMIZE       = -Os
-CFLAGS	= $(MCFLAGS)  $(OPTIMIZE)  $(DEFS) -I./ -I./ $(INCLUDES)  -Wl,-T,./linker/stm32_flash.ld
 
 all: $(TARGETBIN) objcopy
 
