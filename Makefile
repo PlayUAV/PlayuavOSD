@@ -39,7 +39,7 @@ STM32_INCLUDES = -I$(STMLIBSDIR)/CMSIS/Include/ \
           		 -I$(USBHOSTLIB)/Core/inc    \
           		 -I$(USBOTGLIB)/inc    \
 				 -I./inc 
-OPTIMIZE       = -O0
+OPTIMIZE       = -Os
 
 CFLAGS	= $(MCFLAGS)  $(OPTIMIZE)  $(DEFS) -I./ -I./ $(STM32_INCLUDES)  -Wl,-T,./linker/stm32_flash.ld
 AFLAGS	= $(MCFLAGS) 

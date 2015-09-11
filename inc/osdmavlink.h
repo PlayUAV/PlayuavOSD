@@ -39,6 +39,9 @@ static inline void comm_send_ch(mavlink_channel_t chan, uint8_t ch)
 #include "ardupilotmega/mavlink.h"
 
 void request_mavlink_rates(void);
+void request_mission_count(void);
+void request_mission_item(uint16_t index);
+    
 void MavlinkTask(void *pvParameters);
 
 #endif	//__OSD_MAVLINK_H

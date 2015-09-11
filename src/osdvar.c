@@ -118,3 +118,14 @@ uint32_t atti_3d_min_clipX = 0;
 uint32_t atti_3d_max_clipX = 0;
 uint32_t atti_3d_min_clipY = 0;
 uint32_t atti_3d_max_clipY = 0;
+
+
+uint8_t got_mission_counts = 0;
+uint8_t enable_mission_count_request = 0;
+uint16_t mission_counts = 0;
+uint8_t enable_mission_item_request = 0;
+uint16_t current_mission_item_req_index = 0;
+
+uint16_t wp_counts = 0;
+uint8_t got_all_wps = 0;
+WAYPOINT wp_list[MAX_WAYPOINTS];

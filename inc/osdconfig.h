@@ -267,6 +267,15 @@ typedef union{
         uint16_t TotalTripDist_fontsize;
         uint16_t TotalTripDist_align;
 
+        uint16_t RSSI_type;
+
+        uint16_t Map_en;
+        uint16_t Map_panel;
+        uint16_t Map_radius;
+        uint16_t Map_fontsize;
+        uint16_t Map_H_align;
+        uint16_t Map_V_align;
+
 //		//below is unused. if add a param, reduce one item here
 //		uint16_t unused[EERROM_SIZE/2 - 104];
 	}params;

@@ -104,4 +104,37 @@ extern uint32_t     atti_3d_min_clipX;
 extern uint32_t     atti_3d_max_clipX;
 extern uint32_t     atti_3d_min_clipY;
 extern uint32_t     atti_3d_max_clipY;
+
+
+#define MAX_WAYPOINTS   20
+
+extern uint8_t got_mission_counts;
+extern uint8_t enable_mission_count_request;
+extern uint16_t mission_counts;
+extern uint8_t enable_mission_item_request;
+extern uint16_t current_mission_item_req_index;
+
+extern uint16_t wp_counts;
+extern uint8_t got_all_wps;
+// a self contained waypoint list
+typedef struct WAYPOINT_TYP
+{
+//	float para1;
+//    float para2;
+//    float para3;
+//    float para4;
+    
+    float x;
+    float y;
+    float z;
+                        
+    uint16_t seq;
+    uint16_t cmd;
+    
+//    uint8_t frame;
+    uint8_t current;
+//    uint8_t autocontinue;
+} WAYPOINT, *WAYPOINT_PTR;
+
+extern WAYPOINT wp_list[MAX_WAYPOINTS];
 #endif
