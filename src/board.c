@@ -51,7 +51,8 @@ void board_init(void)
 							RCC_AHB1Periph_BKPSRAM, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1 | RCC_APB2Periph_TIM1 | RCC_APB2Periph_SYSCFG, ENABLE);
     RCC_APB1PeriphClockCmd( RCC_APB1Periph_SPI2 | RCC_APB1Periph_SPI3 | RCC_APB1Periph_TIM2 |
-							RCC_APB1Periph_TIM3 | RCC_APB1Periph_TIM4 | RCC_APB1Periph_PWR, ENABLE);
+							RCC_APB1Periph_TIM3 | RCC_APB1Periph_TIM4 | RCC_APB1Periph_TIM5 |  RCC_APB1Periph_TIM12 |
+                     RCC_APB1Periph_PWR, ENABLE);
 
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
@@ -156,6 +157,8 @@ void vTaskHeartBeat(void *pvParameters)
 	{
 		LEDToggle(LED_GREEN);
 		vTaskDelay( 500 / portTICK_RATE_MS );
+        
+
 	}
 }
 
@@ -200,6 +203,18 @@ void vTask10HZ(void *pvParameters)
                 waitingMAVBeats = 0;
                 lastMAVBeat = GetSystimeMS();
             }
+            
+            if(enable_mission_count_request == 1)
+            {
+                request_mission_count();
+                enable_mission_count_request = 0;
+            }
+
+            if(enable_mission_item_request == 1)
+            {
+                request_mission_item(current_mission_item_req_index);
+            }
+
         }
 }
 
