@@ -1,8 +1,3 @@
-
-dev branch used to develop new feature. Below is the list of developing feature:
-
-1) Using VBI transfer telemetry data.
-
 Acknowledgments
 ============
 It is created by integrating a variety of excellent open-source projects. Many thanks to the developers for their efforts and dedication.
