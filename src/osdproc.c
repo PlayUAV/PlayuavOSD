@@ -120,7 +120,7 @@ void write_data ( uint8_t const * ar)
 // TODO change to uint8_t and test
 static char telem_tx_buffer[TELEM_LINES * TELEM_DATA_BYTES_PER_LINE] = { 0 };
 
-void dev_test(void)
+void VBI_test(void)
 {    
 
     uint32_t time_now = GetSystimeMS();
@@ -187,7 +187,7 @@ void RenderScreen(void)
 
     do_converts();
 
-    //dev_test();
+    //VBI_test();
 
     if(current_panel > eeprom_buffer.params.Max_panels)
         current_panel = 1;

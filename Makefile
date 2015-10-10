@@ -6,8 +6,8 @@ CC=arm-none-eabi-gcc
 AS=arm-none-eabi-as
 CP=arm-none-eabi-objcopy
 
+#config customize compiler tool
 #TOOLCHAIN_PATH = /opt/gcc-arm-none-eabi-4_7-2013q2/bin
-
 #CC=$(TOOLCHAIN_PATH)/arm-none-eabi-gcc
 #AS=$(TOOLCHAIN_PATH)/arm-none-eabi-as
 #CP=$(TOOLCHAIN_PATH)/arm-none-eabi-objcopy
