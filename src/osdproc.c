@@ -187,7 +187,7 @@ void RenderScreen(void)
 
     do_converts();
 
-    dev_test();
+    //dev_test();
 
     if(current_panel > eeprom_buffer.params.Max_panels)
         current_panel = 1;
@@ -225,7 +225,7 @@ void RenderScreen(void)
                      SIZE_TO_FONT[eeprom_buffer.params.BattCurrent_fontsize]);
     }
     if (eeprom_buffer.params.BattRemaining_en==1 && bShownAtPanle(eeprom_buffer.params.BattRemaining_panel)) {
-        sprintf(tmp_str, "%d/", osd_battery_remaining_A);
+        sprintf(tmp_str, "%d%%", osd_battery_remaining_A);
         write_string(tmp_str, eeprom_buffer.params.BattRemaining_posX,
                      eeprom_buffer.params.BattRemaining_posY, 0, 0, TEXT_VA_TOP,
                      eeprom_buffer.params.BattRemaining_align, 0,
@@ -304,13 +304,13 @@ void RenderScreen(void)
             sprintf(tmp_str, "NOFIX");
             break;
         case GPS_OK_FIX_2D:
-            sprintf(tmp_str, "FIX2D-%d", (int) osd_satellites_visible);
+            sprintf(tmp_str, "2D-%d", (int) osd_satellites_visible);
             break;
         case GPS_OK_FIX_3D:
-            sprintf(tmp_str, "FIX3D-%d", (int) osd_satellites_visible);
+            sprintf(tmp_str, "3D-%d", (int) osd_satellites_visible);
             break;
         case GPS_OK_FIX_3D_DGPS:
-            sprintf(tmp_str, "FIXD3D-%d", (int) osd_satellites_visible);
+            sprintf(tmp_str, "D3D-%d", (int) osd_satellites_visible);
             break;
         default:
             sprintf(tmp_str, "NOGPS");
@@ -323,7 +323,7 @@ void RenderScreen(void)
     }
 
     if (eeprom_buffer.params.GpsHDOP_en==1 && bShownAtPanle(eeprom_buffer.params.GpsHDOP_panel)) {
-        sprintf(tmp_str, "HDOP:%0.2f", (double) osd_hdop / 100.0f);
+        sprintf(tmp_str, "HDOP:%0.1f", (double) osd_hdop / 100.0f);
         write_string(tmp_str, eeprom_buffer.params.GpsHDOP_posX,
                      eeprom_buffer.params.GpsHDOP_posY, 0, 0, TEXT_VA_TOP,
                      eeprom_buffer.params.GpsHDOP_align, 0,
@@ -353,13 +353,13 @@ void RenderScreen(void)
             sprintf(tmp_str, "NOFIX");
             break;
         case GPS_OK_FIX_2D:
-            sprintf(tmp_str, "FIX2D-%d", (int) osd_satellites_visible2);
+            sprintf(tmp_str, "2D-%d", (int) osd_satellites_visible2);
             break;
         case GPS_OK_FIX_3D:
-            sprintf(tmp_str, "FIX3D-%d", (int) osd_satellites_visible2);
+            sprintf(tmp_str, "3D-%d", (int) osd_satellites_visible2);
             break;
         case GPS_OK_FIX_3D_DGPS:
-            sprintf(tmp_str, "FIXD3D-%d", (int) osd_satellites_visible2);
+            sprintf(tmp_str, "D3D-%d", (int) osd_satellites_visible2);
             break;
         default:
             sprintf(tmp_str, "NOGPS");
@@ -371,7 +371,7 @@ void RenderScreen(void)
                      SIZE_TO_FONT[eeprom_buffer.params.Gps2Status_fontsize]);
     }
     if (eeprom_buffer.params.Gps2HDOP_en==1 && bShownAtPanle(eeprom_buffer.params.Gps2HDOP_panel)) {
-        sprintf(tmp_str, "HDOP:%0.2f", (double) osd_hdop2 / 100.0f);
+        sprintf(tmp_str, "HDOP:%0.1f", (double) osd_hdop2 / 100.0f);
         write_string(tmp_str, eeprom_buffer.params.Gps2HDOP_posX,
                      eeprom_buffer.params.Gps2HDOP_posY, 0, 0, TEXT_VA_TOP,
                      eeprom_buffer.params.Gps2HDOP_align, 0,
@@ -510,7 +510,7 @@ void RenderScreen(void)
                 rssi = 0;
         }
 
-        sprintf(tmp_str, "RSSI:%d/", rssi);
+        sprintf(tmp_str, "RSSI:%d%%", rssi);
         write_string(tmp_str, x, y, 0, 0, TEXT_VA_MIDDLE,
                 eeprom_buffer.params.RSSI_align, 0,
                 SIZE_TO_FONT[eeprom_buffer.params.RSSI_fontsize]);
