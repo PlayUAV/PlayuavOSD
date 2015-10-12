@@ -146,6 +146,13 @@ void parseMavlink(void)
                         osd_climb = mavlink_msg_vfr_hud_get_climb(&msg);
                     }
                     break;
+                case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:              // jmmods 
+                    {
+                        osd_rel_alt = mavlink_msg_global_position_int_get_relative_alt(&msg) / 1000.0 ;   // jmmods 
+                        // uav.relative_alt = packet.relative_alt / 1000.0; //jmtune Altitude above ground in meters, expressed as * 1000 (millimeters)   // jmmods
+                    }
+                     break;
+                
                 case MAVLINK_MSG_ID_ATTITUDE:
                     {
                         osd_pitch = Rad2Deg(mavlink_msg_attitude_get_pitch(&msg));
@@ -281,7 +288,7 @@ void parseMavlink(void)
 
 void MavlinkTask(void *pvParameters)
 {
-    mavlink_usart_init(57600);
+    mavlink_usart_init(57600);  // jmmods 19200 for ultimate lrs use
     sys_start_time = GetSystimeMS();
 
     while (1)

@@ -44,7 +44,8 @@ extern float        osd_airspeed;              // airspeed
 extern float        osd_groundspeed;            // ground speed
 extern float        osd_downVelocity;            // ground speed
 extern uint16_t     osd_throttle;               // throtle
-extern float        osd_alt;                    // altitude
+extern float       	osd_alt;                    // altitude
+extern float 		osd_rel_alt; 				 // relative altitude	//  jmmods 
 extern float        osd_climb;
 extern float        osd_total_trip_dist;        //total trip distance since startup, calculated in meter
 

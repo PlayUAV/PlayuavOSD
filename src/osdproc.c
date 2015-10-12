@@ -247,7 +247,8 @@ void RenderScreen(void)
 
     //altitude
     if (eeprom_buffer.params.Alt_Scale_en==1 && bShownAtPanle(eeprom_buffer.params.Alt_Scale_panle)) {
-        hud_draw_vertical_scale(osd_alt * convert_distance, 60,
+       // hud_draw_vertical_scale(osd_alt * convert_distance, 60,
+        hud_draw_vertical_scale(osd_rel_alt * convert_distance, 60,   // jmmods
                 eeprom_buffer.params.Alt_Scale_align,
                 eeprom_buffer.params.Alt_Scale_posX,
                 eeprom_buffer.params.Alt_Scale_posY, 72, 10, 20, 5, 8, 11,
@@ -272,7 +273,8 @@ void RenderScreen(void)
 
     //speed
     if (eeprom_buffer.params.Speed_scale_en==1 && bShownAtPanle(eeprom_buffer.params.Speed_scale_panel)) {
-        hud_draw_vertical_scale(osd_groundspeed * convert_speed, 60,
+       // hud_draw_vertical_scale(osd_groundspeed * convert_speed, 60,
+        hud_draw_vertical_scale(osd_airspeed * convert_speed, 60,  // jmmods 
                 eeprom_buffer.params.Speed_scale_align,
                 eeprom_buffer.params.Speed_scale_posX,
                 eeprom_buffer.params.Speed_scale_posY, 72, 10, 20, 5, 8, 11,
@@ -280,7 +282,8 @@ void RenderScreen(void)
     }
 
     if (eeprom_buffer.params.TSPD_en==1 && bShownAtPanle(eeprom_buffer.params.TSPD_panel)) {
-        float tmp = osd_groundspeed * convert_speed;
+        // float tmp = osd_groundspeed * convert_speed;
+        float tmp = osd_airspeed * convert_speed; // jmmods
         sprintf(tmp_str, "SPD:%d%s", (int) tmp, spd_unit);
         write_string(tmp_str, eeprom_buffer.params.TSPD_posX,
                      eeprom_buffer.params.TSPD_posY, 0, 0, TEXT_VA_TOP,
@@ -1247,13 +1250,16 @@ void hud_draw_warnning(void)
     }
 
     //under speed
-    if( eeprom_buffer.params.Alarm_low_speed_en==1 && (osd_groundspeed < eeprom_buffer.params.Alarm_low_speed)) {
+    // if( eeprom_buffer.params.Alarm_low_speed_en==1 && (osd_groundspeed < eeprom_buffer.params.Alarm_low_speed)) {
+    if( eeprom_buffer.params.Alarm_low_speed_en==1 && (osd_airspeed < eeprom_buffer.params.Alarm_low_speed)) {    // jmmods
         haswarn = true;
         warning[2] = 1;
     }
 
     //over speed
-    if( eeprom_buffer.params.Alarm_over_speed_en==1 && (osd_groundspeed > eeprom_buffer.params.Alarm_over_speed)) {
+    // if( eeprom_buffer.params.Alarm_over_speed_en==1 && (osd_groundspeed > eeprom_buffer.params.Alarm_over_speed)) {
+    if( eeprom_buffer.params.Alarm_over_speed_en==1 && (osd_airspeed > eeprom_buffer.params.Alarm_over_speed)) {    // jmmods
+
         haswarn = true;
         warning[3] = 1;
     }
