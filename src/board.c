@@ -170,7 +170,7 @@ void vTask10HZ(void *pvParameters)
             osd_curr_consumed_mah += (osd_curr_A * 0.00027777778f);
 
             // calculate osd_total_trip_dist(simulation)
-            if (osd_groundspeed > 1.0f) osd_total_trip_dist += (osd_groundspeed * 0.1f);
+            if (osd_groundspeed > 1.0f) osd_total_trip_dist += (osd_groundspeed * 0.1f);   // jmmods > for calculation of trip , Groundspeed is better than airspeed
 
             //trigger video switch
             if(eeprom_buffer.params.PWM_Video_en)
