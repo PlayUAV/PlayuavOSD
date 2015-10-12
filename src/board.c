@@ -383,6 +383,19 @@ void checkDefaultParam()
         bNeedUpdateFlash = true;
     }
 
+    if (eeprom_buffer.params.firmware_ver < 8) {
+        eeprom_buffer.params.firmware_ver = 8;
+        eeprom_buffer.params.Max_panels = 3;
+        eeprom_buffer.params.RSSI_type = 0;
+        eeprom_buffer.params.Map_en = 1;
+        eeprom_buffer.params.Map_panel = 4;
+        eeprom_buffer.params.Map_radius = 120;
+        eeprom_buffer.params.Map_fontsize = 1;
+        eeprom_buffer.params.Map_H_align = 0;
+        eeprom_buffer.params.Map_V_align = 0;
+        bNeedUpdateFlash = true;
+    }
+
     bool ret = false;
     if(bNeedUpdateFlash)
     {

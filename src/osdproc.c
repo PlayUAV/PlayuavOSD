@@ -225,7 +225,13 @@ void RenderScreen(void)
                      SIZE_TO_FONT[eeprom_buffer.params.BattCurrent_fontsize]);
     }
     if (eeprom_buffer.params.BattRemaining_en==1 && bShownAtPanle(eeprom_buffer.params.BattRemaining_panel)) {
-        sprintf(tmp_str, "%d%%", osd_battery_remaining_A);
+        if(eeprom_buffer.params.BattRemaining_fontsize == 0){
+            //small font, use / instead of %
+            sprintf(tmp_str, "%d/", osd_battery_remaining_A);
+        }
+        else{
+            sprintf(tmp_str, "%d%%", osd_battery_remaining_A);
+        }
         write_string(tmp_str, eeprom_buffer.params.BattRemaining_posX,
                      eeprom_buffer.params.BattRemaining_posY, 0, 0, TEXT_VA_TOP,
                      eeprom_buffer.params.BattRemaining_align, 0,
@@ -510,7 +516,13 @@ void RenderScreen(void)
                 rssi = 0;
         }
 
-        sprintf(tmp_str, "RSSI:%d%%", rssi);
+        if(eeprom_buffer.params.RSSI_fontsize == 0){
+            //small font, use / instead of %
+            sprintf(tmp_str, "RSSI:%d/", rssi);
+        }
+        else{
+            sprintf(tmp_str, "RSSI:%d%%", rssi);
+        }
         write_string(tmp_str, x, y, 0, 0, TEXT_VA_MIDDLE,
                 eeprom_buffer.params.RSSI_align, 0,
                 SIZE_TO_FONT[eeprom_buffer.params.RSSI_fontsize]);
