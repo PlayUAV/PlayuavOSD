@@ -256,8 +256,12 @@ void RenderScreen(void)
     }
 
     if (eeprom_buffer.params.TALT_en==1 && bShownAtPanle(eeprom_buffer.params.TALT_panel)) {
+<<<<<<< HEAD
         // float tmp = (osd_alt - osd_home_alt) * convert_distance;
          float tmp = (osd_rel_alt) * convert_distance;    // jmmods Panel 2 alt error
+=======
+        float tmp = (osd_alt - osd_home_alt) * convert_distance;
+>>>>>>> parent of 4ea7b8f... - change on panel 2 ALT (erronous if reboot of playuav in flight) with osd_rel_alt
         if (tmp < convert_distance_divider){
             sprintf(tmp_str, "ALT: %d%s", (int) tmp, dist_unit_short);
         }
