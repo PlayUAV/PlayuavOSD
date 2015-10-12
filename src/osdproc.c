@@ -256,7 +256,8 @@ void RenderScreen(void)
     }
 
     if (eeprom_buffer.params.TALT_en==1 && bShownAtPanle(eeprom_buffer.params.TALT_panel)) {
-        float tmp = (osd_alt - osd_home_alt) * convert_distance;
+        //float tmp = (osd_alt - osd_home_alt) * convert_distance;
+         float tmp = (osd_rel_alt) * convert_distance;    // jmmods Panel 2 alt error
         if (tmp < convert_distance_divider){
             sprintf(tmp_str, "ALT: %d%s", (int) tmp, dist_unit_short);
         }
