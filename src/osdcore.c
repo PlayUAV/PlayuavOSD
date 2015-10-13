@@ -188,7 +188,7 @@ void osdCoreInit(void)
     gpio.GPIO_Mode = GPIO_Mode_AF;
 	gpio.GPIO_OType = GPIO_OType_PP;
     gpio.GPIO_Speed = GPIO_Speed_50MHz;
-	gpio.GPIO_PuPd  = GPIO_PuPd_UP;
+	gpio.GPIO_PuPd  = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOC, &gpio);
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource2, GPIO_AF_SPI2);
 	

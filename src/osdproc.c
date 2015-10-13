@@ -132,49 +132,49 @@ void VBI_test(void)
 
 void do_converts(void)
 {
-	if (eeprom_buffer.params.Units_mode == 1)
-	{
-		convert_distance = 2.23f;
-		convert_speed = 3.28f;
-		convert_distance_divider = 5280.0f; // feet in a mile
-		dist_unit_short = IMPERIAL_DIST_SHORT;
-		dist_unit_long = IMPERIAL_DIST_LONG;
-		spd_unit = IMPERIAL_SPEED;
-	}
-	else
-	{
-		convert_distance = 1.0f;
-		convert_speed = 3.6f;
-		convert_distance_divider = 1000.0f;
-		dist_unit_short = METRIC_DIST_SHORT;
-		dist_unit_long = METRIC_DIST_LONG;
-		spd_unit = METRIC_SPEED;
-	}
+    if (eeprom_buffer.params.Units_mode == 1)
+    {
+        convert_distance = 2.23f;
+        convert_speed = 3.28f;
+        convert_distance_divider = 5280.0f; // feet in a mile
+        dist_unit_short = IMPERIAL_DIST_SHORT;
+        dist_unit_long = IMPERIAL_DIST_LONG;
+        spd_unit = IMPERIAL_SPEED;
+    }
+    else
+    {
+        convert_distance = 1.0f;
+        convert_speed = 3.6f;
+        convert_distance_divider = 1000.0f;
+        dist_unit_short = METRIC_DIST_SHORT;
+        dist_unit_long = METRIC_DIST_LONG;
+        spd_unit = METRIC_SPEED;
+    }
 }
 
 bool bShownAtPanle(uint16_t itemPanel)
 {
-	//issue #1 - fixed
-	return ((itemPanel & (1<<(current_panel-1))) != 0);
+    //issue #1 - fixed
+    return ((itemPanel & (1<<(current_panel-1))) != 0);
 }
 
 void vTaskOSD(void *pvParameters)
-{	
+{
     uav3D_init();
     uav2D_init();
 
-	osdCoreInit();
- 	osdVideoSetXOffset(eeprom_buffer.params.osd_offsetX);
- 	osdVideoSetYOffset(eeprom_buffer.params.osd_offsetY);
+    osdCoreInit();
+     osdVideoSetXOffset(eeprom_buffer.params.osd_offsetX);
+     osdVideoSetYOffset(eeprom_buffer.params.osd_offsetY);
 
-	for(;;)
-	{
-		xSemaphoreTake(onScreenDisplaySemaphore, portMAX_DELAY);
-		
-		clearGraphics();
+    for(;;)
+    {
+        xSemaphoreTake(onScreenDisplaySemaphore, portMAX_DELAY);
 
-		RenderScreen();
-	}
+        clearGraphics();
+
+        RenderScreen();
+    }
 }
 
 void RenderScreen(void)
@@ -245,51 +245,109 @@ void RenderScreen(void)
                      SIZE_TO_FONT[eeprom_buffer.params.BattConsumed_fontsize]);
     }
 
-    //altitude
+    //altitude scale bar
     if (eeprom_buffer.params.Alt_Scale_en==1 && bShownAtPanle(eeprom_buffer.params.Alt_Scale_panle)) {
-       // hud_draw_vertical_scale(osd_alt * convert_distance, 60,
-        hud_draw_vertical_scale(osd_rel_alt * convert_distance, 60,   // jmmods
+        float alt_shown = osd_rel_alt;
+        uint16_t posX = eeprom_buffer.params.Alt_Scale_posX;
+        sprintf(tmp_str, "RALT");
+        if(eeprom_buffer.params.Alt_Scale_type == 0){
+            alt_shown = osd_alt;
+            sprintf(tmp_str, "AALT");
+        }
+        hud_draw_vertical_scale(alt_shown * convert_distance, 60,   // jmmods
                 eeprom_buffer.params.Alt_Scale_align,
                 eeprom_buffer.params.Alt_Scale_posX,
                 eeprom_buffer.params.Alt_Scale_posY, 72, 10, 20, 5, 8, 11,
                 10000, 0);
+        if((eeprom_buffer.params.Alt_Scale_align == 1) && (posX > 15)){
+            posX -=15;
+        }
+        write_string(tmp_str, posX,
+                     eeprom_buffer.params.Alt_Scale_posY-50, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.Alt_Scale_align, 0,
+                     SIZE_TO_FONT[0]);
+        if((eeprom_buffer.params.Alt_Scale_align == 1) && (posX > 15)){
+            posX +=10;
+        }
+        write_string("M", posX,
+                     eeprom_buffer.params.Alt_Scale_posY+40, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.Alt_Scale_align, 0,
+                     SIZE_TO_FONT[0]);
     }
 
+    // Absolute altitude(above sea) in text
     if (eeprom_buffer.params.TALT_en==1 && bShownAtPanle(eeprom_buffer.params.TALT_panel)) {
-        // float tmp = (osd_alt - osd_home_alt) * convert_distance;
-         float tmp = (osd_rel_alt) * convert_distance;    // jmmods Panel 2 alt error
+        float tmp = osd_alt * convert_distance;    // jmmods Panel 2 alt error
         if (tmp < convert_distance_divider){
-            sprintf(tmp_str, "ALT: %d%s", (int) tmp, dist_unit_short);
+            sprintf(tmp_str, "A-ALT: %d%s", (int) tmp, dist_unit_short);
         }
         else{
-            sprintf(tmp_str, "ALT: %0.2f%s", (double) (tmp / convert_distance_divider), dist_unit_long);
+            sprintf(tmp_str, "A-ALT: %0.2f%s", (double) (tmp / convert_distance_divider), dist_unit_long);
         }
 
-        //sprintf(tmp_str, "ALT:%i", (int)osd_alt);
         write_string(tmp_str, eeprom_buffer.params.TALT_posX,
                      eeprom_buffer.params.TALT_posY, 0, 0, TEXT_VA_TOP,
                      eeprom_buffer.params.TALT_align, 0,
                      SIZE_TO_FONT[eeprom_buffer.params.TALT_fontsize]);
     }
 
+    // Relative altitude(above ground) in text
+    if (eeprom_buffer.params.Relative_ALT_en==1 && bShownAtPanle(eeprom_buffer.params.Relative_ALT_panel)) {
+        float tmp = osd_rel_alt * convert_distance;    // jmmods Panel 2 alt error
+        if (tmp < convert_distance_divider){
+            sprintf(tmp_str, "R-ALT: %d%s", (int) tmp, dist_unit_short);
+        }
+        else{
+            sprintf(tmp_str, "R-ALT: %0.2f%s", (double) (tmp / convert_distance_divider), dist_unit_long);
+        }
+
+        write_string(tmp_str, eeprom_buffer.params.Relative_ALT_posX,
+                     eeprom_buffer.params.Relative_ALT_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.Relative_ALT_align, 0,
+                     SIZE_TO_FONT[eeprom_buffer.params.Relative_ALT_fontsize]);
+    }
+
     //speed
     if (eeprom_buffer.params.Speed_scale_en==1 && bShownAtPanle(eeprom_buffer.params.Speed_scale_panel)) {
-       // hud_draw_vertical_scale(osd_groundspeed * convert_speed, 60,
-        hud_draw_vertical_scale(osd_airspeed * convert_speed, 60,  // jmmods 
+        float spd_shown = osd_groundspeed;
+        sprintf(tmp_str, "GSPD");
+        if(eeprom_buffer.params.Spd_Scale_type == 1){
+            spd_shown = osd_airspeed;
+            sprintf(tmp_str, "ASPD");
+        }
+        hud_draw_vertical_scale(spd_shown * convert_speed, 60,  // jmmods
                 eeprom_buffer.params.Speed_scale_align,
                 eeprom_buffer.params.Speed_scale_posX,
                 eeprom_buffer.params.Speed_scale_posY, 72, 10, 20, 5, 8, 11,
                 100, 0);
+        write_string(tmp_str, eeprom_buffer.params.Speed_scale_posX,
+                     eeprom_buffer.params.Speed_scale_posY-50, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.Speed_scale_align, 0,
+                     SIZE_TO_FONT[0]);
+        write_string("m/s", eeprom_buffer.params.Speed_scale_posX,
+                             eeprom_buffer.params.Speed_scale_posY+40, 0, 0, TEXT_VA_TOP,
+                             eeprom_buffer.params.Speed_scale_align, 0,
+                             SIZE_TO_FONT[0]);
     }
 
+    // ground speed in text
     if (eeprom_buffer.params.TSPD_en==1 && bShownAtPanle(eeprom_buffer.params.TSPD_panel)) {
-        // float tmp = osd_groundspeed * convert_speed;
-        float tmp = osd_airspeed * convert_speed; // jmmods
-        sprintf(tmp_str, "SPD:%d%s", (int) tmp, spd_unit);
+        float tmp = osd_groundspeed * convert_speed; // jmmods
+        sprintf(tmp_str, "G-SPD:%d%s", (int) tmp, spd_unit);
         write_string(tmp_str, eeprom_buffer.params.TSPD_posX,
                      eeprom_buffer.params.TSPD_posY, 0, 0, TEXT_VA_TOP,
                      eeprom_buffer.params.TSPD_align, 0,
                      SIZE_TO_FONT[eeprom_buffer.params.TSPD_fontsize]);
+    }
+
+    // Air speed in text
+    if (eeprom_buffer.params.Air_Speed_en==1 && bShownAtPanle(eeprom_buffer.params.Air_Speed_panel)) {
+        float tmp = osd_airspeed * convert_speed; // jmmods
+        sprintf(tmp_str, "A-SPD:%d%s", (int) tmp, spd_unit);
+        write_string(tmp_str, eeprom_buffer.params.Air_Speed_posX,
+                     eeprom_buffer.params.Air_Speed_posY, 0, 0, TEXT_VA_TOP,
+                     eeprom_buffer.params.Air_Speed_align, 0,
+                     SIZE_TO_FONT[eeprom_buffer.params.Air_Speed_fontsize]);
     }
 
     //uav attitude
@@ -551,7 +609,7 @@ void RenderScreen(void)
     if (eeprom_buffer.params.Map_en==1 && bShownAtPanle(eeprom_buffer.params.Map_panel)) {
         draw_map();
     }
-		
+
     //warnning - should be displayed lastly in case not be covered by others
     hud_draw_warnning();
 }
@@ -778,16 +836,17 @@ void hud_draw_CWH(void)
     }
     else if(osd_got_home == 1){
         // JRChange: osd_home_alt: check for stable osd_alt (must be stable for 75*40ms = 3s)
-        if (osd_alt_cnt < 75) {
-            if (fabs(osd_alt_prev - osd_alt) > 0.5) {
-                osd_alt_cnt = 0;
-                osd_alt_prev = osd_alt;
-            } else {
-                if (++osd_alt_cnt >= 75) {
-                    osd_home_alt = osd_alt; // take this stable osd_alt as osd_home_alt
-                }
-            }
-        }
+        // we can get the relative alt from mavlink directly.
+//        if (osd_alt_cnt < 75) {
+//            if (fabs(osd_alt_prev - osd_alt) > 0.5) {
+//                osd_alt_cnt = 0;
+//                osd_alt_prev = osd_alt;
+//            } else {
+//                if (++osd_alt_cnt >= 75) {
+//                    osd_home_alt = osd_alt; // take this stable osd_alt as osd_home_alt
+//                }
+//            }
+//        }
 
         // shrinking factor for longitude going to poles direction
         double scaleLongDown = Fast_Cos(fabs(osd_home_lat));
@@ -1334,24 +1393,24 @@ void debug_wps(void)
         write_string(tmp_str, 10, a, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
         a += 15;
     }
-		
-		float uav_lat = osd_lat / 10000000.0f;
+
+    float uav_lat = osd_lat / 10000000.0f;
     float uav_lon = osd_lon / 10000000.0f;
     float home_lat = osd_home_lat / 10000000.0f;
     float home_lon = osd_home_lon / 10000000.0f;
-		
-		if(osd_fix_type > 1){
-			  sprintf(tmp_str, "UAV X:%0.12f Y:%0.12f",(double)uav_lat,(double)uav_lon);
+
+    if(osd_fix_type > 1){
+        sprintf(tmp_str, "UAV X:%0.12f Y:%0.12f",(double)uav_lat,(double)uav_lon);
         write_string(tmp_str, 10, a, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
         a += 15;
-		}
-		
-		if(osd_got_home == 1){
+    }
+
+    if(osd_got_home == 1){
         sprintf(tmp_str, "home X:%0.12f Y:%0.12f",(double)home_lat,(double)home_lon);
         write_string(tmp_str, 10, a, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
         a += 15;
     }
-		
+
     return;
 }
 

@@ -276,6 +276,24 @@ typedef union{
         uint16_t Map_H_align;
         uint16_t Map_V_align;
 
+        //v1.0.9
+        uint16_t Relative_ALT_en;
+        uint16_t Relative_ALT_panel;
+        uint16_t Relative_ALT_posX;
+        uint16_t Relative_ALT_posY;
+        uint16_t Relative_ALT_fontsize;
+        uint16_t Relative_ALT_align;
+
+        uint16_t Alt_Scale_type;
+
+        uint16_t Air_Speed_en;
+        uint16_t Air_Speed_panel;
+        uint16_t Air_Speed_posX;
+        uint16_t Air_Speed_posY;
+        uint16_t Air_Speed_fontsize;
+        uint16_t Air_Speed_align;
+
+        uint16_t Spd_Scale_type;
 //		//below is unused. if add a param, reduce one item here
 //		uint16_t unused[EERROM_SIZE/2 - 104];
 	}params;

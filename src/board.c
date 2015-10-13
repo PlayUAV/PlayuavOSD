@@ -396,6 +396,25 @@ void checkDefaultParam()
         bNeedUpdateFlash = true;
     }
 
+    if (eeprom_buffer.params.firmware_ver < 9) {
+        eeprom_buffer.params.firmware_ver = 9;
+        eeprom_buffer.params.Relative_ALT_en = 1;
+        eeprom_buffer.params.Relative_ALT_panel = 2;
+        eeprom_buffer.params.Relative_ALT_posX = 5;
+        eeprom_buffer.params.Relative_ALT_posY = 25;
+        eeprom_buffer.params.Relative_ALT_fontsize = 0;
+        eeprom_buffer.params.Relative_ALT_align = 0;
+        eeprom_buffer.params.Alt_Scale_type = 1;
+        eeprom_buffer.params.Air_Speed_en = 1;
+        eeprom_buffer.params.Air_Speed_panel = 2;
+        eeprom_buffer.params.Air_Speed_posX = 5;
+        eeprom_buffer.params.Air_Speed_posY = 55;
+        eeprom_buffer.params.Air_Speed_fontsize = 0;
+        eeprom_buffer.params.Air_Speed_align = 0;
+        eeprom_buffer.params.Spd_Scale_type = 0;
+        bNeedUpdateFlash = true;
+    }
+
     bool ret = false;
     if(bNeedUpdateFlash)
     {
