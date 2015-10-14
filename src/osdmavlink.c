@@ -48,7 +48,7 @@ void request_mavlink_rates(void)
 	{
 		return; //we need not change the rate
 	}
-    for (u32 i=0; i < MAX_STREAMS; i++) {
+    for (uint32_t i=0; i < MAX_STREAMS; i++) {
         mavlink_msg_request_data_stream_send(MAVLINK_COMM_0,
             apm_mav_system, apm_mav_component,
             MAVStreams[i], MAVRates[i], 1);
@@ -96,6 +96,16 @@ void parseMavlink(void)
                         if(heatbeat_start_time == 0){
                             heatbeat_start_time = GetSystimeMS();
                         }
+
+                        if (!last_motor_armed && motor_armed) {
+                            armed_start_time = GetSystimeMS();
+                        }
+
+                        if (last_motor_armed && !motor_armed){
+                            total_armed_time = GetSystimeMS() - armed_start_time + total_armed_time;
+                            armed_start_time = 0;
+                        }
+
                         lastMAVBeat = GetSystimeMS();
                         if(waitingMAVBeats == 1){
                             enable_mav_request = 1;

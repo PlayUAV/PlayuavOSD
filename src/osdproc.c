@@ -476,13 +476,7 @@ void RenderScreen(void)
     }
 
     // time
-    if (!last_motor_armed && motor_armed) {
-        armed_start_time = GetSystimeMS();
-    }
 
-    if (!motor_armed){
-        armed_start_time = 0;
-    }
 
     if (eeprom_buffer.params.Time_en==1 && bShownAtPanle(eeprom_buffer.params.Time_panel)) {
         time_now = GetSystimeMS() - sys_start_time;
@@ -490,7 +484,7 @@ void RenderScreen(void)
         if (eeprom_buffer.params.Time_type == 1) {
             time_now = heatbeat_start_time ? (GetSystimeMS() - heatbeat_start_time) : 0;
         } else if (eeprom_buffer.params.Time_type == 2) {
-            time_now = armed_start_time ? (GetSystimeMS() - armed_start_time) : 0;
+            time_now = armed_start_time ? (GetSystimeMS() - armed_start_time + total_armed_time) : total_armed_time;
         }
 
         tmp_int16 = (time_now / 3600000); // hours

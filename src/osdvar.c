@@ -20,17 +20,19 @@
 #include "osdvar.h"
 
 /////////////////////////////////////////////////////////////////////////
-u8 mavbeat = 0;
-u32 lastMAVBeat = 0;
-u32 lastWritePanel = 0;
-u8 waitingMAVBeats = 1;
-u8 apm_mav_type;
-u8 apm_mav_system;
-u8 apm_mav_component;
-u8 enable_mav_request = 0;
-u32 sys_start_time = 0;
-u32 heatbeat_start_time = 0;
-u32 armed_start_time = 0;
+uint8_t mavbeat = 0;
+uint32_t lastMAVBeat = 0;
+uint32_t lastWritePanel = 0;
+uint8_t waitingMAVBeats = 1;
+uint8_t apm_mav_type;
+uint8_t apm_mav_system;
+uint8_t apm_mav_component;
+uint8_t enable_mav_request = 0;
+uint32_t sys_start_time = 0;
+uint32_t heatbeat_start_time = 0;
+uint32_t armed_start_time = 0;
+uint32_t total_armed_time = 0;
+
 /////////////////////////////////////////////////////////////////////////
 float osd_vbat_A = 0.0f;                 // Battery A voltage in milivolt
 int16_t osd_curr_A = 0;                 // Battery A current

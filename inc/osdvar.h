@@ -15,6 +15,7 @@ extern uint8_t enable_mav_request;
 extern uint32_t sys_start_time;
 extern uint32_t heatbeat_start_time;
 extern uint32_t armed_start_time;
+extern uint32_t total_armed_time;
 
 /////////////////////////////////////////////////////////////////////////
 extern float osd_vbat_A;                 // Battery A voltage in milivolt
