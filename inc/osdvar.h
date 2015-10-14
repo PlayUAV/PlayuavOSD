@@ -61,7 +61,7 @@ extern float aspd_error; // Current airspeed error in meters/second
 extern float xtrack_error; // Current crosstrack error on x-y plane in meters
 extern float eff; //Efficiency
 
-extern uint8_t osd_mode;
+extern uint32_t osd_mode;
 extern bool motor_armed;
 extern bool last_motor_armed;
 extern uint8_t base_mode;
