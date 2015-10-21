@@ -341,6 +341,31 @@ fop_error:
 		return false;	
 }
 
+uint32_t get_map_bandrate(uint16_t mapbandrate)
+{
+    switch(mapbandrate)
+    {
+        case 1:
+            return 4800;
+        case 2:
+            return 9600;
+        case 3:
+            return 19200;
+        case 4:
+            return 38400;
+        case 5:
+            return 43000;
+        case 6:
+            return 56000;
+        case 7:
+            return 57600;
+        case 8:
+            return 115200;
+        default:
+            return 57600;
+    }
 
+    return 57600;
+}
 
 

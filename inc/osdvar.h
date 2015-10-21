@@ -136,4 +136,7 @@ typedef struct WAYPOINT_TYP {
 } WAYPOINT, *WAYPOINT_PTR;
 
 extern WAYPOINT wp_list[MAX_WAYPOINTS];
+
+extern int8_t osd_offset_Y;
+extern int8_t osd_offset_X;
 #endif

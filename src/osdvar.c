@@ -132,3 +132,6 @@ uint16_t current_mission_item_req_index = 0;
 uint16_t wp_counts = 0;
 uint8_t got_all_wps = 0;
 WAYPOINT wp_list[MAX_WAYPOINTS];
+
+int8_t osd_offset_Y = 0;
+int8_t osd_offset_X = 0;

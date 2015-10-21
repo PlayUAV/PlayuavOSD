@@ -90,7 +90,7 @@ void write_data ( uint8_t const * ar)
 {
    
    memset( write_buffer_tele,0, TELEM_LINES * TELEM_BUFFER_WIDTH);
-   taskENTER_CRITICAL();
+
    for ( uint32_t y = 0 ,yend = TELEM_LINES; y < yend; ++y){ // rows
      // start of line mark state 
      uint32_t bit_offset = y * 8U * TELEM_BUFFER_WIDTH + 3U;
@@ -112,7 +112,6 @@ void write_data ( uint8_t const * ar)
       // rest of line mark state
       
    }
-   taskEXIT_CRITICAL();
 }
 
 // the user layer buffer
@@ -163,10 +162,11 @@ void vTaskOSD(void *pvParameters)
     uav3D_init();
     uav2D_init();
 
-    osdCoreInit();
-     osdVideoSetXOffset(eeprom_buffer.params.osd_offsetX);
-     osdVideoSetYOffset(eeprom_buffer.params.osd_offsetY);
+    osdVideoSetXOffset(osd_offset_X);
+    osdVideoSetYOffset(osd_offset_Y);
 
+    osdCoreInit();
+    
     for(;;)
     {
         xSemaphoreTake(onScreenDisplaySemaphore, portMAX_DELAY);
@@ -324,7 +324,9 @@ void RenderScreen(void)
                      eeprom_buffer.params.Speed_scale_posY-50, 0, 0, TEXT_VA_TOP,
                      eeprom_buffer.params.Speed_scale_align, 0,
                      SIZE_TO_FONT[0]);
-        write_string("m/s", eeprom_buffer.params.Speed_scale_posX,
+
+        sprintf(tmp_str, "%s", spd_unit);
+        write_string(tmp_str, eeprom_buffer.params.Speed_scale_posX,
                              eeprom_buffer.params.Speed_scale_posY+40, 0, 0, TEXT_VA_TOP,
                              eeprom_buffer.params.Speed_scale_align, 0,
                              SIZE_TO_FONT[0]);
@@ -1303,29 +1305,36 @@ void hud_draw_warnning(void)
         warning[1] = 1;
     }
 
+    float spd_comparison = osd_groundspeed;
+    if(eeprom_buffer.params.Spd_Scale_type == 1){
+        spd_comparison = osd_airspeed;
+    }
+    spd_comparison *= convert_speed;
     //under speed
-    // if( eeprom_buffer.params.Alarm_low_speed_en==1 && (osd_groundspeed < eeprom_buffer.params.Alarm_low_speed)) {
-    if( eeprom_buffer.params.Alarm_low_speed_en==1 && (osd_airspeed < eeprom_buffer.params.Alarm_low_speed)) {    // jmmods
+    if( eeprom_buffer.params.Alarm_low_speed_en==1 && (spd_comparison < eeprom_buffer.params.Alarm_low_speed)) {    // jmmods
         haswarn = true;
         warning[2] = 1;
     }
 
     //over speed
-    // if( eeprom_buffer.params.Alarm_over_speed_en==1 && (osd_groundspeed > eeprom_buffer.params.Alarm_over_speed)) {
-    if( eeprom_buffer.params.Alarm_over_speed_en==1 && (osd_airspeed > eeprom_buffer.params.Alarm_over_speed)) {    // jmmods
+    if( eeprom_buffer.params.Alarm_over_speed_en==1 && (spd_comparison > eeprom_buffer.params.Alarm_over_speed)) {    // jmmods
 
         haswarn = true;
         warning[3] = 1;
     }
 
+    float alt_comparison = osd_rel_alt;
+    if(eeprom_buffer.params.Alt_Scale_type == 0){
+        alt_comparison = osd_alt;
+    }
     //under altitude
-    if( eeprom_buffer.params.Alarm_low_alt_en==1 && (osd_alt < eeprom_buffer.params.Alarm_low_alt)) {
+    if( eeprom_buffer.params.Alarm_low_alt_en==1 && (alt_comparison < eeprom_buffer.params.Alarm_low_alt)) {
         haswarn = true;
         warning[4] = 1;
     }
 
     //over altitude
-    if( eeprom_buffer.params.Alarm_over_alt_en==1 && (osd_alt > eeprom_buffer.params.Alarm_over_alt)) {
+    if( eeprom_buffer.params.Alarm_over_alt_en==1 && (alt_comparison > eeprom_buffer.params.Alarm_over_alt)) {
         haswarn = true;
         warning[5] = 1;
     }

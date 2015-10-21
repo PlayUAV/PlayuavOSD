@@ -19,7 +19,7 @@
  */
 #include "uavtalk.h"
 #include "osdvar.h"
-
+#include "osdconfig.h"
 
 extern xSemaphoreHandle onUAVTalkSemaphore;
 extern uint8_t *mavlink_buffer_proc;
@@ -428,7 +428,7 @@ void parseUAVTalk(void)
 
 void UAVTalkTask(void *pvParameters)
 {
-	mavlink_usart_init(57600);
+	mavlink_usart_init(get_map_bandrate(eeprom_buffer.params.uart_bandrate));
 	sys_start_time = GetSystimeMS();
 
 	while (1) 

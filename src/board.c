@@ -109,6 +109,14 @@ void board_init(void)
     LoadParams();
     checkDefaultParam();
 
+    //fabs, make sure not broken the VBI
+    osd_offset_Y = fabs(eeprom_buffer.params.osd_offsetY);
+
+    osd_offset_X = eeprom_buffer.params.osd_offsetX;
+    if(eeprom_buffer.params.osd_offsetX_sign == 0){
+        osd_offset_X = osd_offset_X * -1;
+    }
+
     SPI_MAX7456_init();
 
     atti_mp_scale = (float)eeprom_buffer.params.Atti_mp_scale_real + (float)eeprom_buffer.params.Atti_mp_scale_frac * 0.01;
@@ -346,16 +354,17 @@ void checkDefaultParam()
         eeprom_buffer.params.osd_offsetX = 20;
         bNeedUpdateFlash = true;
     }
-    if (eeprom_buffer.params.osd_offsetX <-20) {
-        eeprom_buffer.params.osd_offsetX = -20;
+    if(eeprom_buffer.params.osd_offsetX == 0xFFFF){
+        eeprom_buffer.params.osd_offsetX = 0;
         bNeedUpdateFlash = true;
     }
+
     if (eeprom_buffer.params.osd_offsetY > 20) {
         eeprom_buffer.params.osd_offsetY = 20;
         bNeedUpdateFlash = true;
     }
-    if (eeprom_buffer.params.osd_offsetY <-20) {
-        eeprom_buffer.params.osd_offsetY = -20;
+    if (eeprom_buffer.params.osd_offsetY == 0xFFFF) {
+        eeprom_buffer.params.osd_offsetY = 0;
         bNeedUpdateFlash = true;
     }
 
@@ -412,6 +421,12 @@ void checkDefaultParam()
         eeprom_buffer.params.Air_Speed_fontsize = 0;
         eeprom_buffer.params.Air_Speed_align = 0;
         eeprom_buffer.params.Spd_Scale_type = 0;
+        bNeedUpdateFlash = true;
+    }
+
+    if (eeprom_buffer.params.firmware_ver < 10) {
+        eeprom_buffer.params.firmware_ver = 10;
+        eeprom_buffer.params.osd_offsetX_sign = 1;
         bNeedUpdateFlash = true;
     }
 

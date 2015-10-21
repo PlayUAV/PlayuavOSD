@@ -21,10 +21,11 @@
 
 #include "osdmavlink.h"
 #include "osdvar.h"
+#include "osdconfig.h"
 
 #define MAX_STREAMS 6
 
-mavlink_system_t mavlink_system = {12,1,0,0}; //modified
+mavlink_system_t mavlink_system = {7,1}; //Ardupilot:7,1  Pixhawk:100,50
 mavlink_message_t msg; 
 mavlink_status_t status;
 uint8_t mavlink_active = 0;
@@ -41,13 +42,13 @@ void request_mavlink_rates(void)
         MAV_DATA_STREAM_POSITION,
         MAV_DATA_STREAM_EXTRA1, 
         MAV_DATA_STREAM_EXTRA2};
-    //const u16 MAVRates[maxStreams] = {0x01, 0x02, 0x05, 0x02, 0x05, 0x02};
+    //uint16_t MAVRates[MAX_STREAMS] = {0x01, 0x02, 0x05, 0x02, 0x05, 0x02};
 	uint16_t MAVRates[MAX_STREAMS] = {0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A};
 
-	if(apm_mav_component == 0x32) //pixhawk origin FW
-	{
-		return; //we need not change the rate
-	}
+//	if(apm_mav_component == 0x32) //pixhawk origin FW
+//	{
+//		return; //we need not change the rate
+//	}
     for (uint32_t i=0; i < MAX_STREAMS; i++) {
         mavlink_msg_request_data_stream_send(MAVLINK_COMM_0,
             apm_mav_system, apm_mav_component,
@@ -71,6 +72,7 @@ void parseMavlink(void)
 {
     uint8_t c;
     uint8_t index = 0;
+    uint8_t mavtype = 0;
 
     while (index < MAVLINK_BUFFER_SIZE)
     {
@@ -83,10 +85,21 @@ void parseMavlink(void)
             {
                 case MAVLINK_MSG_ID_HEARTBEAT:
                     {
+                        if((msg.compid != 1) && (msg.compid != 50)){
+                            // MAVMSG not from ardupilot(component ID:1) or pixhawk(component ID:50)
+                            break;
+                        }
+
+                        mavtype = mavlink_msg_heartbeat_get_type(&msg);
+                        if(mavtype == 6){
+                            // MAVMSG from GCS
+                            break;
+                        }
+
                         mavbeat = 1;
                         apm_mav_system    = msg.sysid;
                         apm_mav_component = msg.compid;
-                        apm_mav_type      = mavlink_msg_heartbeat_get_type(&msg);
+                        apm_mav_type      = mavtype;
                         osd_mode = mavlink_msg_heartbeat_get_custom_mode(&msg);
                         base_mode = mavlink_msg_heartbeat_get_base_mode(&msg);
 
@@ -298,7 +311,7 @@ void parseMavlink(void)
 
 void MavlinkTask(void *pvParameters)
 {
-    mavlink_usart_init(57600);  // jmmods 19200 for ultimate lrs use
+    mavlink_usart_init(get_map_bandrate(eeprom_buffer.params.uart_bandrate));  // jmmods 19200 for ultimate lrs use
     sys_start_time = GetSystimeMS();
 
     while (1)

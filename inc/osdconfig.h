@@ -294,11 +294,17 @@ typedef union{
         uint16_t Air_Speed_align;
 
         uint16_t Spd_Scale_type;
+
+        //v1.1.0
+        uint16_t osd_offsetX_sign;
+        uint16_t uart_bandrate;
+
 //		//below is unused. if add a param, reduce one item here
 //		uint16_t unused[EERROM_SIZE/2 - 104];
 	}params;
 } EEPROM_BUF_TYPE;
 
+uint32_t get_map_bandrate(uint16_t mapbandrate);
 extern EEPROM_BUF_TYPE eeprom_buffer;
 				
 #endif	//__OSD_CONFIG_H
