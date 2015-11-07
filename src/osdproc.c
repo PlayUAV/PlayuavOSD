@@ -62,6 +62,7 @@ const char * dist_unit_long = METRIC_DIST_LONG;
 const char * spd_unit = METRIC_SPEED;
 
 extern uint8_t *write_buffer_tele;
+void debug_wps();
 
 static void inline setbit(uint8_t* buf, uint32_t bit)
 {
@@ -188,6 +189,7 @@ void RenderScreen(void)
     do_converts();
 
     //VBI_test();
+    //debug_wps();
 
     if(current_panel > eeprom_buffer.params.Max_panels)
         current_panel = 1;
@@ -562,10 +564,13 @@ void RenderScreen(void)
             uint16_t rssiMin = eeprom_buffer.params.RSSI_min;
             uint16_t rssiMax = eeprom_buffer.params.RSSI_max;
 
-            if (rssiMin < 0)
-                rssiMin = 0;
-            if (rssiMax > 255)
-                rssiMax = 255;
+            //Trim the min_rssi and max_rssi if RSSI come from the MAVLINK
+            if(eeprom_buffer.params.RSSI_type == 0){
+				if (rssiMin < 0)
+					rssiMin = 0;
+				if (rssiMax > 255)
+					rssiMax = 255;
+            }
 
             if ((rssiMax - rssiMin) > 0)
                 rssi = (int) ((float) (rssi - rssiMin) / (float) (rssiMax - rssiMin) * 100.0f);
@@ -833,16 +838,16 @@ void hud_draw_CWH(void)
     else if(osd_got_home == 1){
         // JRChange: osd_home_alt: check for stable osd_alt (must be stable for 75*40ms = 3s)
         // we can get the relative alt from mavlink directly.
-//        if (osd_alt_cnt < 75) {
-//            if (fabs(osd_alt_prev - osd_alt) > 0.5) {
-//                osd_alt_cnt = 0;
-//                osd_alt_prev = osd_alt;
-//            } else {
-//                if (++osd_alt_cnt >= 75) {
-//                    osd_home_alt = osd_alt; // take this stable osd_alt as osd_home_alt
-//                }
-//            }
-//        }
+        if (osd_alt_cnt < 75) {
+            if (fabs(osd_alt_prev - osd_alt) > 0.5) {
+                osd_alt_cnt = 0;
+                osd_alt_prev = osd_alt;
+            } else {
+                if (++osd_alt_cnt >= 75) {
+                    osd_home_alt = osd_alt; // take this stable osd_alt as osd_home_alt
+                }
+            }
+        }
 
         // shrinking factor for longitude going to poles direction
         double scaleLongDown = Fast_Cos(fabs(osd_home_lat));
@@ -858,7 +863,9 @@ void hud_draw_CWH(void)
         dstlon = (osd_home_lon - osd_lon); //OffSet_X
         dstlat = (osd_home_lat - osd_lat) * scaleLongUp; //OffSet Y
         osd_home_bearing = 270 + (atan2(dstlat, -dstlon) * R2D); //absolut home direction
-        osd_home_bearing = (osd_home_bearing+360)%360;
+        //osd_home_bearing = (osd_home_bearing+360)%360;
+        if(osd_home_bearing > 360)
+        	osd_home_bearing -= 360;
     }
 
     //distance
@@ -1386,32 +1393,34 @@ void debug_wps(void)
 {
     char tmp_str[50] = { 0 };
 
-    //debug
-    uint16_t a = 20;
-    for(int i=1; i<wp_counts; i++)
-    {
-        sprintf(tmp_str, "WP%d X:%0.12f Y:%0.12f",
-                         (int)wp_list[i].seq, (double)wp_list[i].x,
-                          (double)wp_list[i].y);
-        write_string(tmp_str, 10, a, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-        a += 15;
-    }
+//    //debug
+//    uint16_t a = 20;
+//    for(int i=1; i<wp_counts; i++)
+//    {
+//        sprintf(tmp_str, "WP%d X:%0.12f Y:%0.12f",
+//                         (int)wp_list[i].seq, (double)wp_list[i].x,
+//                          (double)wp_list[i].y);
+//        write_string(tmp_str, 10, a, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
+//        a += 15;
+//    }
 
-    float uav_lat = osd_lat / 10000000.0f;
-    float uav_lon = osd_lon / 10000000.0f;
+//    float uav_lat = osd_lat / 10000000.0f;
+//    float uav_lon = osd_lon / 10000000.0f;
     float home_lat = osd_home_lat / 10000000.0f;
     float home_lon = osd_home_lon / 10000000.0f;
 
-    if(osd_fix_type > 1){
-        sprintf(tmp_str, "UAV X:%0.12f Y:%0.12f",(double)uav_lat,(double)uav_lon);
-        write_string(tmp_str, 10, a, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-        a += 15;
-    }
+//    if(osd_fix_type > 1){
+//        sprintf(tmp_str, "UAV X:%0.12f Y:%0.12f",(double)uav_lat,(double)uav_lon);
+//        write_string(tmp_str, 10, a, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
+//        a += 15;
+//    }
 
     if(osd_got_home == 1){
-        sprintf(tmp_str, "home X:%0.12f Y:%0.12f",(double)home_lat,(double)home_lon);
-        write_string(tmp_str, 10, a, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
-        a += 15;
+//        sprintf(tmp_str, "home X:%0.12f Y:%0.12f",(double)home_lat,(double)home_lon);
+//        write_string(tmp_str, 10, a, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
+//        a += 15;
+        sprintf(tmp_str, "%0.5f %0.5f",(double)home_lat,(double)home_lon);
+        write_string(tmp_str, 70, 210, 0, 0, TEXT_VA_TOP, TEXT_HA_LEFT, 0, SIZE_TO_FONT[0]);
     }
 
     return;

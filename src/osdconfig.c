@@ -314,6 +314,30 @@ fop_error:
 		return false;	
 }
 
+bool clear_all_params(void)
+{
+	/* Unlock the Flash to enable the flash control register access *************/ 
+	FLASH_Unlock();
+	
+	/* Clear pending flags (if any) */  
+	FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | 
+					FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR);
+	
+	//erase the whole sector
+	/* Device voltage range supposed to be [2.7V to 3.6V], the operation will
+       be done by word */ 
+	if (FLASH_EraseSector(FLASH_Sector_11, VoltageRange_3) != FLASH_COMPLETE)
+	{ 
+		goto fop_error;
+	}
+
+	FLASH_Lock();
+	return true;
+	
+fop_error:
+		FLASH_Lock(); 
+		return false;	
+}
 bool flash_write_word(uint32_t add, uint32_t value)
 {
 	/* Unlock the Flash to enable the flash control register access *************/ 

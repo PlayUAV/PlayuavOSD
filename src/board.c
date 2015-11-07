@@ -105,10 +105,19 @@ void board_init(void)
 	GPIO_SetBits(GPIOA,GPIO_Pin_15);
 
     Build_Sin_Cos_Tables();
-
+    
+    
+    bool force_clear_params = false;
+    force_clear_params = test_force_clear_all_params();
+    if(force_clear_params)
+    {
+        clear_all_params();
+    }
+    
     LoadParams();
     checkDefaultParam();
-
+    SPI_MAX7456_init();
+    
     //fabs, make sure not broken the VBI
     osd_offset_Y = fabs(eeprom_buffer.params.osd_offsetY);
 
@@ -116,8 +125,6 @@ void board_init(void)
     if(eeprom_buffer.params.osd_offsetX_sign == 0){
         osd_offset_X = osd_offset_X * -1;
     }
-
-    SPI_MAX7456_init();
 
     atti_mp_scale = (float)eeprom_buffer.params.Atti_mp_scale_real + (float)eeprom_buffer.params.Atti_mp_scale_frac * 0.01;
     atti_3d_scale = (float)eeprom_buffer.params.Atti_3D_scale_real + (float)eeprom_buffer.params.Atti_3D_scale_frac * 0.01;
@@ -439,4 +446,50 @@ void checkDefaultParam()
             //TODO - handle flash write error here
         }
     }
+}
+
+bool test_force_clear_all_params(void)
+{
+    volatile unsigned samples = 0;
+	volatile unsigned vote = 0;
+    
+    GPIO_InitTypeDef  gpio;
+    gpio.GPIO_Pin = GPIO_Pin_11;
+	gpio.GPIO_Mode = GPIO_Mode_IN;
+	gpio.GPIO_PuPd = GPIO_PuPd_UP;
+	gpio.GPIO_Speed = GPIO_Speed_100MHz;
+	GPIO_Init(GPIOB, &gpio);
+
+	gpio.GPIO_Pin = GPIO_Pin_10;
+    gpio.GPIO_Mode = GPIO_Mode_OUT;
+    gpio.GPIO_OType = GPIO_OType_PP;
+	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOB, &gpio);
+
+    for (volatile unsigned cycles = 0; cycles < 10; cycles++) {
+        GPIO_SetBits(GPIOB, GPIO_Pin_10);
+		for (unsigned count = 0; count < 20; count++) {
+            if(GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_11) != 0)
+				vote++;
+			samples++;
+		}
+        GPIO_ResetBits(GPIOB, GPIO_Pin_10);
+		for (unsigned count = 0; count < 20; count++) {
+			if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_11) == 0)
+				vote++;
+			samples++;
+		}
+	}
+    
+    /* revert the driver pin */
+    gpio.GPIO_Pin = GPIO_Pin_10;
+    gpio.GPIO_Mode = GPIO_Mode_IN;
+	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOB, &gpio);
+    
+    /* the idea here is to reject wire-to-wire coupling, so require > 90% agreement */
+	if ((vote * 100) > (samples * 90))
+		return true;
+    
+    return false;
 }

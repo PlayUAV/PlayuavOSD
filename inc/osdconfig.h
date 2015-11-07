@@ -11,6 +11,7 @@ void vTaskVCP(void *pvParameters);
 void LoadParams(void);
 bool StoreParams(void);
 bool flash_write_word(uint32_t add, uint32_t value);
+bool clear_all_params(void);
 
 typedef union{
 	uint8_t		c[EERROM_SIZE];

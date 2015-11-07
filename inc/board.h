@@ -92,6 +92,8 @@ void module_init(void);
 
 uint32_t GetSystimeMS(void);	//return the current system time
 
+bool test_force_clear_all_params(void);
+
 // Macro to swap buffers given a temporary pointer.
 #define SWAP_BUFFS(tmp, a, b) { tmp = a; a = b; b = tmp; }
 
