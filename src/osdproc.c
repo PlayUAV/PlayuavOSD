@@ -563,13 +563,13 @@ void RenderScreen(void)
         if ((eeprom_buffer.params.RSSI_raw_en == 0)) {
             uint16_t rssiMin = eeprom_buffer.params.RSSI_min;
             uint16_t rssiMax = eeprom_buffer.params.RSSI_max;
-
-            //Trim the min_rssi and max_rssi if RSSI come from the MAVLINK
+            
+            //Trim the rssiMAX/MIN only for MAVLINK-rssi
             if(eeprom_buffer.params.RSSI_type == 0){
-				if (rssiMin < 0)
-					rssiMin = 0;
-				if (rssiMax > 255)
-					rssiMax = 255;
+                if (rssiMin < 0)
+                    rssiMin = 0;
+                if (rssiMax > 255)
+                    rssiMax = 255;
             }
 
             if ((rssiMax - rssiMin) > 0)
