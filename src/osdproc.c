@@ -89,11 +89,11 @@ static inline void clearbit(uint8_t* buf, uint32_t bit)
 */
 void write_data ( uint8_t const * ar)
 {
-   
+
    memset( write_buffer_tele,0, TELEM_LINES * TELEM_BUFFER_WIDTH);
 
    for ( uint32_t y = 0 ,yend = TELEM_LINES; y < yend; ++y){ // rows
-     // start of line mark state 
+     // start of line mark state
      uint32_t bit_offset = y * 8U * TELEM_BUFFER_WIDTH + 3U;
      for ( uint32_t xbyte = 0, xend = TELEM_DATA_BYTES_PER_LINE; xbyte < xend; ++xbyte){ // columns
          // start bit
@@ -111,7 +111,7 @@ void write_data ( uint8_t const * ar)
          ++ar;
       }
       // rest of line mark state
-      
+
    }
 }
 
@@ -121,13 +121,13 @@ void write_data ( uint8_t const * ar)
 static char telem_tx_buffer[TELEM_LINES * TELEM_DATA_BYTES_PER_LINE] = { 0 };
 
 void VBI_test(void)
-{    
+{
 
     uint32_t time_now = GetSystimeMS();
-    
+
     snprintf(telem_tx_buffer,TELEM_LINES * TELEM_DATA_BYTES_PER_LINE,"PlayUAV time = %u",time_now);
 
-    write_data(telem_tx_buffer);     
+    write_data(telem_tx_buffer);
 }
 
 void do_converts(void)
@@ -167,7 +167,7 @@ void vTaskOSD(void *pvParameters)
     osdVideoSetYOffset(osd_offset_Y);
 
     osdCoreInit();
-    
+
     for(;;)
     {
         xSemaphoreTake(onScreenDisplaySemaphore, portMAX_DELAY);
@@ -227,13 +227,7 @@ void RenderScreen(void)
                      SIZE_TO_FONT[eeprom_buffer.params.BattCurrent_fontsize]);
     }
     if (eeprom_buffer.params.BattRemaining_en==1 && bShownAtPanle(eeprom_buffer.params.BattRemaining_panel)) {
-        if(eeprom_buffer.params.BattRemaining_fontsize == 0){
-            //small font, use / instead of %
-            sprintf(tmp_str, "%d/", osd_battery_remaining_A);
-        }
-        else{
-            sprintf(tmp_str, "%d%%", osd_battery_remaining_A);
-        }
+        sprintf(tmp_str, "%d%%", osd_battery_remaining_A);
         write_string(tmp_str, eeprom_buffer.params.BattRemaining_posX,
                      eeprom_buffer.params.BattRemaining_posY, 0, 0, TEXT_VA_TOP,
                      eeprom_buffer.params.BattRemaining_align, 0,
@@ -563,7 +557,7 @@ void RenderScreen(void)
         if ((eeprom_buffer.params.RSSI_raw_en == 0)) {
             uint16_t rssiMin = eeprom_buffer.params.RSSI_min;
             uint16_t rssiMax = eeprom_buffer.params.RSSI_max;
-            
+
             //Trim the rssiMAX/MIN only for MAVLINK-rssi
             if(eeprom_buffer.params.RSSI_type == 0){
                 if (rssiMin < 0)
@@ -577,15 +571,11 @@ void RenderScreen(void)
 
             if (rssi < 0)
                 rssi = 0;
+            sprintf(tmp_str, "RSSI:%d%%", rssi);
+        } else {
+            sprintf(tmp_str, "RSSI:%d", rssi);
         }
 
-        if(eeprom_buffer.params.RSSI_fontsize == 0){
-            //small font, use / instead of %
-            sprintf(tmp_str, "RSSI:%d/", rssi);
-        }
-        else{
-            sprintf(tmp_str, "RSSI:%d%%", rssi);
-        }
         write_string(tmp_str, x, y, 0, 0, TEXT_VA_MIDDLE,
                 eeprom_buffer.params.RSSI_align, 0,
                 SIZE_TO_FONT[eeprom_buffer.params.RSSI_fontsize]);
@@ -795,7 +785,7 @@ void hud_draw_throttle(void)
 
     pos_th_y = (int16_t)(0.5*osd_throttle);
     pos_th_x = posX - 25 + pos_th_y;
-    sprintf(tmp_str, "%d", (int32_t)osd_throttle);
+    sprintf(tmp_str, "%d%%", (int32_t)osd_throttle);
     write_string(tmp_str, posX, posY, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[0]);
 
 //  if(eeprom_buffer.params.Throt_scale_en){
@@ -1435,29 +1425,29 @@ void gen_overlay_rect(float lat, float lon, VECTOR4D_PTR vec)
     if(lat < vec->w) vec->w = lat;
 }
 
-VERTEX2DF gps_to_screen_pixel(float lat, float lon, float cent_lat, float cent_lon, 
+VERTEX2DF gps_to_screen_pixel(float lat, float lon, float cent_lat, float cent_lon,
                               float rect_diagonal_half, float cent_x, float cent_y, float radius)
 {
     float dstlon, dstlat, distance;
     float scaleLongUp, scaleLongDown;
     int dir = 0;
-    
+
     VERTEX2DF point_ret;
 
     scaleLongUp   = 1.0f/Fast_Cos(fabs(lat));
     scaleLongDown = Fast_Cos(fabs(lat));
-    
-    dstlon = fabs(lon - cent_lon) * 111319.5f * scaleLongDown; 
+
+    dstlon = fabs(lon - cent_lon) * 111319.5f * scaleLongDown;
     dstlat = fabs(lat - cent_lat) * 111319.5f;
     distance = sqrt(dstlat*dstlat + dstlon*dstlon);
-    
-    dstlon = (lon - cent_lon); 
-    dstlat = (lat - cent_lat) * scaleLongUp; 
-    dir = 270 + (atan2(dstlat, -dstlon) * R2D); 
+
+    dstlon = (lon - cent_lon);
+    dstlat = (lat - cent_lat) * scaleLongUp;
+    dir = 270 + (atan2(dstlat, -dstlon) * R2D);
     dir = (dir+360)%360;
     point_ret.x = cent_x + radius * Fast_Sin(dir) * distance / rect_diagonal_half;
     point_ret.y = cent_y - radius * Fast_Cos(dir) * distance / rect_diagonal_half;
-    
+
     return point_ret;
 }
 
@@ -1472,25 +1462,25 @@ void draw_map(void)
     float uav_lon = osd_lon / 10000000.0f;
     float home_lat = osd_home_lat / 10000000.0f;
     float home_lon = osd_home_lon / 10000000.0f;
-    
+
     float uav_x = 0.0f;
     float uav_y = 0.0f;
-    
+
     VECTOR4D rect;
     rect.x = 999.0f;
     rect.y = -999.0f;
     rect.z = -999.0f;
     rect.w = 999.0f;
-    
+
     for(int i=1; i<wp_counts; i++)
     {
         gen_overlay_rect(wp_list[i].x, wp_list[i].y, &rect);
     }
-    
+
     if(osd_fix_type > 1){
         gen_overlay_rect(uav_lat, uav_lon, &rect);
     }
-    
+
     if(osd_got_home == 1){
         gen_overlay_rect(home_lat, home_lon, &rect);
     }
@@ -1505,45 +1495,45 @@ void draw_map(void)
     uint32_t radius = eeprom_buffer.params.Map_radius;
     if(radius < 1) radius = 1;
     if(radius > 120) radius = 120;
-    
+
     float dstlon, dstlat, scaleLongDown;
-    
+
     VERTEX2DF wps_screen_point[wp_counts];
     scaleLongDown = Fast_Cos(fabs(rect.y));
-    dstlon = fabs(rect.x - rect.z) * 111319.5f * scaleLongDown; 
+    dstlon = fabs(rect.x - rect.z) * 111319.5f * scaleLongDown;
     dstlat = fabs(rect.y - rect.w) * 111319.5f;
     float rect_diagonal_half = sqrt(dstlat*dstlat + dstlon*dstlon)/2;
-    
+
     VERTEX2DF tmp_point;
     for(int i=1; i<wp_counts; i++)
     {
         wps_screen_point[i] = gps_to_screen_pixel(wp_list[i].x, wp_list[i].y, cent_lat, cent_lon,
                                               rect_diagonal_half, cent_x, cent_y, radius);
     }
-    
+
     if(osd_fix_type > 1){
         tmp_point = gps_to_screen_pixel(uav_lat, uav_lon, cent_lat, cent_lon,
                                               rect_diagonal_half, cent_x, cent_y, radius);
         uav_x = tmp_point.x;
         uav_y = tmp_point.y;
     }
-    
+
     if(osd_got_home == 1){
         wps_screen_point[0] = gps_to_screen_pixel(home_lat, home_lon, cent_lat, cent_lon,
                                               rect_diagonal_half, cent_x, cent_y, radius);
     }
-    
+
     //draw line
     for(int i=1; i<wp_counts-1; i++)
     {
         write_line_outlined(wps_screen_point[i].x, wps_screen_point[i].y, wps_screen_point[i+1].x, wps_screen_point[i+1].y, 2, 2, 0, 1);
     }
-    
+
     if(osd_got_home == 1){
         write_line_outlined(wps_screen_point[0].x, wps_screen_point[0].y, wps_screen_point[1].x, wps_screen_point[1].y, 2, 2, 0, 1);
 //        write_line_outlined(wps_screen_point[0].x, wps_screen_point[0].y, wps_screen_point[wp_counts-1].x, wps_screen_point[wp_counts-1].y, 2, 2, 0, 1);
     }
-    
+
     //draw number
     for(int i=1; i<wp_counts; i++)
     {
@@ -1555,7 +1545,7 @@ void draw_map(void)
     if(osd_got_home == 1){
         write_string("H", wps_screen_point[0].x, wps_screen_point[0].y, 0, 0, eeprom_buffer.params.Map_V_align, eeprom_buffer.params.Map_H_align, 0, SIZE_TO_FONT[eeprom_buffer.params.Map_fontsize]);
     }
-    
+
     if(osd_fix_type > 1){
         //draw heading
         POLYGON2D suav;
@@ -1628,4 +1618,3 @@ void DJI_test(void)
 
     hud_draw_linear_compass(osd_heading, osd_home_bearing, 120, 180, GRAPHICS_X_MIDDLE, GRAPHICS_Y_MIDDLE+80, 15, 30, 5, 8, 0);
 }
-
