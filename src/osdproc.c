@@ -162,6 +162,7 @@ void vTaskOSD(void *pvParameters)
 {
     uav3D_init();
     uav2D_init();
+    simple_attitude_init();
 
     osdVideoSetXOffset(osd_offset_X);
     osdVideoSetYOffset(osd_offset_Y);
@@ -354,7 +355,11 @@ void RenderScreen(void)
     }
 
     if(eeprom_buffer.params.Atti_mp_en==1 && bShownAtPanle(eeprom_buffer.params.Atti_mp_panel)){
-        hud_draw_uav2d();
+        if (eeprom_buffer.params.Atti_mp_type == 0) {
+            hud_draw_uav2d();
+        } else {
+            hud_draw_simple_attitude();
+        }
     }
 
     // throttle with percent
@@ -717,6 +722,35 @@ void hud_draw_uav3d(void)
                             2, 2, 0, 1);
 
     } // end for poly
+}
+
+void hud_draw_simple_attitude()
+{
+    Reset_Polygon2D(&simple_attitude);
+    int pitch = osd_pitch;
+    const int max_pitch = 60;
+    const int radius = 4 * atti_mp_scale;
+    const int x = simple_attitude.x0;
+    const int y = simple_attitude.y0;
+    if (pitch > max_pitch) {
+      pitch = max_pitch;
+    } else if (pitch < - max_pitch) {
+      pitch = -max_pitch;
+    }
+
+    write_circle_outlined(x, y, radius, 0, 1, 0, 1);
+    write_line_outlined(x - radius - 1, y, x - 2 * radius - 1, y, 0, 0, 0, 1);
+    write_line_outlined(x + radius - 1, y, x + 2 * radius + 1, y, 0, 0, 0, 1);
+    write_line_outlined(x, y - radius - 1, x, y - 2 * radius, 0, 0, 0, 1);
+
+    Transform_Polygon2D(&simple_attitude, - osd_roll, 0, pitch);
+    VECTOR4D v;
+    for (int i = 0; i < simple_attitude.num_verts; i += 2) {
+      write_line_outlined(simple_attitude.vlist_trans[i].x + x, simple_attitude.vlist_trans[i].y + y,
+                          simple_attitude.vlist_trans[i + 1].x + x, simple_attitude.vlist_trans[i + 1].y + y,
+                          2 , 2, 0 ,1);
+    }
+
 }
 
 void hud_draw_uav2d()
