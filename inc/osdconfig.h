@@ -224,83 +224,93 @@ typedef union{
 
 		uint16_t FC_Protocol;
 
-        uint16_t Wind_en;
-        uint16_t Wind_panel;
-        uint16_t Wind_posX;
-        uint16_t Wind_posY;
+      uint16_t Wind_en;
+      uint16_t Wind_panel;
+      uint16_t Wind_posX;
+      uint16_t Wind_posY;
 
-        uint16_t Time_type;
+      uint16_t Time_type;
 
-        uint16_t Throttle_Scale_Type;
+      uint16_t Throttle_Scale_Type;
 
-        uint16_t Atti_mp_posX;
-        uint16_t Atti_mp_posY;
-        uint16_t Atti_mp_scale_real;
-        uint16_t Atti_mp_scale_frac;
-        uint16_t Atti_3D_posX;
-        uint16_t Atti_3D_posY;
-        uint16_t Atti_3D_scale_real;
-        uint16_t Atti_3D_scale_frac;
-        uint16_t Atti_3D_map_radius;
+      uint16_t Atti_mp_posX;
+      uint16_t Atti_mp_posY;
+      uint16_t Atti_mp_scale_real;
+      uint16_t Atti_mp_scale_frac;
+      uint16_t Atti_3D_posX;
+      uint16_t Atti_3D_posY;
+      uint16_t Atti_3D_scale_real;
+      uint16_t Atti_3D_scale_frac;
+      uint16_t Atti_3D_map_radius;
 
-        uint16_t osd_offsetY;
-        uint16_t osd_offsetX;
+      uint16_t osd_offsetY;
+      uint16_t osd_offsetX;
 
-        /*from firmware version 6*/
-        uint16_t firmware_ver;
-        uint16_t video_mode;
+      /*from firmware version 6*/
+      uint16_t firmware_ver;
+      uint16_t video_mode;
 
-        /*from firmware version 7*/
-        uint16_t Speed_scale_posY;
-        uint16_t Alt_Scale_posY;
+      /*from firmware version 7*/
+      uint16_t Speed_scale_posY;
+      uint16_t Alt_Scale_posY;
 
-        uint16_t BattConsumed_en;          // total current drawn since startup in amp-hours
-        uint16_t BattConsumed_panel;
-        uint16_t BattConsumed_posX;
-        uint16_t BattConsumed_posY;
-        uint16_t BattConsumed_fontsize;
-        uint16_t BattConsumed_align;
+      uint16_t BattConsumed_en;          // total current drawn since startup in amp-hours
+      uint16_t BattConsumed_panel;
+      uint16_t BattConsumed_posX;
+      uint16_t BattConsumed_posY;
+      uint16_t BattConsumed_fontsize;
+      uint16_t BattConsumed_align;
 
-        uint16_t TotalTripDist_en;          // total trip distance since startup, calculated in meter
-        uint16_t TotalTripDist_panel;
-        uint16_t TotalTripDist_posX;
-        uint16_t TotalTripDist_posY;
-        uint16_t TotalTripDist_fontsize;
-        uint16_t TotalTripDist_align;
+      uint16_t TotalTripDist_en;          // total trip distance since startup, calculated in meter
+      uint16_t TotalTripDist_panel;
+      uint16_t TotalTripDist_posX;
+      uint16_t TotalTripDist_posY;
+      uint16_t TotalTripDist_fontsize;
+      uint16_t TotalTripDist_align;
 
-        uint16_t RSSI_type;
+      uint16_t RSSI_type;
 
-        uint16_t Map_en;
-        uint16_t Map_panel;
-        uint16_t Map_radius;
-        uint16_t Map_fontsize;
-        uint16_t Map_H_align;
-        uint16_t Map_V_align;
+      uint16_t Map_en;
+      uint16_t Map_panel;
+      uint16_t Map_radius;
+      uint16_t Map_fontsize;
+      uint16_t Map_H_align;
+      uint16_t Map_V_align;
 
-        //v1.0.9
-        uint16_t Relative_ALT_en;
-        uint16_t Relative_ALT_panel;
-        uint16_t Relative_ALT_posX;
-        uint16_t Relative_ALT_posY;
-        uint16_t Relative_ALT_fontsize;
-        uint16_t Relative_ALT_align;
+      //v1.0.9
+      uint16_t Relative_ALT_en;
+      uint16_t Relative_ALT_panel;
+      uint16_t Relative_ALT_posX;
+      uint16_t Relative_ALT_posY;
+      uint16_t Relative_ALT_fontsize;
+      uint16_t Relative_ALT_align;
 
-        uint16_t Alt_Scale_type;
+      uint16_t Alt_Scale_type;
 
-        uint16_t Air_Speed_en;
-        uint16_t Air_Speed_panel;
-        uint16_t Air_Speed_posX;
-        uint16_t Air_Speed_posY;
-        uint16_t Air_Speed_fontsize;
-        uint16_t Air_Speed_align;
+      uint16_t Air_Speed_en;
+      uint16_t Air_Speed_panel;
+      uint16_t Air_Speed_posX;
+      uint16_t Air_Speed_posY;
+      uint16_t Air_Speed_fontsize;
+      uint16_t Air_Speed_align;
 
-        uint16_t Spd_Scale_type;
+      uint16_t Spd_Scale_type;
 
-        //v1.1.0
-        uint16_t osd_offsetX_sign;
-        uint16_t uart_bandrate;
+      //v1.1.0
+      uint16_t osd_offsetX_sign;
+      uint16_t uart_bandrate;
 
-				uint16_t Atti_mp_type;
+			uint16_t Atti_mp_type;
+
+			uint16_t Efficiency_en;
+			uint16_t Efficiency_panel;
+			uint16_t Efficiency_posX;
+			uint16_t Efficiency_posY;
+			uint16_t Efficiency_fontsize;
+			uint16_t Efficiency_align;
+
+			uint16_t PWM_Video_mode;
+			uint16_t PWM_Panel_mode;
 
 //		//below is unused. if add a param, reduce one item here
 //		uint16_t unused[EERROM_SIZE/2 - 104];

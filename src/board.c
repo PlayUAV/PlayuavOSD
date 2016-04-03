@@ -26,6 +26,7 @@
 #include "osdconfig.h"
 #include "math3d.h"
 #include "osdvar.h"
+#include <math.h>
 
 void vTaskHeartBeat(void *pvParameters);
 void vTask10HZ(void *pvParameters);
@@ -105,19 +106,19 @@ void board_init(void)
 	GPIO_SetBits(GPIOA,GPIO_Pin_15);
 
     Build_Sin_Cos_Tables();
-    
-    
+
+
     bool force_clear_params = false;
     force_clear_params = test_force_clear_all_params();
     if(force_clear_params)
     {
         clear_all_params();
     }
-    
+
     LoadParams();
     checkDefaultParam();
     SPI_MAX7456_init();
-    
+
     //fabs, make sure not broken the VBI
     osd_offset_Y = fabs(eeprom_buffer.params.osd_offsetY);
 
@@ -216,7 +217,7 @@ void vTask10HZ(void *pvParameters)
                 waitingMAVBeats = 0;
                 lastMAVBeat = GetSystimeMS();
             }
-            
+
             if(enable_mission_count_request == 1)
             {
                 request_mission_count();
@@ -250,29 +251,34 @@ void triggerVideo(void)
 	else if(eeprom_buffer.params.PWM_Video_ch == 15) video_ch_raw = osd_chan15_raw;
 	else if(eeprom_buffer.params.PWM_Video_ch == 16) video_ch_raw = osd_chan16_raw;
 
-	if((video_ch_raw > eeprom_buffer.params.PWM_Video_value))
-	{
-		if(!video_trigger)
-		{
-			video_trigger = true;
-			if(video_switch == 0)
-			{
-				video_switch = 1;
-				GPIO_ResetBits(GPIOC, GPIO_Pin_0);
-				GPIO_SetBits(GPIOC, GPIO_Pin_1);
-			}
-			else
-			{
-				video_switch = 0;
-				GPIO_SetBits(GPIOC, GPIO_Pin_0);
-				GPIO_ResetBits(GPIOC, GPIO_Pin_1);
-			}
-		}
-	}
-	else
-	{
-		video_trigger = false;
-	}
+	if (eeprom_buffer.params.PWM_Panel_mode == 0) {
+    if (video_ch_raw > eeprom_buffer.params.PWM_Video_value) {
+      if (!video_trigger) {
+        video_trigger = true;
+        if (video_switch == 0) {
+          video_switch =  1;
+          GPIO_ResetBits(GPIOC, GPIO_Pin_0);
+          GPIO_SetBits(GPIOC, GPIO_Pin_1);
+        } else {
+          video_switch = 0;
+          GPIO_SetBits(GPIOC, GPIO_Pin_0);
+          GPIO_ResetBits(GPIOC, GPIO_Pin_1);
+        }
+      }
+    } else {
+      video_trigger = false;
+    }
+  } else {
+    if (video_ch_raw < 1500 && video_switch == 1) {
+      video_switch = 0;
+      GPIO_SetBits(GPIOC, GPIO_Pin_0);
+      GPIO_ResetBits(GPIOC, GPIO_Pin_1);
+    } else if (video_ch_raw >= 1500 && video_switch == 0) {
+      video_switch = 1;
+      GPIO_ResetBits(GPIOC, GPIO_Pin_0);
+      GPIO_SetBits(GPIOC, GPIO_Pin_1);
+    }
+  }
 }
 
 void triggerPanel(void)
@@ -286,25 +292,29 @@ void triggerPanel(void)
 	else if(eeprom_buffer.params.PWM_Panel_ch == 7) panel_ch_raw = osd_chan7_raw;
 	else if(eeprom_buffer.params.PWM_Panel_ch == 8) panel_ch_raw = osd_chan8_raw;
 	else if(eeprom_buffer.params.PWM_Panel_ch == 9) panel_ch_raw = osd_chan9_raw;
-    else if(eeprom_buffer.params.PWM_Panel_ch == 10) panel_ch_raw = osd_chan10_raw;
-    else if(eeprom_buffer.params.PWM_Panel_ch == 11) panel_ch_raw = osd_chan11_raw;
-    else if(eeprom_buffer.params.PWM_Panel_ch == 12) panel_ch_raw = osd_chan12_raw;
-    else if(eeprom_buffer.params.PWM_Panel_ch == 13) panel_ch_raw = osd_chan13_raw;
-    else if(eeprom_buffer.params.PWM_Panel_ch == 14) panel_ch_raw = osd_chan14_raw;
-    else if(eeprom_buffer.params.PWM_Panel_ch == 15) panel_ch_raw = osd_chan15_raw;
-    else if(eeprom_buffer.params.PWM_Panel_ch == 16) panel_ch_raw = osd_chan16_raw;
+  else if(eeprom_buffer.params.PWM_Panel_ch == 10) panel_ch_raw = osd_chan10_raw;
+  else if(eeprom_buffer.params.PWM_Panel_ch == 11) panel_ch_raw = osd_chan11_raw;
+  else if(eeprom_buffer.params.PWM_Panel_ch == 12) panel_ch_raw = osd_chan12_raw;
+  else if(eeprom_buffer.params.PWM_Panel_ch == 13) panel_ch_raw = osd_chan13_raw;
+  else if(eeprom_buffer.params.PWM_Panel_ch == 14) panel_ch_raw = osd_chan14_raw;
+  else if(eeprom_buffer.params.PWM_Panel_ch == 15) panel_ch_raw = osd_chan15_raw;
+  else if(eeprom_buffer.params.PWM_Panel_ch == 16) panel_ch_raw = osd_chan16_raw;
 
-	if((panel_ch_raw > eeprom_buffer.params.PWM_Panel_value))
-	{
-		if(!panel_trigger)
-		{
-			panel_trigger = true;
-			current_panel++;
+	if (eeprom_buffer.params.PWM_Panel_mode == 0) {
+		if((panel_ch_raw > eeprom_buffer.params.PWM_Panel_value)) {
+			if(!panel_trigger) {
+				panel_trigger = true;
+				current_panel++;
+			}
+		} else {
+			panel_trigger = false;
 		}
-	}
-	else
-	{
-		panel_trigger = false;
+	} else {
+		if (panel_ch_raw > 950 && panel_ch_raw < 2050) {
+			current_panel = ceil((panel_ch_raw - 950) / (1100 / (float) eeprom_buffer.params.Max_panels));
+		} else {
+			current_panel = 1;
+		}
 	}
 }
 
@@ -452,7 +462,7 @@ bool test_force_clear_all_params(void)
 {
     volatile unsigned samples = 0;
 	volatile unsigned vote = 0;
-    
+
     GPIO_InitTypeDef  gpio;
     gpio.GPIO_Pin = GPIO_Pin_11;
 	gpio.GPIO_Mode = GPIO_Mode_IN;
@@ -480,16 +490,16 @@ bool test_force_clear_all_params(void)
 			samples++;
 		}
 	}
-    
+
     /* revert the driver pin */
     gpio.GPIO_Pin = GPIO_Pin_10;
     gpio.GPIO_Mode = GPIO_Mode_IN;
 	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOB, &gpio);
-    
+
     /* the idea here is to reject wire-to-wire coupling, so require > 90% agreement */
 	if ((vote * 100) > (samples * 90))
 		return true;
-    
+
     return false;
 }

@@ -586,6 +586,20 @@ void RenderScreen(void)
                 SIZE_TO_FONT[eeprom_buffer.params.RSSI_fontsize]);
     }
 
+    if(eeprom_buffer.params.Efficiency_en==1 && bShownAtPanle(eeprom_buffer.params.Efficiency_panel)){
+        float wattage = osd_vbat_A * osd_curr_A * 0.01;
+        float speed = osd_groundspeed * convert_speed;
+        float efficiency = 0;
+        if (speed != 0) {
+          efficiency = wattage / speed;
+        }
+        sprintf(tmp_str, "%0.1fW/%s", efficiency, dist_unit_long);
+
+        write_string(tmp_str, eeprom_buffer.params.Efficiency_posX, eeprom_buffer.params.Efficiency_posY,
+                     0, 0, TEXT_VA_TOP, eeprom_buffer.params.Efficiency_align, 0,
+                     SIZE_TO_FONT[eeprom_buffer.params.Efficiency_fontsize]);
+    }
+
     //tip which panel are the current panel for 3 secs
     if (last_panel != current_panel) {
         last_panel = current_panel;
