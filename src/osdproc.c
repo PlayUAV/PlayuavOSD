@@ -246,10 +246,10 @@ void RenderScreen(void)
     if (eeprom_buffer.params.Alt_Scale_en==1 && bShownAtPanle(eeprom_buffer.params.Alt_Scale_panle)) {
         float alt_shown = osd_rel_alt;
         uint16_t posX = eeprom_buffer.params.Alt_Scale_posX;
-        sprintf(tmp_str, "RALT");
+        sprintf(tmp_str, "Alt");
         if(eeprom_buffer.params.Alt_Scale_type == 0){
             alt_shown = osd_alt;
-            sprintf(tmp_str, "AALT");
+            sprintf(tmp_str, "AAlt");
         }
         hud_draw_vertical_scale(alt_shown * convert_distance, 60,   // jmmods
                 eeprom_buffer.params.Alt_Scale_align,
@@ -276,10 +276,10 @@ void RenderScreen(void)
     if (eeprom_buffer.params.TALT_en==1 && bShownAtPanle(eeprom_buffer.params.TALT_panel)) {
         float tmp = osd_alt * convert_distance;    // jmmods Panel 2 alt error
         if (tmp < convert_distance_divider){
-            sprintf(tmp_str, "A-ALT: %d%s", (int) tmp, dist_unit_short);
+            sprintf(tmp_str, "AA %d%s", (int) tmp, dist_unit_short);
         }
         else{
-            sprintf(tmp_str, "A-ALT: %0.2f%s", (double) (tmp / convert_distance_divider), dist_unit_long);
+            sprintf(tmp_str, "AA %0.2f%s", (double) (tmp / convert_distance_divider), dist_unit_long);
         }
 
         write_string(tmp_str, eeprom_buffer.params.TALT_posX,
@@ -292,10 +292,10 @@ void RenderScreen(void)
     if (eeprom_buffer.params.Relative_ALT_en==1 && bShownAtPanle(eeprom_buffer.params.Relative_ALT_panel)) {
         float tmp = osd_rel_alt * convert_distance;    // jmmods Panel 2 alt error
         if (tmp < convert_distance_divider){
-            sprintf(tmp_str, "R-ALT: %d%s", (int) tmp, dist_unit_short);
+            sprintf(tmp_str, "A %d%s", (int) tmp, dist_unit_short);
         }
         else{
-            sprintf(tmp_str, "R-ALT: %0.2f%s", (double) (tmp / convert_distance_divider), dist_unit_long);
+            sprintf(tmp_str, "A %0.2f%s", (double) (tmp / convert_distance_divider), dist_unit_long);
         }
 
         write_string(tmp_str, eeprom_buffer.params.Relative_ALT_posX,
@@ -307,10 +307,10 @@ void RenderScreen(void)
     //speed
     if (eeprom_buffer.params.Speed_scale_en==1 && bShownAtPanle(eeprom_buffer.params.Speed_scale_panel)) {
         float spd_shown = osd_groundspeed;
-        sprintf(tmp_str, "GSPD");
+        sprintf(tmp_str, "GS");
         if(eeprom_buffer.params.Spd_Scale_type == 1){
             spd_shown = osd_airspeed;
-            sprintf(tmp_str, "ASPD");
+            sprintf(tmp_str, "AS");
         }
         hud_draw_vertical_scale(spd_shown * convert_speed, 60,  // jmmods
                 eeprom_buffer.params.Speed_scale_align,
@@ -332,7 +332,7 @@ void RenderScreen(void)
     // ground speed in text
     if (eeprom_buffer.params.TSPD_en==1 && bShownAtPanle(eeprom_buffer.params.TSPD_panel)) {
         float tmp = osd_groundspeed * convert_speed; // jmmods
-        sprintf(tmp_str, "G-SPD:%d%s", (int) tmp, spd_unit);
+        sprintf(tmp_str, "GS %d%s", (int) tmp, spd_unit);
         write_string(tmp_str, eeprom_buffer.params.TSPD_posX,
                      eeprom_buffer.params.TSPD_posY, 0, 0, TEXT_VA_TOP,
                      eeprom_buffer.params.TSPD_align, 0,
@@ -342,7 +342,7 @@ void RenderScreen(void)
     // Air speed in text
     if (eeprom_buffer.params.Air_Speed_en==1 && bShownAtPanle(eeprom_buffer.params.Air_Speed_panel)) {
         float tmp = osd_airspeed * convert_speed; // jmmods
-        sprintf(tmp_str, "A-SPD:%d%s", (int) tmp, spd_unit);
+        sprintf(tmp_str, "AS %d%s", (int) tmp, spd_unit);
         write_string(tmp_str, eeprom_buffer.params.Air_Speed_posX,
                      eeprom_buffer.params.Air_Speed_posY, 0, 0, TEXT_VA_TOP,
                      eeprom_buffer.params.Air_Speed_align, 0,
@@ -394,7 +394,7 @@ void RenderScreen(void)
     }
 
     if (eeprom_buffer.params.GpsHDOP_en==1 && bShownAtPanle(eeprom_buffer.params.GpsHDOP_panel)) {
-        sprintf(tmp_str, "HDOP:%0.1f", (double) osd_hdop / 100.0f);
+        sprintf(tmp_str, "HDOP %0.1f", (double) osd_hdop / 100.0f);
         write_string(tmp_str, eeprom_buffer.params.GpsHDOP_posX,
                      eeprom_buffer.params.GpsHDOP_posY, 0, 0, TEXT_VA_TOP,
                      eeprom_buffer.params.GpsHDOP_align, 0,
@@ -442,7 +442,7 @@ void RenderScreen(void)
                      SIZE_TO_FONT[eeprom_buffer.params.Gps2Status_fontsize]);
     }
     if (eeprom_buffer.params.Gps2HDOP_en==1 && bShownAtPanle(eeprom_buffer.params.Gps2HDOP_panel)) {
-        sprintf(tmp_str, "HDOP:%0.1f", (double) osd_hdop2 / 100.0f);
+        sprintf(tmp_str, "HDOP %0.1f", (double) osd_hdop2 / 100.0f);
         write_string(tmp_str, eeprom_buffer.params.Gps2HDOP_posX,
                      eeprom_buffer.params.Gps2HDOP_posY, 0, 0, TEXT_VA_TOP,
                      eeprom_buffer.params.Gps2HDOP_align, 0,
@@ -576,9 +576,9 @@ void RenderScreen(void)
 
             if (rssi < 0)
                 rssi = 0;
-            sprintf(tmp_str, "RSSI:%d%%", rssi);
+            sprintf(tmp_str, "RSSI %d%%", rssi);
         } else {
-            sprintf(tmp_str, "RSSI:%d", rssi);
+            sprintf(tmp_str, "RSSI %d", rssi);
         }
 
         write_string(tmp_str, x, y, 0, 0, TEXT_VA_MIDDLE,
@@ -592,7 +592,7 @@ void RenderScreen(void)
         new_panel_start_time = GetSystimeMS();
     }
     if ((GetSystimeMS() - new_panel_start_time) < 3000) {
-        sprintf(tmp_str, "P:%d", (int) current_panel);
+        sprintf(tmp_str, "P %d", (int) current_panel);
         write_string(tmp_str, GRAPHICS_X_MIDDLE, 210, 0, 0, TEXT_VA_TOP,
                 TEXT_HA_CENTER, 0, SIZE_TO_FONT[1]);
     }
@@ -896,18 +896,18 @@ void hud_draw_CWH(void)
     if(eeprom_buffer.params.CWH_home_dist_en==1 && bShownAtPanle(eeprom_buffer.params.CWH_home_dist_panel)){
         float tmp = osd_home_distance * convert_distance;
         if (tmp < convert_distance_divider)
-            sprintf(tmp_str, "H: %d%s", (int)tmp, dist_unit_short);
+            sprintf(tmp_str, "H %d%s", (int)tmp, dist_unit_short);
         else
-            sprintf(tmp_str, "H: %0.2f%s", (double)(tmp / convert_distance_divider), dist_unit_long);
+            sprintf(tmp_str, "H %0.2f%s", (double)(tmp / convert_distance_divider), dist_unit_long);
 
         write_string(tmp_str, eeprom_buffer.params.CWH_home_dist_posX, eeprom_buffer.params.CWH_home_dist_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.CWH_home_dist_align, 0, SIZE_TO_FONT[eeprom_buffer.params.CWH_home_dist_fontsize]);
     }
     if((wp_number != 0) &&(eeprom_buffer.params.CWH_wp_dist_en) && bShownAtPanle(eeprom_buffer.params.CWH_wp_dist_panel)){
         float tmp = wp_dist * convert_distance;
         if (tmp < convert_distance_divider)
-            sprintf(tmp_str, "WP: %d%s", (int)tmp, dist_unit_short);
+            sprintf(tmp_str, "WP %d%s", (int)tmp, dist_unit_short);
         else
-            sprintf(tmp_str, "WP: %0.2f%s", (double)(tmp / convert_distance_divider), dist_unit_long);
+            sprintf(tmp_str, "WP %0.2f%s", (double)(tmp / convert_distance_divider), dist_unit_long);
 
         write_string(tmp_str, eeprom_buffer.params.CWH_wp_dist_posX, eeprom_buffer.params.CWH_wp_dist_posY, 0, 0, TEXT_VA_TOP, eeprom_buffer.params.CWH_wp_dist_align, 0, SIZE_TO_FONT[eeprom_buffer.params.CWH_wp_dist_fontsize]);
     }
