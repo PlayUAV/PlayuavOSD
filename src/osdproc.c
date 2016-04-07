@@ -844,21 +844,29 @@ void hud_draw_throttle(void)
 //      write_vline_lm(posX-25, posY+10, posY+14, 1, 1);
 //  }
 
-    if(eeprom_buffer.params.Throt_scale_en){
-        if(eeprom_buffer.params.Throttle_Scale_Type == 0){
+    if (eeprom_buffer.params.Throt_scale_en) {
+        pos_th_y = (int16_t)(0.5*osd_throttle);
+        pos_th_x = posX - 25 + pos_th_y;
+        sprintf(tmp_str, "%d%%", (int32_t)osd_throttle);
+        write_string(tmp_str, posX, posY, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[0]);
+        if (eeprom_buffer.params.Throttle_Scale_Type == 0) {
             write_filled_rectangle_lm(posX+3, posY+25-pos_th_y, 5, pos_th_y, 1, 1);
             write_hline_lm(posX+3, posX+7, posY-25, 1, 1);
             write_hline_lm(posX+3, posX+7, posY+25-pos_th_y, 1, 1);
             write_vline_lm(posX+3, posY-25, posY+25-pos_th_y, 1, 1);
             write_vline_lm(posX+7, posY-25, posY+25-pos_th_y, 1, 1);
         }
-        else if(eeprom_buffer.params.Throttle_Scale_Type == 1){
+        else if (eeprom_buffer.params.Throttle_Scale_Type == 1) {
             write_filled_rectangle_lm(posX-25, posY+10, pos_th_y, 5, 1, 1);
             write_hline_lm(pos_th_x, posX+25, posY+10, 1, 1);
             write_hline_lm(pos_th_x, posX+25, posY+14, 1, 1);
             write_vline_lm(posX+25, posY+10, posY+14, 1, 1);
             write_vline_lm(posX-25, posY+10, posY+14, 1, 1);
         }
+    } else {
+        pos_th_y = (int16_t)(0.5*osd_throttle);
+        sprintf(tmp_str, "thr %d%%", (int32_t)osd_throttle);
+        write_string(tmp_str, posX, posY, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[0]);
     }
 }
 
