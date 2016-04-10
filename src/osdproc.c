@@ -852,7 +852,7 @@ void hud_draw_throttle(void) {
     }
   } else {
     pos_th_y = (int16_t)(0.5 * osd_throttle);
-    sprintf(tmp_str, "thr %d%%", (int32_t)osd_throttle);
+    sprintf(tmp_str, "THR %d%%", (int32_t)osd_throttle);
     write_string(tmp_str, posX, posY, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[0]);
   }
 }
