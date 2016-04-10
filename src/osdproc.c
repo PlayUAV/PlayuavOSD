@@ -134,8 +134,8 @@ void do_converts(void)
 {
     if (eeprom_buffer.params.Units_mode == 1)
     {
-        convert_distance = 2.23f;
-        convert_speed = 3.28f;
+        convert_distance = 3.28f;
+        convert_speed = 2.23f;
         convert_distance_divider = 5280.0f; // feet in a mile
         dist_unit_short = IMPERIAL_DIST_SHORT;
         dist_unit_long = IMPERIAL_DIST_LONG;
