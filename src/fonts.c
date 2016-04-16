@@ -20,9 +20,9 @@
 #include "fonts.h"
 
 struct FontEntry fonts[NUM_FONTS + 1] = {
-{ 0,  8,  14, "Outlined8x14", font_lookup_outlined8x14, font_data_outlined8x14,	0 },
-{ 1,  8,  8,  "Outlined8x8",  font_lookup_outlined8x8,  font_data_outlined8x8, FONT_UPPERCASE_ONLY },
-{ 2,  8,  10, "font8x10",    0,  0, 0 },
-{ 3,  12, 18, "font12x18",   0,  0, 0 },
-{ -1, 0,  0,  "",            0,  0, 0 } // ends font table
+  { 0,  8,  14, "Outlined8x14", font_lookup_outlined8x14, font_data_outlined8x14, 0 },
+  { 1,  8,  8,  "Outlined8x8",  font_lookup_outlined8x8,  font_data_outlined8x8, FONT_UPPERCASE_ONLY },
+  { 2,  8,  10, "font8x10",    0,  0, 0 },
+  { 3,  12, 18, "font12x18",   0,  0, 0 },
+  { -1, 0,  0,  "",            0,  0, 0 }// ends font table
 };

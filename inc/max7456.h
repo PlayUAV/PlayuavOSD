@@ -1,7 +1,7 @@
 #ifndef __MAX7456_H
 #define __MAX7456_H
 
-#include "board.h" 
+#include "board.h"
 
 
 /******* MAX7456 DATASHEET BEGIN*******/
@@ -73,29 +73,29 @@
 
 /******* MAX7456 DATASHEET END*******/
 
-#define MAX7456_CS_LOW()		GPIO_ResetBits(GPIOA, GPIO_Pin_15)
-#define MAX7456_CS_HIGH()		GPIO_SetBits(GPIOA, GPIO_Pin_15)
+#define MAX7456_CS_LOW()                GPIO_ResetBits(GPIOA, GPIO_Pin_15)
+#define MAX7456_CS_HIGH()               GPIO_SetBits(GPIOA, GPIO_Pin_15)
 
-void 	SPI_MAX7456_init(void);
-void 	SPI_MAX7456_clear(void);
-void 	SPI_MAX7456_setPanel(u8 start_col, u8 start_row);
-void 	SPI_MAX7456_openPanel(void);
-void	SPI_MAX7456_writeSingle(uint8_t x, uint8_t y, u8 c);
-void 	SPI_MAX7456_closePanel(void);
-void 	SPI_MAX7456_detectMode(void);
-void 	SPI_MAX7456_setMode(int mode);
-void 	SPI_MAX7456_control(u8 ctrl);
-void	SPI_MAX7456_write(u8 c);
-void 	SPI_MAX7456_write_NVM(u32 font_count, uint8_t *character_bitmap);
+void    SPI_MAX7456_init(void);
+void    SPI_MAX7456_clear(void);
+void    SPI_MAX7456_setPanel(u8 start_col, u8 start_row);
+void    SPI_MAX7456_openPanel(void);
+void    SPI_MAX7456_writeSingle(uint8_t x, uint8_t y, u8 c);
+void    SPI_MAX7456_closePanel(void);
+void    SPI_MAX7456_detectMode(void);
+void    SPI_MAX7456_setMode(int mode);
+void    SPI_MAX7456_control(u8 ctrl);
+void    SPI_MAX7456_write(u8 c);
+void    SPI_MAX7456_write_NVM(u32 font_count, uint8_t *character_bitmap);
 
 ////test function
-void	read_one_char_from_NVM(u32 font_count);
+void    read_one_char_from_NVM(u32 font_count);
 
-extern u8 	max7456_startCol;
-extern u8 	max7456_startRow;
-extern u8 	max7456_col;
-extern u8 	max7456_row;
-extern u8 	max7456_videoMode;
+extern u8 max7456_startCol;
+extern u8 max7456_startRow;
+extern u8 max7456_col;
+extern u8 max7456_row;
+extern u8 max7456_videoMode;
 
 #endif
 

@@ -14,10 +14,10 @@
 // Macro for writing a word with a mode (NAND = clear, OR = set, XOR = toggle)
 // at a given position
 #define WRITE_WORD_MODE(buff, addr, mask, mode) \
-	switch (mode) { \
-	case 0: buff[addr] &= ~mask; break; \
-	case 1: buff[addr] |= mask; break; \
-	case 2: buff[addr] ^= mask; break; }
+  switch (mode) { \
+  case 0: buff[addr] &= ~mask; break; \
+  case 1: buff[addr] |= mask; break; \
+  case 2: buff[addr] ^= mask; break; }
 
 #define WRITE_WORD_NAND(buff, addr, mask) { buff[addr] &= ~mask; DEBUG_DELAY; }
 #define WRITE_WORD_OR(buff, addr, mask)   { buff[addr] |= mask; DEBUG_DELAY; }
@@ -33,9 +33,9 @@
 // Macro for initializing stroke/fill modes. Add new modes here
 // if necessary.
 #define SETUP_STROKE_FILL(stroke, fill, mode) \
-	stroke = 0; fill = 0; \
-	if (mode == 0) { stroke = 0; fill = 1; } \
-	if (mode == 1) { stroke = 1; fill = 0; } \
+  stroke = 0; fill = 0; \
+  if (mode == 0) { stroke = 0; fill = 1; } \
+  if (mode == 1) { stroke = 1; fill = 0; } \
 
 // Line endcaps (for horizontal and vertical lines.)
 #define ENDCAP_NONE  0
@@ -43,36 +43,36 @@
 #define ENDCAP_FLAT  2
 
 #define DRAW_ENDCAP_HLINE(e, x, y, s, f, l) \
-	if ((e) == ENDCAP_ROUND) /* single pixel endcap */ \
-{ write_pixel_lm(x, y, f, l); } \
-	else if ((e) == ENDCAP_FLAT) /* flat endcap: FIXME, quicker to draw a vertical line(?) */ \
-{ write_pixel_lm(x, y - 1, s, l); write_pixel_lm(x, y, s, l); write_pixel_lm(x, y + 1, s, l); }
+  if ((e) == ENDCAP_ROUND)       /* single pixel endcap */ \
+  { write_pixel_lm(x, y, f, l); } \
+  else if ((e) == ENDCAP_FLAT)       /* flat endcap: FIXME, quicker to draw a vertical line(?) */ \
+  { write_pixel_lm(x, y - 1, s, l); write_pixel_lm(x, y, s, l); write_pixel_lm(x, y + 1, s, l); }
 
 #define DRAW_ENDCAP_VLINE(e, x, y, s, f, l) \
-	if ((e) == ENDCAP_ROUND) /* single pixel endcap */ \
-{ write_pixel_lm(x, y, f, l); } \
-	else if ((e) == ENDCAP_FLAT) /* flat endcap: FIXME, quicker to draw a horizontal line(?) */ \
-{ write_pixel_lm(x - 1, y, s, l); write_pixel_lm(x, y, s, l); write_pixel_lm(x + 1, y, s, l); }
+  if ((e) == ENDCAP_ROUND)       /* single pixel endcap */ \
+  { write_pixel_lm(x, y, f, l); } \
+  else if ((e) == ENDCAP_FLAT)       /* flat endcap: FIXME, quicker to draw a horizontal line(?) */ \
+  { write_pixel_lm(x - 1, y, s, l); write_pixel_lm(x, y, s, l); write_pixel_lm(x + 1, y, s, l); }
 
 // Macros for writing pixels in a midpoint circle algorithm.
 #define CIRCLE_PLOT_8(buff, cx, cy, x, y, mode) \
-	CIRCLE_PLOT_4(buff, cx, cy, x, y, mode); \
-	if ((x) != (y)) { CIRCLE_PLOT_4(buff, cx, cy, y, x, mode); }
+  CIRCLE_PLOT_4(buff, cx, cy, x, y, mode); \
+  if ((x) != (y)) { CIRCLE_PLOT_4(buff, cx, cy, y, x, mode); }
 
 #define CIRCLE_PLOT_4(buff, cx, cy, x, y, mode) \
-	write_pixel(buff, (cx) + (x), (cy) + (y), mode); \
-	write_pixel(buff, (cx) - (x), (cy) + (y), mode); \
-	write_pixel(buff, (cx) + (x), (cy) - (y), mode); \
-	write_pixel(buff, (cx) - (x), (cy) - (y), mode);
+  write_pixel(buff, (cx) + (x), (cy) + (y), mode); \
+  write_pixel(buff, (cx) - (x), (cy) + (y), mode); \
+  write_pixel(buff, (cx) + (x), (cy) - (y), mode); \
+  write_pixel(buff, (cx) - (x), (cy) - (y), mode);
 
 // Macros for writing pixels in a upper arc algorithm.
 #define UPPER_ARC_PLOT_8(buff, cx, cy, x, y, x1, x2, mode) \
-	UPPER_ARC_PLOT_4(buff, cx, cy, x, y, x1, x2, mode); \
-	if ((x) != (y)) { UPPER_ARC_PLOT_4(buff, cx, cy, y, x, x1, x2, mode); }
+  UPPER_ARC_PLOT_4(buff, cx, cy, x, y, x1, x2, mode); \
+  if ((x) != (y)) { UPPER_ARC_PLOT_4(buff, cx, cy, y, x, x1, x2, mode); }
 #define UPPER_ARC_PLOT_4(buff, cx, cy, x, y, x1, x2, mode) \
-	if(((cx) - (x)) > x1) write_pixel(buff, (cx) + (x), (cy) - (y), mode); \
-	if(((cx) + (x)) < x2) write_pixel(buff, (cx) - (x), (cy) - (y), mode);
-	
+  if (((cx) - (x)) > x1) write_pixel(buff, (cx) + (x), (cy) - (y), mode); \
+  if (((cx) + (x)) < x2) write_pixel(buff, (cx) - (x), (cy) - (y), mode);
+
 // Font flags.
 #define FONT_BOLD      1               // bold text (no outline)
 #define FONT_INVERT    2               // invert: border white, inside black
@@ -86,36 +86,36 @@
 
 // Text dimension structures.
 struct FontDimensions {
-	int width, height;
+  int width, height;
 };
 
 // to convert metric -> imperial
 // for speeds see http://en.wikipedia.org/wiki/Miles_per_hour
 typedef struct {                    // from		metric			imperial
-	float   m_to_m_feet;            // m		m		1.0		feet	3.280840
-	float   ms_to_ms_fts;           // m/s		m/s		1.0		ft/s	3.280840
-	float   ms_to_kmh_mph;          // m/s		km/h	3.6		mph		2.236936
-	uint8_t char_m_feet;            // char		'm'				'f'
-	uint8_t char_ms_fts;            // char		'm/s'			'ft/s'
+  float m_to_m_feet;                    // m		m		1.0		feet	3.280840
+  float ms_to_ms_fts;                   // m/s		m/s		1.0		ft/s	3.280840
+  float ms_to_kmh_mph;                  // m/s		km/h	3.6		mph		2.236936
+  uint8_t char_m_feet;                  // char		'm'				'f'
+  uint8_t char_ms_fts;                  // char		'm/s'			'ft/s'
 } Unit;
 
 // Home position for calculations
 typedef struct {
-	int32_t  Latitude;
-	int32_t  Longitude;
-	float    Altitude;
-	uint8_t  GotHome;
-	uint32_t Distance;
-	uint16_t Direction;
+  int32_t Latitude;
+  int32_t Longitude;
+  float Altitude;
+  uint8_t GotHome;
+  uint32_t Distance;
+  uint16_t Direction;
 } HomePosition;
 
 // ADC values filtered
 typedef struct {
-	double rssi;
-	double flight;
-	double video;
-	double volt;
-	double curr;
+  double rssi;
+  double flight;
+  double video;
+  double volt;
+  double curr;
 } ADCfiltered;
 
 // Max/Min macros

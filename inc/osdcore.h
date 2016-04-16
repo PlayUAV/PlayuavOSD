@@ -6,26 +6,26 @@
 
 // PAL/NTSC specific boundary values
 struct pios_video_type_boundary {
-	uint16_t graphics_right;
-	uint16_t graphics_bottom;
+  uint16_t graphics_right;
+  uint16_t graphics_bottom;
 };
 
 // PAL/NTSC specific config values
 struct pios_video_type_cfg {
-	uint16_t graphics_hight_real;
-	uint8_t  graphics_column_start;
-	uint8_t  graphics_line_start;
-	uint8_t  dma_buffer_length;
-	uint8_t  period;
-	uint8_t  dc;
+  uint16_t graphics_hight_real;
+  uint8_t graphics_column_start;
+  uint8_t graphics_line_start;
+  uint8_t dma_buffer_length;
+  uint8_t period;
+  uint8_t dc;
 };
 
 struct pios_osd_bw_cfg_t {
-	TIM_TimeBaseInitTypeDef tim_base_init;
-	TIM_OCInitTypeDef tim_oc_init;
-	GPIO_InitTypeDef gpio_init;
-	uint32_t remap;
-	const struct pios_tim_channel * bw_channels;
+  TIM_TimeBaseInitTypeDef tim_base_init;
+  TIM_OCInitTypeDef tim_oc_init;
+  GPIO_InitTypeDef gpio_init;
+  uint32_t remap;
+  const struct pios_tim_channel * bw_channels;
 };
 
 //extern OS_FlagID osdUpdateFlag;
@@ -51,8 +51,8 @@ extern const struct pios_video_type_boundary *pios_video_type_boundary_act;
 #define GRAPHICS_RIGHT       pios_video_type_boundary_act->graphics_right
 #define GRAPHICS_BOTTOM      pios_video_type_boundary_act->graphics_bottom
 
-#define GRAPHICS_X_MIDDLE	((GRAPHICS_RIGHT + 1) / 2)
-#define GRAPHICS_Y_MIDDLE	((GRAPHICS_BOTTOM + 1) / 2)
+#define GRAPHICS_X_MIDDLE       ((GRAPHICS_RIGHT + 1) / 2)
+#define GRAPHICS_Y_MIDDLE       ((GRAPHICS_BOTTOM + 1) / 2)
 
 
 // video type defs for autodetect
@@ -70,15 +70,15 @@ extern const struct pios_video_type_boundary *pios_video_type_boundary_act;
 #define BUFFER_HEIGHT        (GRAPHICS_HEIGHT_REAL)
 
 enum Trans_mode {
-    trans_idle = 0,
-    trans_tele = 1,
-    trans_osd = 2,
+  trans_idle = 0,
+  trans_tele = 1,
+  trans_osd = 2,
 };
 
 // make sure that (START_LINE + NUMLINES) < 16 so doesnt overlap OSD ( NTSC osd starts on line 16)
 // play safe to get in the  window for rx at the moment
-#define TELEM_START_LINE    9    // first row of telem 
-#define TELEM_LINES         4   // num telem rows 
+#define TELEM_START_LINE    9    // first row of telem
+#define TELEM_LINES         4   // num telem rows
 #define TELEM_BUFFER_WIDTH  12  // gives (12 *8) div 10 == 9 bytes of data per line
 
 #endif

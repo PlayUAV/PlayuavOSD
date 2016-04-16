@@ -16,47 +16,44 @@
 
 #include "spi.h"
 
-void SPI1_Init(void)
-{
-  	SPI_InitTypeDef  SPI_InitStructure;
-	
-	SPI_Cmd(SPI3, DISABLE);
-	
-	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex; 
-	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;		
-	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;		
-	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;	
-	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;		
-	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32;		
-	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;	
-	SPI_InitStructure.SPI_CRCPolynomial = 7;	
-	SPI_Init(SPI3, &SPI_InitStructure);  
-	
-	SPI_Cmd(SPI3, ENABLE);
-} 
+void SPI1_Init(void) {
+  SPI_InitTypeDef SPI_InitStructure;
+
+  SPI_Cmd(SPI3, DISABLE);
+
+  SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+  SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
+  SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
+  SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
+  SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
+  SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
+  SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32;
+  SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
+  SPI_InitStructure.SPI_CRCPolynomial = 7;
+  SPI_Init(SPI3, &SPI_InitStructure);
+
+  SPI_Cmd(SPI3, ENABLE);
+}
 
 
-void SPI1_SetSpeed(u8 SPI_BaudRatePrescaler)
-{
-  	assert_param(IS_SPI_BAUDRATE_PRESCALER(SPI_BaudRatePrescaler));
-	SPI3->CR1&=0XFFC7;
-	SPI3->CR1|=SPI_BaudRatePrescaler;
-	SPI_Cmd(SPI3,ENABLE); 
-} 
+void SPI1_SetSpeed(u8 SPI_BaudRatePrescaler) {
+  assert_param(IS_SPI_BAUDRATE_PRESCALER(SPI_BaudRatePrescaler));
+  SPI3->CR1 &= 0XFFC7;
+  SPI3->CR1 |= SPI_BaudRatePrescaler;
+  SPI_Cmd(SPI3, ENABLE);
+}
 
 
-u8 SPI1_TransferByte(u8 TxData)
-{		
+u8 SPI1_TransferByte(u8 TxData) {
 
-	while (SPI_I2S_GetFlagStatus(SPI3, SPI_I2S_FLAG_TXE) == RESET);
-		
-	SPI_I2S_SendData(SPI3, TxData); 
-	
+  while (SPI_I2S_GetFlagStatus(SPI3, SPI_I2S_FLAG_TXE) == RESET);
 
-	while (SPI_I2S_GetFlagStatus(SPI3, SPI_I2S_FLAG_RXNE) == RESET);
-	
-	return SPI_I2S_ReceiveData(SPI3); 				    
+  SPI_I2S_SendData(SPI3, TxData);
+
+
+  while (SPI_I2S_GetFlagStatus(SPI3, SPI_I2S_FLAG_RXNE) == RESET);
+
+  return SPI_I2S_ReceiveData(SPI3);
 }
 
 

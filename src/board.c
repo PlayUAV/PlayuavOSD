@@ -34,224 +34,219 @@ void triggerVideo(void);
 void triggerPanel(void);
 void checkDefaultParam(void);
 
-uint8_t video_switch=0;
+uint8_t video_switch = 0;
 
 xTaskHandle xTaskVCPHandle;
 
 int32_t pwmPanelNormal = 0;
 
-void board_init(void)
-{
-	GPIO_InitTypeDef  gpio;
-	SystemCoreClockUpdate( );
+void board_init(void) {
+  GPIO_InitTypeDef gpio;
+  SystemCoreClockUpdate();
 
-    // turn on peripherals needed by all
-    RCC_AHB1PeriphClockCmd(	RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB |
-							RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD |
-							RCC_AHB1Periph_DMA1  | RCC_AHB1Periph_DMA2  |
-							RCC_AHB1Periph_BKPSRAM, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1 | RCC_APB2Periph_TIM1 | RCC_APB2Periph_SYSCFG, ENABLE);
-    RCC_APB1PeriphClockCmd( RCC_APB1Periph_SPI2 | RCC_APB1Periph_SPI3 | RCC_APB1Periph_TIM2 |
-							RCC_APB1Periph_TIM3 | RCC_APB1Periph_TIM4 | RCC_APB1Periph_TIM5 |  RCC_APB1Periph_TIM12 |
-                     RCC_APB1Periph_PWR, ENABLE);
+  // turn on peripherals needed by all
+  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB |
+                         RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD |
+                         RCC_AHB1Periph_DMA1  | RCC_AHB1Periph_DMA2  |
+                         RCC_AHB1Periph_BKPSRAM, ENABLE);
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1 | RCC_APB2Periph_TIM1 | RCC_APB2Periph_SYSCFG, ENABLE);
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2 | RCC_APB1Periph_SPI3 | RCC_APB1Periph_TIM2 |
+                         RCC_APB1Periph_TIM3 | RCC_APB1Periph_TIM4 | RCC_APB1Periph_TIM5 |  RCC_APB1Periph_TIM12 |
+                         RCC_APB1Periph_PWR, ENABLE);
 
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
-	RCC_LSEConfig(RCC_LSE_OFF);
+  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+  SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
+  RCC_LSEConfig(RCC_LSE_OFF);
 
-	LEDInit(LED_BLUE);
-	LEDInit(LED_GREEN);
+  LEDInit(LED_BLUE);
+  LEDInit(LED_GREEN);
 
-	gpio.GPIO_Pin = GPIO_Pin_0;
-	gpio.GPIO_Mode = GPIO_Mode_OUT;
-	gpio.GPIO_OType = GPIO_OType_PP;
-	gpio.GPIO_PuPd = GPIO_PuPd_UP;
-	gpio.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_Init(GPIOC, &gpio);
-	GPIO_SetBits(GPIOC, GPIO_Pin_0);
-	gpio.GPIO_Pin = GPIO_Pin_1;
-	gpio.GPIO_PuPd = GPIO_PuPd_DOWN;
-	GPIO_Init(GPIOC, &gpio);
-	GPIO_ResetBits(GPIOC, GPIO_Pin_1);
+  gpio.GPIO_Pin = GPIO_Pin_0;
+  gpio.GPIO_Mode = GPIO_Mode_OUT;
+  gpio.GPIO_OType = GPIO_OType_PP;
+  gpio.GPIO_PuPd = GPIO_PuPd_UP;
+  gpio.GPIO_Speed = GPIO_Speed_100MHz;
+  GPIO_Init(GPIOC, &gpio);
+  GPIO_SetBits(GPIOC, GPIO_Pin_0);
+  gpio.GPIO_Pin = GPIO_Pin_1;
+  gpio.GPIO_PuPd = GPIO_PuPd_DOWN;
+  GPIO_Init(GPIOC, &gpio);
+  GPIO_ResetBits(GPIOC, GPIO_Pin_1);
 
-	//SPI1 output to electronic switch to control mask
-	GPIO_StructInit(&gpio);
-	gpio.GPIO_Pin = GPIO_Pin_6; // SPI1 MISO
-    gpio.GPIO_Mode = GPIO_Mode_AF;
-	gpio.GPIO_OType = GPIO_OType_PP;
-    gpio.GPIO_Speed = GPIO_Speed_50MHz;
-	gpio.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIOA, &gpio);
-	GPIO_ResetBits(GPIOA, GPIO_Pin_6);
+  //SPI1 output to electronic switch to control mask
+  GPIO_StructInit(&gpio);
+  gpio.GPIO_Pin = GPIO_Pin_6;       // SPI1 MISO
+  gpio.GPIO_Mode = GPIO_Mode_AF;
+  gpio.GPIO_OType = GPIO_OType_PP;
+  gpio.GPIO_Speed = GPIO_Speed_50MHz;
+  gpio.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+  GPIO_Init(GPIOA, &gpio);
+  GPIO_ResetBits(GPIOA, GPIO_Pin_6);
 
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_SPI3);
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_SPI3);
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource12, GPIO_AF_SPI3);
+  GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_SPI3);
+  GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_SPI3);
+  GPIO_PinAFConfig(GPIOC, GPIO_PinSource12, GPIO_AF_SPI3);
 
-	// max7456 SPI MOIS MISO SLK pin config
-	gpio.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12;
-	gpio.GPIO_Mode = GPIO_Mode_AF;
-	gpio.GPIO_OType = GPIO_OType_PP;
-    gpio.GPIO_Speed = GPIO_Speed_50MHz;
-	gpio.GPIO_PuPd  = GPIO_PuPd_DOWN;
-	GPIO_Init(GPIOC, &gpio);
+  // max7456 SPI MOIS MISO SLK pin config
+  gpio.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12;
+  gpio.GPIO_Mode = GPIO_Mode_AF;
+  gpio.GPIO_OType = GPIO_OType_PP;
+  gpio.GPIO_Speed = GPIO_Speed_50MHz;
+  gpio.GPIO_PuPd  = GPIO_PuPd_DOWN;
+  GPIO_Init(GPIOC, &gpio);
 
-	// max7456 SPI CS Pin
-	gpio.GPIO_Pin = GPIO_Pin_15;
-	gpio.GPIO_Mode = GPIO_Mode_OUT;
-	gpio.GPIO_OType = GPIO_OType_PP;
-	gpio.GPIO_Speed = GPIO_Speed_50MHz;
-	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIOA, &gpio);
-	GPIO_SetBits(GPIOA,GPIO_Pin_15);
+  // max7456 SPI CS Pin
+  gpio.GPIO_Pin = GPIO_Pin_15;
+  gpio.GPIO_Mode = GPIO_Mode_OUT;
+  gpio.GPIO_OType = GPIO_OType_PP;
+  gpio.GPIO_Speed = GPIO_Speed_50MHz;
+  gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_Init(GPIOA, &gpio);
+  GPIO_SetBits(GPIOA, GPIO_Pin_15);
 
-    Build_Sin_Cos_Tables();
+  Build_Sin_Cos_Tables();
 
 
-    bool force_clear_params = false;
-    force_clear_params = test_force_clear_all_params();
-    if(force_clear_params)
-    {
-        clear_all_params();
-    }
+  bool force_clear_params = false;
+  force_clear_params = test_force_clear_all_params();
+  if (force_clear_params)
+  {
+    clear_all_params();
+  }
 
-    LoadParams();
-    checkDefaultParam();
-    SPI_MAX7456_init();
+  LoadParams();
+  checkDefaultParam();
+  SPI_MAX7456_init();
 
-    //fabs, make sure not broken the VBI
-    osd_offset_Y = fabs(eeprom_buffer.params.osd_offsetY);
+  //fabs, make sure not broken the VBI
+  osd_offset_Y = fabs(eeprom_buffer.params.osd_offsetY);
 
-    osd_offset_X = eeprom_buffer.params.osd_offsetX;
-    if(eeprom_buffer.params.osd_offsetX_sign == 0){
-        osd_offset_X = osd_offset_X * -1;
-    }
+  osd_offset_X = eeprom_buffer.params.osd_offsetX;
+  if (eeprom_buffer.params.osd_offsetX_sign == 0) {
+    osd_offset_X = osd_offset_X * -1;
+  }
 
-    atti_mp_scale = (float)eeprom_buffer.params.Atti_mp_scale_real + (float)eeprom_buffer.params.Atti_mp_scale_frac * 0.01;
-    atti_3d_scale = (float)eeprom_buffer.params.Atti_3D_scale_real + (float)eeprom_buffer.params.Atti_3D_scale_frac * 0.01;
-    atti_3d_min_clipX = eeprom_buffer.params.Atti_mp_posX - (uint32_t)(22*atti_mp_scale);
-    atti_3d_max_clipX = eeprom_buffer.params.Atti_mp_posX + (uint32_t)(22*atti_mp_scale);
-    atti_3d_min_clipY = eeprom_buffer.params.Atti_mp_posY - (uint32_t)(30*atti_mp_scale);
-    atti_3d_max_clipY = eeprom_buffer.params.Atti_mp_posY + (uint32_t)(34*atti_mp_scale);
+  atti_mp_scale = (float)eeprom_buffer.params.Atti_mp_scale_real + (float)eeprom_buffer.params.Atti_mp_scale_frac * 0.01;
+  atti_3d_scale = (float)eeprom_buffer.params.Atti_3D_scale_real + (float)eeprom_buffer.params.Atti_3D_scale_frac * 0.01;
+  atti_3d_min_clipX = eeprom_buffer.params.Atti_mp_posX - (uint32_t)(22 * atti_mp_scale);
+  atti_3d_max_clipX = eeprom_buffer.params.Atti_mp_posX + (uint32_t)(22 * atti_mp_scale);
+  atti_3d_min_clipY = eeprom_buffer.params.Atti_mp_posY - (uint32_t)(30 * atti_mp_scale);
+  atti_3d_max_clipY = eeprom_buffer.params.Atti_mp_posY + (uint32_t)(34 * atti_mp_scale);
 }
 
-void module_init(void)
-{
-	xTaskCreate( vTaskHeartBeat, (const char*)"Task Heartbeat",
-		STACK_SIZE_MIN, NULL, THREAD_PRIO_LOW, NULL );
+void module_init(void) {
+  xTaskCreate(vTaskHeartBeat, (const char*)"Task Heartbeat",
+              STACK_SIZE_MIN, NULL, THREAD_PRIO_LOW, NULL);
 
-	xTaskCreate( vTask10HZ, (const char*)"Task 10HZ",
-		STACK_SIZE_MIN, NULL, THREAD_PRIO_NORMAL, NULL );
+  xTaskCreate(vTask10HZ, (const char*)"Task 10HZ",
+              STACK_SIZE_MIN, NULL, THREAD_PRIO_NORMAL, NULL);
 
-	xTaskCreate( vTaskOSD, (const char*)"Task OSD",
-		STACK_SIZE_MIN*2, NULL, THREAD_PRIO_HIGHEST, NULL );
+  xTaskCreate(vTaskOSD, (const char*)"Task OSD",
+              STACK_SIZE_MIN * 2, NULL, THREAD_PRIO_HIGHEST, NULL);
 
-	xTaskCreate( vTaskVCP, (const char*)"Task VCP",
-	STACK_SIZE_MIN*2, NULL, THREAD_PRIO_NORMAL, &xTaskVCPHandle );
+  xTaskCreate(vTaskVCP, (const char*)"Task VCP",
+              STACK_SIZE_MIN * 2, NULL, THREAD_PRIO_NORMAL, &xTaskVCPHandle);
 
-	switch(eeprom_buffer.params.FC_Protocol){
-		case PROTOCOL_MAVLINK:
-			xTaskCreate( MavlinkTask, (const char*)"Task Mavlink",
-						 STACK_SIZE_MIN*2, NULL, THREAD_PRIO_HIGH, NULL );
-			break;
-		case PROTOCOL_UAVTALK:
-			xTaskCreate( UAVTalkTask, (const char*)"Task UAVTalk",
-						 STACK_SIZE_MIN*2, NULL, THREAD_PRIO_HIGH, NULL );
-			break;
-		default:
-			break;
-	}
+  switch (eeprom_buffer.params.FC_Protocol) {
+  case PROTOCOL_MAVLINK:
+    xTaskCreate(MavlinkTask, (const char*)"Task Mavlink",
+                STACK_SIZE_MIN * 2, NULL, THREAD_PRIO_HIGH, NULL);
+    break;
+  case PROTOCOL_UAVTALK:
+    xTaskCreate(UAVTalkTask, (const char*)"Task UAVTalk",
+                STACK_SIZE_MIN * 2, NULL, THREAD_PRIO_HIGH, NULL);
+    break;
+  default:
+    break;
+  }
 
 
 //	xTaskCreate( DJICanTask, (const char*)"DJI CAN",
 //	STACK_SIZE_MIN, NULL, THREAD_PRIO_HIGH, NULL );
 }
 
-void vTaskHeartBeat(void *pvParameters)
-{
-	for(;;)
-	{
-		LEDToggle(LED_GREEN);
-		vTaskDelay( 500 / portTICK_RATE_MS );
-	}
+void vTaskHeartBeat(void *pvParameters) {
+  for (;; )
+  {
+    LEDToggle(LED_GREEN);
+    vTaskDelay(500 / portTICK_RATE_MS);
+  }
 }
 
-void vTask10HZ(void *pvParameters)
-{
-    for(;;)
-        {
-            vTaskDelay( 100 / portTICK_RATE_MS );
+void vTask10HZ(void *pvParameters) {
+  for (;; )
+  {
+    vTaskDelay(100 / portTICK_RATE_MS);
 
-            // calculate osd_curr_consumed_mah(simulation)
-            osd_curr_consumed_mah += (osd_curr_A * 0.00027777778f);
+    // calculate osd_curr_consumed_mah(simulation)
+    osd_curr_consumed_mah += (osd_curr_A * 0.00027777778f);
 
-            // calculate osd_total_trip_dist(simulation)
-            if (osd_groundspeed > 1.0f) osd_total_trip_dist += (osd_groundspeed * 0.1f);   // jmmods > for calculation of trip , Groundspeed is better than airspeed
+    // calculate osd_total_trip_dist(simulation)
+    if (osd_groundspeed > 1.0f) osd_total_trip_dist += (osd_groundspeed * 0.1f);           // jmmods > for calculation of trip , Groundspeed is better than airspeed
 
-            //trigger video switch
-            if(eeprom_buffer.params.PWM_Video_en)
-            {
-                triggerVideo();
-            }
+    //trigger video switch
+    if (eeprom_buffer.params.PWM_Video_en)
+    {
+      triggerVideo();
+    }
 
-            //trigger panel switch
-            if(eeprom_buffer.params.PWM_Panel_en)
-            {
-                triggerPanel();
-            }
+    //trigger panel switch
+    if (eeprom_buffer.params.PWM_Panel_en)
+    {
+      triggerPanel();
+    }
 
-            //if no mavlink update for 2 secs, show waring and request mavlink rate again
-            if(GetSystimeMS() > (lastMAVBeat + 2200))
-            {
-                heatbeat_start_time = 0;
-                waitingMAVBeats = 1;
-            }
+    //if no mavlink update for 2 secs, show waring and request mavlink rate again
+    if (GetSystimeMS() > (lastMAVBeat + 2200))
+    {
+      heatbeat_start_time = 0;
+      waitingMAVBeats = 1;
+    }
 
-            if(enable_mav_request == 1)
-            {
-                for(int n = 0; n < 3; n++){
-                    request_mavlink_rates();//Three times to certify it will be readed
-                    vTaskDelay(50/portTICK_RATE_MS);
-                }
-                enable_mav_request = 0;
-                waitingMAVBeats = 0;
-                lastMAVBeat = GetSystimeMS();
-            }
+    if (enable_mav_request == 1)
+    {
+      for (int n = 0; n < 3; n++) {
+        request_mavlink_rates();            //Three times to certify it will be readed
+        vTaskDelay(50 / portTICK_RATE_MS);
+      }
+      enable_mav_request = 0;
+      waitingMAVBeats = 0;
+      lastMAVBeat = GetSystimeMS();
+    }
 
-            if(enable_mission_count_request == 1)
-            {
-                request_mission_count();
-                enable_mission_count_request = 0;
-            }
+    if (enable_mission_count_request == 1)
+    {
+      request_mission_count();
+      enable_mission_count_request = 0;
+    }
 
-            if(enable_mission_item_request == 1)
-            {
-                request_mission_item(current_mission_item_req_index);
-            }
+    if (enable_mission_item_request == 1)
+    {
+      request_mission_item(current_mission_item_req_index);
+    }
 
-        }
+  }
 }
 
-void triggerVideo(void)
-{
-	static uint16_t video_ch_raw;
-	static bool video_trigger = false;
+void triggerVideo(void) {
+  static uint16_t video_ch_raw;
+  static bool video_trigger = false;
 
-	video_ch_raw = 0;
-	if(eeprom_buffer.params.PWM_Video_ch == 5) video_ch_raw = osd_chan5_raw;
-	else if(eeprom_buffer.params.PWM_Video_ch == 6) video_ch_raw = osd_chan6_raw;
-	else if(eeprom_buffer.params.PWM_Video_ch == 7) video_ch_raw = osd_chan7_raw;
-	else if(eeprom_buffer.params.PWM_Video_ch == 8) video_ch_raw = osd_chan8_raw;
-	else if(eeprom_buffer.params.PWM_Video_ch == 9) video_ch_raw = osd_chan9_raw;
-	else if(eeprom_buffer.params.PWM_Video_ch == 10) video_ch_raw = osd_chan10_raw;
-	else if(eeprom_buffer.params.PWM_Video_ch == 11) video_ch_raw = osd_chan11_raw;
-	else if(eeprom_buffer.params.PWM_Video_ch == 12) video_ch_raw = osd_chan12_raw;
-	else if(eeprom_buffer.params.PWM_Video_ch == 13) video_ch_raw = osd_chan13_raw;
-	else if(eeprom_buffer.params.PWM_Video_ch == 14) video_ch_raw = osd_chan14_raw;
-	else if(eeprom_buffer.params.PWM_Video_ch == 15) video_ch_raw = osd_chan15_raw;
-	else if(eeprom_buffer.params.PWM_Video_ch == 16) video_ch_raw = osd_chan16_raw;
+  video_ch_raw = 0;
+  if (eeprom_buffer.params.PWM_Video_ch == 5) video_ch_raw = osd_chan5_raw;
+  else if (eeprom_buffer.params.PWM_Video_ch == 6) video_ch_raw = osd_chan6_raw;
+  else if (eeprom_buffer.params.PWM_Video_ch == 7) video_ch_raw = osd_chan7_raw;
+  else if (eeprom_buffer.params.PWM_Video_ch == 8) video_ch_raw = osd_chan8_raw;
+  else if (eeprom_buffer.params.PWM_Video_ch == 9) video_ch_raw = osd_chan9_raw;
+  else if (eeprom_buffer.params.PWM_Video_ch == 10) video_ch_raw = osd_chan10_raw;
+  else if (eeprom_buffer.params.PWM_Video_ch == 11) video_ch_raw = osd_chan11_raw;
+  else if (eeprom_buffer.params.PWM_Video_ch == 12) video_ch_raw = osd_chan12_raw;
+  else if (eeprom_buffer.params.PWM_Video_ch == 13) video_ch_raw = osd_chan13_raw;
+  else if (eeprom_buffer.params.PWM_Video_ch == 14) video_ch_raw = osd_chan14_raw;
+  else if (eeprom_buffer.params.PWM_Video_ch == 15) video_ch_raw = osd_chan15_raw;
+  else if (eeprom_buffer.params.PWM_Video_ch == 16) video_ch_raw = osd_chan16_raw;
 
-	if (eeprom_buffer.params.PWM_Panel_mode == 0) {
+  if (eeprom_buffer.params.PWM_Panel_mode == 0) {
     if (video_ch_raw > eeprom_buffer.params.PWM_Video_value) {
       if (!video_trigger) {
         video_trigger = true;
@@ -281,225 +276,218 @@ void triggerVideo(void)
   }
 }
 
-void triggerPanel(void)
-{
-	static uint16_t panel_ch_raw;
-	static bool panel_trigger = false;
+void triggerPanel(void) {
+  static uint16_t panel_ch_raw;
+  static bool panel_trigger = false;
 
-	panel_ch_raw = 0;
-	if(eeprom_buffer.params.PWM_Panel_ch == 5) panel_ch_raw = osd_chan5_raw;
-	else if(eeprom_buffer.params.PWM_Panel_ch == 6) panel_ch_raw = osd_chan6_raw;
-	else if(eeprom_buffer.params.PWM_Panel_ch == 7) panel_ch_raw = osd_chan7_raw;
-	else if(eeprom_buffer.params.PWM_Panel_ch == 8) panel_ch_raw = osd_chan8_raw;
-	else if(eeprom_buffer.params.PWM_Panel_ch == 9) panel_ch_raw = osd_chan9_raw;
-  else if(eeprom_buffer.params.PWM_Panel_ch == 10) panel_ch_raw = osd_chan10_raw;
-  else if(eeprom_buffer.params.PWM_Panel_ch == 11) panel_ch_raw = osd_chan11_raw;
-  else if(eeprom_buffer.params.PWM_Panel_ch == 12) panel_ch_raw = osd_chan12_raw;
-  else if(eeprom_buffer.params.PWM_Panel_ch == 13) panel_ch_raw = osd_chan13_raw;
-  else if(eeprom_buffer.params.PWM_Panel_ch == 14) panel_ch_raw = osd_chan14_raw;
-  else if(eeprom_buffer.params.PWM_Panel_ch == 15) panel_ch_raw = osd_chan15_raw;
-  else if(eeprom_buffer.params.PWM_Panel_ch == 16) panel_ch_raw = osd_chan16_raw;
+  panel_ch_raw = 0;
+  if (eeprom_buffer.params.PWM_Panel_ch == 5) panel_ch_raw = osd_chan5_raw;
+  else if (eeprom_buffer.params.PWM_Panel_ch == 6) panel_ch_raw = osd_chan6_raw;
+  else if (eeprom_buffer.params.PWM_Panel_ch == 7) panel_ch_raw = osd_chan7_raw;
+  else if (eeprom_buffer.params.PWM_Panel_ch == 8) panel_ch_raw = osd_chan8_raw;
+  else if (eeprom_buffer.params.PWM_Panel_ch == 9) panel_ch_raw = osd_chan9_raw;
+  else if (eeprom_buffer.params.PWM_Panel_ch == 10) panel_ch_raw = osd_chan10_raw;
+  else if (eeprom_buffer.params.PWM_Panel_ch == 11) panel_ch_raw = osd_chan11_raw;
+  else if (eeprom_buffer.params.PWM_Panel_ch == 12) panel_ch_raw = osd_chan12_raw;
+  else if (eeprom_buffer.params.PWM_Panel_ch == 13) panel_ch_raw = osd_chan13_raw;
+  else if (eeprom_buffer.params.PWM_Panel_ch == 14) panel_ch_raw = osd_chan14_raw;
+  else if (eeprom_buffer.params.PWM_Panel_ch == 15) panel_ch_raw = osd_chan15_raw;
+  else if (eeprom_buffer.params.PWM_Panel_ch == 16) panel_ch_raw = osd_chan16_raw;
 
-	if (eeprom_buffer.params.PWM_Panel_mode == 0) {
-		if((panel_ch_raw > eeprom_buffer.params.PWM_Panel_value)) {
-			if(!panel_trigger) {
-				panel_trigger = true;
-				current_panel++;
-			}
-		} else {
-			panel_trigger = false;
-		}
-	} else {
-		if (panel_ch_raw > 950 && panel_ch_raw < 2050) {
-			current_panel = ceil((panel_ch_raw - 950) / (1100 / (float) eeprom_buffer.params.Max_panels));
-		} else {
-			current_panel = 1;
-		}
-	}
+  if (eeprom_buffer.params.PWM_Panel_mode == 0) {
+    if ((panel_ch_raw > eeprom_buffer.params.PWM_Panel_value)) {
+      if (!panel_trigger) {
+        panel_trigger = true;
+        current_panel++;
+      }
+    } else {
+      panel_trigger = false;
+    }
+  } else {
+    if (panel_ch_raw > 950 && panel_ch_raw < 2050) {
+      current_panel = ceil((panel_ch_raw - 950) / (1100 / (float) eeprom_buffer.params.Max_panels));
+    } else {
+      current_panel = 1;
+    }
+  }
 }
 
-uint32_t GetSystimeMS(void)
-{
-	return (uint32_t)TICKS2MS(xTaskGetTickCount());
+uint32_t GetSystimeMS(void) {
+  return (uint32_t)TICKS2MS(xTaskGetTickCount());
 }
 
-float Rad2Deg(float x)
-{
-    return x * (180.0F / M_PI);
+float Rad2Deg(float x) {
+  return x * (180.0F / M_PI);
 }
 
-float Deg2Rad(float x)
-{
-    return x * (M_PI / 180.0F);
+float Deg2Rad(float x) {
+  return x * (M_PI / 180.0F);
 }
 
-void Delay_us(u32 nus)
-{
-	u16 i=0;
-	while(nus--)
-	{
-		i=12;
-		while(i--);
-	}
+void Delay_us(u32 nus) {
+  u16 i = 0;
+  while (nus--)
+  {
+    i = 12;
+    while (i--);
+  }
 }
 
-void checkDefaultParam()
-{
-    bool bNeedUpdateFlash = false;
-    //if new version add parameters, we should set them to default
-    u16 curVer = eeprom_buffer.params.firmware_ver;
+void checkDefaultParam() {
+  bool bNeedUpdateFlash = false;
+  //if new version add parameters, we should set them to default
+  u16 curVer = eeprom_buffer.params.firmware_ver;
 
-    //v1.0.5              Released: 2015-6-15
-    if(curVer < 5 || curVer == 0xFFFF)
+  //v1.0.5              Released: 2015-6-15
+  if (curVer < 5 || curVer == 0xFFFF)
+  {
+    bNeedUpdateFlash = true;
+
+    eeprom_buffer.params.Atti_mp_posX = 180;
+    eeprom_buffer.params.Atti_mp_posY = 133;
+    eeprom_buffer.params.Atti_mp_scale_real = 1;
+    eeprom_buffer.params.Atti_mp_scale_frac = 0;
+    eeprom_buffer.params.Atti_3D_posX = 180;
+    eeprom_buffer.params.Atti_3D_posY = 133;
+    eeprom_buffer.params.Atti_3D_scale_real = 1;
+    eeprom_buffer.params.Atti_3D_scale_frac = 0;
+    eeprom_buffer.params.Atti_3D_map_radius = 40;
+    eeprom_buffer.params.osd_offsetY = 0;
+    eeprom_buffer.params.osd_offsetX = 0;
+  }
+
+  if (eeprom_buffer.params.osd_offsetX > 20) {
+    eeprom_buffer.params.osd_offsetX = 20;
+    bNeedUpdateFlash = true;
+  }
+  if (eeprom_buffer.params.osd_offsetX == 0xFFFF) {
+    eeprom_buffer.params.osd_offsetX = 0;
+    bNeedUpdateFlash = true;
+  }
+
+  if (eeprom_buffer.params.osd_offsetY > 20) {
+    eeprom_buffer.params.osd_offsetY = 20;
+    bNeedUpdateFlash = true;
+  }
+  if (eeprom_buffer.params.osd_offsetY == 0xFFFF) {
+    eeprom_buffer.params.osd_offsetY = 0;
+    bNeedUpdateFlash = true;
+  }
+
+  if (eeprom_buffer.params.firmware_ver < 6) {
+    eeprom_buffer.params.firmware_ver = 6;
+    bNeedUpdateFlash = true;
+  }
+
+  if (eeprom_buffer.params.firmware_ver < 7) {
+    eeprom_buffer.params.firmware_ver = 7;
+    eeprom_buffer.params.Speed_scale_posY = 133;
+    eeprom_buffer.params.Alt_Scale_posY = 133;
+    eeprom_buffer.params.BattConsumed_en = 1;
+    eeprom_buffer.params.BattConsumed_panel = 1;
+    eeprom_buffer.params.BattConsumed_posX = 350;
+    eeprom_buffer.params.BattConsumed_posY = 34;
+    eeprom_buffer.params.BattConsumed_fontsize = 0;
+    eeprom_buffer.params.BattConsumed_align = 2;
+    eeprom_buffer.params.TotalTripDist_en = 1;
+    eeprom_buffer.params.TotalTripDist_panel = 1;
+    eeprom_buffer.params.TotalTripDist_posX = 350;
+    eeprom_buffer.params.TotalTripDist_posY = 210;
+    eeprom_buffer.params.TotalTripDist_fontsize = 0;
+    eeprom_buffer.params.TotalTripDist_align = 2;
+    bNeedUpdateFlash = true;
+  }
+
+  if (eeprom_buffer.params.firmware_ver < 8) {
+    eeprom_buffer.params.firmware_ver = 8;
+    eeprom_buffer.params.Max_panels = 3;
+    eeprom_buffer.params.RSSI_type = 0;
+    eeprom_buffer.params.Map_en = 1;
+    eeprom_buffer.params.Map_panel = 4;
+    eeprom_buffer.params.Map_radius = 120;
+    eeprom_buffer.params.Map_fontsize = 1;
+    eeprom_buffer.params.Map_H_align = 0;
+    eeprom_buffer.params.Map_V_align = 0;
+    bNeedUpdateFlash = true;
+  }
+
+  if (eeprom_buffer.params.firmware_ver < 9) {
+    eeprom_buffer.params.firmware_ver = 9;
+    eeprom_buffer.params.Relative_ALT_en = 1;
+    eeprom_buffer.params.Relative_ALT_panel = 2;
+    eeprom_buffer.params.Relative_ALT_posX = 5;
+    eeprom_buffer.params.Relative_ALT_posY = 25;
+    eeprom_buffer.params.Relative_ALT_fontsize = 0;
+    eeprom_buffer.params.Relative_ALT_align = 0;
+    eeprom_buffer.params.Alt_Scale_type = 1;
+    eeprom_buffer.params.Air_Speed_en = 1;
+    eeprom_buffer.params.Air_Speed_panel = 2;
+    eeprom_buffer.params.Air_Speed_posX = 5;
+    eeprom_buffer.params.Air_Speed_posY = 55;
+    eeprom_buffer.params.Air_Speed_fontsize = 0;
+    eeprom_buffer.params.Air_Speed_align = 0;
+    eeprom_buffer.params.Spd_Scale_type = 0;
+    bNeedUpdateFlash = true;
+  }
+
+  if (eeprom_buffer.params.firmware_ver < 10) {
+    eeprom_buffer.params.firmware_ver = 10;
+    eeprom_buffer.params.osd_offsetX_sign = 1;
+    bNeedUpdateFlash = true;
+  }
+
+  bool ret = false;
+  if (bNeedUpdateFlash)
+  {
+    ret = StoreParams();
+    if (!ret)
     {
-        bNeedUpdateFlash = true;
-
-        eeprom_buffer.params.Atti_mp_posX = 180;
-        eeprom_buffer.params.Atti_mp_posY = 133;
-        eeprom_buffer.params.Atti_mp_scale_real = 1;
-        eeprom_buffer.params.Atti_mp_scale_frac = 0;
-        eeprom_buffer.params.Atti_3D_posX = 180;
-        eeprom_buffer.params.Atti_3D_posY = 133;
-        eeprom_buffer.params.Atti_3D_scale_real = 1;
-        eeprom_buffer.params.Atti_3D_scale_frac = 0;
-        eeprom_buffer.params.Atti_3D_map_radius = 40;
-        eeprom_buffer.params.osd_offsetY = 0;
-        eeprom_buffer.params.osd_offsetX = 0;
+      //TODO - handle flash write error here
     }
-
-    if (eeprom_buffer.params.osd_offsetX > 20) {
-        eeprom_buffer.params.osd_offsetX = 20;
-        bNeedUpdateFlash = true;
-    }
-    if(eeprom_buffer.params.osd_offsetX == 0xFFFF){
-        eeprom_buffer.params.osd_offsetX = 0;
-        bNeedUpdateFlash = true;
-    }
-
-    if (eeprom_buffer.params.osd_offsetY > 20) {
-        eeprom_buffer.params.osd_offsetY = 20;
-        bNeedUpdateFlash = true;
-    }
-    if (eeprom_buffer.params.osd_offsetY == 0xFFFF) {
-        eeprom_buffer.params.osd_offsetY = 0;
-        bNeedUpdateFlash = true;
-    }
-
-    if (eeprom_buffer.params.firmware_ver < 6) {
-        eeprom_buffer.params.firmware_ver = 6;
-        bNeedUpdateFlash = true;
-    }
-
-    if (eeprom_buffer.params.firmware_ver < 7) {
-        eeprom_buffer.params.firmware_ver = 7;
-        eeprom_buffer.params.Speed_scale_posY = 133;
-        eeprom_buffer.params.Alt_Scale_posY = 133;
-        eeprom_buffer.params.BattConsumed_en = 1;
-        eeprom_buffer.params.BattConsumed_panel = 1;
-        eeprom_buffer.params.BattConsumed_posX = 350;
-        eeprom_buffer.params.BattConsumed_posY = 34;
-        eeprom_buffer.params.BattConsumed_fontsize = 0;
-        eeprom_buffer.params.BattConsumed_align = 2;
-        eeprom_buffer.params.TotalTripDist_en = 1;
-        eeprom_buffer.params.TotalTripDist_panel = 1;
-        eeprom_buffer.params.TotalTripDist_posX = 350;
-        eeprom_buffer.params.TotalTripDist_posY = 210;
-        eeprom_buffer.params.TotalTripDist_fontsize = 0;
-        eeprom_buffer.params.TotalTripDist_align = 2;
-        bNeedUpdateFlash = true;
-    }
-
-    if (eeprom_buffer.params.firmware_ver < 8) {
-        eeprom_buffer.params.firmware_ver = 8;
-        eeprom_buffer.params.Max_panels = 3;
-        eeprom_buffer.params.RSSI_type = 0;
-        eeprom_buffer.params.Map_en = 1;
-        eeprom_buffer.params.Map_panel = 4;
-        eeprom_buffer.params.Map_radius = 120;
-        eeprom_buffer.params.Map_fontsize = 1;
-        eeprom_buffer.params.Map_H_align = 0;
-        eeprom_buffer.params.Map_V_align = 0;
-        bNeedUpdateFlash = true;
-    }
-
-    if (eeprom_buffer.params.firmware_ver < 9) {
-        eeprom_buffer.params.firmware_ver = 9;
-        eeprom_buffer.params.Relative_ALT_en = 1;
-        eeprom_buffer.params.Relative_ALT_panel = 2;
-        eeprom_buffer.params.Relative_ALT_posX = 5;
-        eeprom_buffer.params.Relative_ALT_posY = 25;
-        eeprom_buffer.params.Relative_ALT_fontsize = 0;
-        eeprom_buffer.params.Relative_ALT_align = 0;
-        eeprom_buffer.params.Alt_Scale_type = 1;
-        eeprom_buffer.params.Air_Speed_en = 1;
-        eeprom_buffer.params.Air_Speed_panel = 2;
-        eeprom_buffer.params.Air_Speed_posX = 5;
-        eeprom_buffer.params.Air_Speed_posY = 55;
-        eeprom_buffer.params.Air_Speed_fontsize = 0;
-        eeprom_buffer.params.Air_Speed_align = 0;
-        eeprom_buffer.params.Spd_Scale_type = 0;
-        bNeedUpdateFlash = true;
-    }
-
-    if (eeprom_buffer.params.firmware_ver < 10) {
-        eeprom_buffer.params.firmware_ver = 10;
-        eeprom_buffer.params.osd_offsetX_sign = 1;
-        bNeedUpdateFlash = true;
-    }
-
-    bool ret = false;
-    if(bNeedUpdateFlash)
-    {
-        ret = StoreParams();
-        if(!ret)
-        {
-            //TODO - handle flash write error here
-        }
-    }
+  }
 }
 
-bool test_force_clear_all_params(void)
-{
-    volatile unsigned samples = 0;
-	volatile unsigned vote = 0;
+bool test_force_clear_all_params(void) {
+  volatile unsigned samples = 0;
+  volatile unsigned vote = 0;
 
-    GPIO_InitTypeDef  gpio;
-    gpio.GPIO_Pin = GPIO_Pin_11;
-	gpio.GPIO_Mode = GPIO_Mode_IN;
-	gpio.GPIO_PuPd = GPIO_PuPd_UP;
-	gpio.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_Init(GPIOB, &gpio);
+  GPIO_InitTypeDef gpio;
+  gpio.GPIO_Pin = GPIO_Pin_11;
+  gpio.GPIO_Mode = GPIO_Mode_IN;
+  gpio.GPIO_PuPd = GPIO_PuPd_UP;
+  gpio.GPIO_Speed = GPIO_Speed_100MHz;
+  GPIO_Init(GPIOB, &gpio);
 
-	gpio.GPIO_Pin = GPIO_Pin_10;
-    gpio.GPIO_Mode = GPIO_Mode_OUT;
-    gpio.GPIO_OType = GPIO_OType_PP;
-	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIOB, &gpio);
+  gpio.GPIO_Pin = GPIO_Pin_10;
+  gpio.GPIO_Mode = GPIO_Mode_OUT;
+  gpio.GPIO_OType = GPIO_OType_PP;
+  gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_Init(GPIOB, &gpio);
 
-    for (volatile unsigned cycles = 0; cycles < 10; cycles++) {
-        GPIO_SetBits(GPIOB, GPIO_Pin_10);
-		for (unsigned count = 0; count < 20; count++) {
-            if(GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_11) != 0)
-				vote++;
-			samples++;
-		}
-        GPIO_ResetBits(GPIOB, GPIO_Pin_10);
-		for (unsigned count = 0; count < 20; count++) {
-			if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_11) == 0)
-				vote++;
-			samples++;
-		}
-	}
+  for (volatile unsigned cycles = 0; cycles < 10; cycles++) {
+    GPIO_SetBits(GPIOB, GPIO_Pin_10);
+    for (unsigned count = 0; count < 20; count++) {
+      if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_11) != 0)
+        vote++;
+      samples++;
+    }
+    GPIO_ResetBits(GPIOB, GPIO_Pin_10);
+    for (unsigned count = 0; count < 20; count++) {
+      if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_11) == 0)
+        vote++;
+      samples++;
+    }
+  }
 
-    /* revert the driver pin */
-    gpio.GPIO_Pin = GPIO_Pin_10;
-    gpio.GPIO_Mode = GPIO_Mode_IN;
-	gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIOB, &gpio);
+  /* revert the driver pin */
+  gpio.GPIO_Pin = GPIO_Pin_10;
+  gpio.GPIO_Mode = GPIO_Mode_IN;
+  gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_Init(GPIOB, &gpio);
 
-    /* the idea here is to reject wire-to-wire coupling, so require > 90% agreement */
-	if ((vote * 100) > (samples * 90))
-		return true;
+  /* the idea here is to reject wire-to-wire coupling, so require > 90% agreement */
+  if ((vote * 100) > (samples * 90))
+    return true;
 
-    return false;
+  return false;
 }

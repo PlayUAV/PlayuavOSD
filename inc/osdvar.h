@@ -123,15 +123,15 @@ typedef struct WAYPOINT_TYP {
 //    float para3;
 //    float para4;
 
-    float x;
-    float y;
-    float z;
+  float x;
+  float y;
+  float z;
 
-    uint16_t seq;
-    uint16_t cmd;
+  uint16_t seq;
+  uint16_t cmd;
 
 //    uint8_t frame;
-    uint8_t current;
+  uint8_t current;
 //    uint8_t autocontinue;
 } WAYPOINT, *WAYPOINT_PTR;
 

@@ -61,7 +61,7 @@ float osd_groundspeed = 0.0f;            // ground speed
 float osd_downVelocity = 0.0f;
 uint16_t osd_throttle = 0;               // throtle
 float osd_alt = 0.0f;                    // altitude
-float osd_rel_alt = 0.0f; 				 // relative altitude	//  jmmods 
+float osd_rel_alt = 0.0f;                                // relative altitude	//  jmmods
 float osd_climb = 0.0f;
 float osd_total_trip_dist = 0;
 
