@@ -321,6 +321,7 @@ typedef union {
 	  uint16_t LinkQuality_chan;
     uint16_t LinkQuality_min;
     uint16_t LinkQuality_max;
+    uint16_t LinkQuality_type;
 
 //		//below is unused. if add a param, reduce one item here
 //		uint16_t unused[EERROM_SIZE/2 - 104];

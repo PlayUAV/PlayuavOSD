@@ -580,17 +580,17 @@ void RenderScreen(void) {
 
 
   // PWM Link Quality
-  if(eeprom_buffer.params.LinkQuality_en == 1 && bShownAtPanle(eeprom_buffer.params.LinkQuality_panel)) {
-	  int linkquality = (int)linkquality;
-	  int min = eeprom_buffer.params.LinkQuality_min;
-	  int max = eeprom_buffer.params.LinkQuality_max;
+  if (eeprom_buffer.params.LinkQuality_en == 1 && bShownAtPanle(eeprom_buffer.params.LinkQuality_panel)) {
+    int linkquality = (int)linkquality;
+    int min = eeprom_buffer.params.LinkQuality_min;
+    int max = eeprom_buffer.params.LinkQuality_max;
 
 
-	  x = eeprom_buffer.params.LinkQuality_posX;
-	  y = eeprom_buffer.params.LinkQuality_posY;
+    x = eeprom_buffer.params.LinkQuality_posX;
+    y = eeprom_buffer.params.LinkQuality_posY;
 
 
-	  if (eeprom_buffer.params.LinkQuality_chan == 5) linkquality = (int)osd_chan5_raw;
+    if (eeprom_buffer.params.LinkQuality_chan == 5) linkquality = (int)osd_chan5_raw;
     else if (eeprom_buffer.params.LinkQuality_chan == 6) linkquality = (int)osd_chan6_raw;
     else if (eeprom_buffer.params.LinkQuality_chan == 7) linkquality = (int)osd_chan7_raw;
     else if (eeprom_buffer.params.LinkQuality_chan == 8) linkquality = (int)osd_chan8_raw;
@@ -603,28 +603,33 @@ void RenderScreen(void) {
     else if (eeprom_buffer.params.LinkQuality_chan == 15) linkquality = (int)osd_chan15_raw;
     else if (eeprom_buffer.params.LinkQuality_chan == 16) linkquality = (int)osd_chan16_raw;
 
-	  //OpenLRS will output 0 instead of min if the RX is powerd up before the TX
-	  if (linkquality < min )
-	  {
-		  linkquality = min;
-	  }
+    // 0: percent, 1: raw
+    if (eeprom_buffer.params.LinkQuality_type == 0) {
+      //OpenLRS will output 0 instead of min if the RX is powerd up before the TX
+      if (linkquality < min)
+      {
+        linkquality = min;
+      }
 
-	  //Get rid of any variances
-	  if (linkquality > max)
-	  {
-		  linkquality = max;
-	  }
+      //Get rid of any variances
+      if (linkquality > max)
+      {
+        linkquality = max;
+      }
 
-	  //Funky Conversion from  pwm min & max to percent
-	  linkquality = (int) ((float) (linkquality - max) / (float) (max - min) * 100.0f) + 100;
-	  sprintf(tmp_str, "LIQU %d%%", linkquality);
+      //Funky Conversion from  pwm min & max to percent
+      linkquality = (int) ((float) (linkquality - max) / (float) (max - min) * 100.0f) + 100;
+      sprintf(tmp_str, "LIQU %d%%", linkquality);
+    } else {
+      sprintf(tmp_str, "LIQU %d", linkquality);
+    }
 
-	  write_string(tmp_str, x, y, 0, 0, TEXT_VA_MIDDLE,
-                eeprom_buffer.params.LinkQuality_align, 0,
-                SIZE_TO_FONT[eeprom_buffer.params.LinkQuality_fontsize]);
- }
+    write_string(tmp_str, x, y, 0, 0, TEXT_VA_MIDDLE,
+                 eeprom_buffer.params.LinkQuality_align, 0,
+                 SIZE_TO_FONT[eeprom_buffer.params.LinkQuality_fontsize]);
+  }
 
- //Efficiency
+  //Efficiency
   if (eeprom_buffer.params.Efficiency_en == 1 && bShownAtPanle(eeprom_buffer.params.Efficiency_panel)) {
     float wattage = osd_vbat_A * osd_curr_A * 0.01;
     float speed = osd_groundspeed * convert_speed;
