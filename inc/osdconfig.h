@@ -312,6 +312,16 @@ typedef union {
     uint16_t PWM_Video_mode;
     uint16_t PWM_Panel_mode;
 
+    uint16_t LinkQuality_en;
+    uint16_t LinkQuality_panel;
+    uint16_t LinkQuality_posX;
+    uint16_t LinkQuality_posY;
+    uint16_t LinkQuality_fontsize;
+    uint16_t LinkQuality_align;
+	  uint16_t LinkQuality_chan;
+    uint16_t LinkQuality_min;
+    uint16_t LinkQuality_max;
+
 //		//below is unused. if add a param, reduce one item here
 //		uint16_t unused[EERROM_SIZE/2 - 104];
   }params;

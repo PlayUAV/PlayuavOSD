@@ -76,6 +76,7 @@ float alt_error = 0.0f; // Current altitude error in meters
 float aspd_error = 0.0f; // Current airspeed error in meters/second
 float xtrack_error = 0.0f; // Current crosstrack error on x-y plane in meters
 float eff = 0.0f; //Efficiency
+uint8_t osd_linkquality = 0;
 
 uint32_t osd_mode = 0;
 bool motor_armed = false;
