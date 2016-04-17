@@ -14,4 +14,4 @@ extern const char font_lookup_outlined8x8[256];
 // Data.
 extern const char font_data_outlined8x8[];
 
-#endif	//FONT_OUTLINE8X8_H__
+#endif  //FONT_OUTLINE8X8_H__

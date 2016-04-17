@@ -16,14 +16,13 @@
 
 #include "led.h"
 
-GPIO_TypeDef* GPIO_PORT[LEDn] = {LED_GREEN_GPIO_PORT, LED_BLUE_GPIO_PORT};
-const uint16_t GPIO_PIN[LEDn] = {LED_GREEN_PIN, LED_BLUE_PIN};
-const uint32_t GPIO_CLK[LEDn] = {LED_GREEN_GPIO_CLK, LED_BLUE_GPIO_CLK};
+GPIO_TypeDef* GPIO_PORT[LEDn] = { LED_GREEN_GPIO_PORT, LED_BLUE_GPIO_PORT };
+const uint16_t GPIO_PIN[LEDn] = { LED_GREEN_PIN, LED_BLUE_PIN };
+const uint32_t GPIO_CLK[LEDn] = { LED_GREEN_GPIO_CLK, LED_BLUE_GPIO_CLK };
 
 
-void LEDInit(Led_TypeDef Led)
-{
-  GPIO_InitTypeDef  GPIO_InitStructure;
+void LEDInit(Led_TypeDef Led) {
+  GPIO_InitTypeDef GPIO_InitStructure;
 
   /* Enable the GPIO_LED Clock */
   RCC_AHB1PeriphClockCmd(GPIO_CLK[Led], ENABLE);
@@ -38,19 +37,16 @@ void LEDInit(Led_TypeDef Led)
 }
 
 
-void LEDOn(Led_TypeDef Led)
-{
+void LEDOn(Led_TypeDef Led) {
   GPIO_PORT[Led]->BSRRH = GPIO_PIN[Led];
 }
 
-void LEDOff(Led_TypeDef Led)
-{
+void LEDOff(Led_TypeDef Led) {
   GPIO_PORT[Led]->BSRRL = GPIO_PIN[Led];
 }
 
 
-void LEDToggle(Led_TypeDef Led)
-{
+void LEDToggle(Led_TypeDef Led) {
   GPIO_PORT[Led]->ODR ^= GPIO_PIN[Led];
 }
 

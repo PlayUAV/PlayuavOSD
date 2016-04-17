@@ -11,11 +11,11 @@
 // a 2D polygon
 typedef struct POLYGON2D_TYP
 {
-	int state;        // state of polygon
-	int num_verts;    // number of vertices
-	int x0,y0;        // position of center of polygon  
-	VERTEX2DF vlist_local[OBJECT2DV1_MAX_VERTICES]; // pointer to vertex list
-	VERTEX2DF vlist_trans[OBJECT2DV1_MAX_VERTICES]; // pointer to vertex list
+  int state;              // state of polygon
+  int num_verts;          // number of vertices
+  int x0, y0;             // position of center of polygon
+  VERTEX2DF vlist_local[OBJECT2DV1_MAX_VERTICES];       // pointer to vertex list
+  VERTEX2DF vlist_trans[OBJECT2DV1_MAX_VERTICES];       // pointer to vertex list
 
 } POLYGON2D, *POLYGON2D_PTR;
 

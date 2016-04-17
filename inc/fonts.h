@@ -17,12 +17,12 @@
 
 // Font table. (Actual list of fonts in fonts.c.)
 struct FontEntry {
-    int id;
-    unsigned char width, height;
-    const char    *name;
-    const char    *lookup;
-    const char    *data;
-    int flags;
+  int id;
+  unsigned char width, height;
+  const char    *name;
+  const char    *lookup;
+  const char    *data;
+  int flags;
 };
 
 extern struct FontEntry fonts[NUM_FONTS + 1];

@@ -16,9 +16,9 @@
 
 #include "board.h"
 
-uint64_t u64Ticks=0;        // Counts OS ticks (default = 1000Hz).
-uint64_t u64IdleTicks=0;    // Value of u64IdleTicksCnt is copied once per sec.
-uint64_t u64IdleTicksCnt=0; // Counts when the OS has no task to execute.
+uint64_t u64Ticks = 0;        // Counts OS ticks (default = 1000Hz).
+uint64_t u64IdleTicks = 0;    // Value of u64IdleTicksCnt is copied once per sec.
+uint64_t u64IdleTicksCnt = 0; // Counts when the OS has no task to execute.
 bool stackOverflow = false;
 
 xSemaphoreHandle onScreenDisplaySemaphore;
@@ -30,49 +30,47 @@ xSemaphoreHandle onUAVTalkSemaphore;
 #define SCB_CPACR (*((uint32_t*) (((0xE000E000UL) + 0x0D00UL) + 0x088)))
 #endif
 
-int main(void)
-{
-    /* enable FPU on Cortex-M4F core */
-    SCB_CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2)); /* set CP10 Full Access and set CP11 Full Access */
+int main(void) {
+  /* enable FPU on Cortex-M4F core */
+  SCB_CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2));   /* set CP10 Full Access and set CP11 Full Access */
 
 
-	vSemaphoreCreateBinary(onScreenDisplaySemaphore);
-	vSemaphoreCreateBinary(onMavlinkSemaphore);
-	vSemaphoreCreateBinary(onUAVTalkSemaphore);
+  vSemaphoreCreateBinary(onScreenDisplaySemaphore);
+  vSemaphoreCreateBinary(onMavlinkSemaphore);
+  vSemaphoreCreateBinary(onUAVTalkSemaphore);
 
-	board_init();
-	module_init();
+  board_init();
+  module_init();
 
-	vTaskStartScheduler();
+  vTaskStartScheduler();
 }
 
 // This FreeRTOS callback function gets called once per tick (default = 1000Hz).
 // ----------------------------------------------------------------------------
-void vApplicationTickHook( void ) {
-    ++u64Ticks;
+void vApplicationTickHook(void) {
+  ++u64Ticks;
 }
 
 // This FreeRTOS call-back function gets when no other task is ready to execute.
 // On a completely unloaded system this is getting called at over 2.5MHz!
 // ----------------------------------------------------------------------------
-void vApplicationIdleHook( void ) {
-    ++u64IdleTicksCnt;
+void vApplicationIdleHook(void) {
+  ++u64IdleTicksCnt;
 }
 
 // A required FreeRTOS function.
 // ----------------------------------------------------------------------------
-void vApplicationMallocFailedHook( void ) {
-    configASSERT( 0 );  // Latch on any failure / error.
+void vApplicationMallocFailedHook(void) {
+  configASSERT(0);      // Latch on any failure / error.
 }
 
 #define DEBUG_STACK_OVERFLOW 0
-void vApplicationStackOverflowHook(uintptr_t pxTask, signed char * pcTaskName)
-{
-	stackOverflow = true;
+void vApplicationStackOverflowHook(uintptr_t pxTask, signed char * pcTaskName) {
+  stackOverflow = true;
 #if DEBUG_STACK_OVERFLOW
-	static volatile bool wait_here = true;
-	while(wait_here);
-	wait_here = true;
+  static volatile bool wait_here = true;
+  while (wait_here);
+  wait_here = true;
 #endif
 }
 
