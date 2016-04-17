@@ -433,6 +433,7 @@ void checkDefaultParam() {
   if (eeprom_buffer.params.firmware_ver < 10) {
     eeprom_buffer.params.firmware_ver = 10;
     eeprom_buffer.params.osd_offsetX_sign = 1;
+    eeprom_buffer.params.LinkQuality_chan = 0;
     bNeedUpdateFlash = true;
   }
 
