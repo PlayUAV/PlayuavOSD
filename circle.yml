@@ -1,0 +1,12 @@
+dependencies:
+  pre:
+    - sudo usermod -a -G dialout $USER
+    - sudo apt-get remove modemmanager
+    - sudo add-apt-repository ppa:george-edison55/cmake-3.x -y
+    - sudo add-apt-repository ppa:terry.guo/gcc-arm-embedded -y
+    - sudo apt-get update
+    - sudo apt-get install python-argparse git-core wget zip python-empy cmake build-essential genromfs -y
+    - sudo apt-get install python-serial openocd flex bison libncurses5-dev autoconf texinfo build-essential libftdi-dev libtool zlib1g-dev python-empy gcc-arm-none-eabi -y
+test:
+  override:
+    - make
