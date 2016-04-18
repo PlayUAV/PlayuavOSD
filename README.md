@@ -5,11 +5,15 @@ It is created by integrating a variety of excellent open-source projects. Many t
 * MinimOSD - arducam-osd (https://code.google.com/p/arducam-osd/)
 
 * Tau Labs - Brain FPV Flight Controller  ( https://github.com/BrainFPV/TauLabs)
- 
+
 * minoposd - an implementation of OpenPilot UAVTalk on MinimOSD(https://code.google.com/p/minoposd/)
- 
+
 * Books "Tricks of the 3D Game Programming Gurus-Advanced 3D Graphics and Rasterization"
   and "Tricks of the Windows Game Programming Gurus". Both written by Andre LaMothe(Author)
+
+Build status
+============
+![build status](https://circleci.com/gh/TobiasBales/PlayuavOSD.png?circle-token=00903d5716692eb12e014b3e37b49abfbd59c408&style=shield)
 
 Introduction
 ============
@@ -34,4 +38,3 @@ Contact Us
 ==========
 
 The home page of PlayuavOSD is http://en.playuav.com
-
