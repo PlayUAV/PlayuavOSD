@@ -4,11 +4,15 @@ dependencies:
     - sudo apt-get remove modemmanager
     - sudo add-apt-repository ppa:george-edison55/cmake-3.x -y
     - sudo add-apt-repository ppa:terry.guo/gcc-arm-embedded -y
+    - sudo add-apt-repository ppa:ricotz/unstable -y
     - sudo apt-get update
     - sudo apt-get install python-argparse git-core wget zip python-empy cmake build-essential genromfs -y
     - sudo apt-get install python-serial openocd flex bison libncurses5-dev autoconf texinfo build-essential libftdi-dev libtool zlib1g-dev python-empy gcc-arm-none-eabi -y
+    - sudo apt-get install uncrustify -y
 test:
   override:
+    - uncrustify -c .uncrustify.cfg --check src/* > /dev/null || (uncrustify -c .uncrustify.cfg --no-backup src/* && git diff src/* && exit 1)
+    - uncrustify -c .uncrustify.cfg --check inc/* > /dev/null || (uncrustify -c .uncrustify.cfg --no-backup inc/* && git diff inc/* && exit 1)
     - make
   post:
     - cp PlayuavOSD.hex $CIRCLE_ARTIFACTS/
