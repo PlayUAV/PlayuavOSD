@@ -318,7 +318,7 @@ typedef union {
     uint16_t LinkQuality_posY;
     uint16_t LinkQuality_fontsize;
     uint16_t LinkQuality_align;
-	  uint16_t LinkQuality_chan;
+    uint16_t LinkQuality_chan;
     uint16_t LinkQuality_min;
     uint16_t LinkQuality_max;
     uint16_t LinkQuality_type;
