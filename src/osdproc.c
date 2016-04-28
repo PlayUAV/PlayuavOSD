@@ -507,13 +507,13 @@ void RenderScreen(void) {
     int arrlen = 6;
     //Crude moving average filter
     float average_climb = 0.0f;
-    for(int i = 9; i>=1; i--)
+    for (int i = 9; i >= 1; i--)
     {
-        osd_climb_ma[i] = osd_climb_ma[i-1];
-        average_climb = average_climb + osd_climb_ma[i];
+      osd_climb_ma[i] = osd_climb_ma[i - 1];
+      average_climb = average_climb + osd_climb_ma[i];
     }
     osd_climb_ma[0] = osd_climb;
-    average_climb = average_climb/10;
+    average_climb = average_climb / 10;
 
     x = eeprom_buffer.params.ClimbRate_posX;
     y = eeprom_buffer.params.ClimbRate_posY;
