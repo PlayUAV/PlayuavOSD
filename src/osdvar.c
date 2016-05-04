@@ -64,6 +64,7 @@ float osd_alt = 0.0f;                    // altitude
 float osd_rel_alt = 0.0f;                                // relative altitude	//  jmmods
 float osd_climb = 0.0f;
 float osd_climb_ma[10];
+int osd_climb_ma_index = 0;
 float osd_total_trip_dist = 0;
 
 float nav_roll = 0.0f; // Current desired roll in degrees

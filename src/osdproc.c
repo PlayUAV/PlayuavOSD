@@ -503,36 +503,33 @@ void RenderScreen(void) {
   int y = 220;
   //Vertical Speed(climb rate) in m/s
   if (eeprom_buffer.params.ClimbRate_en == 1 && bShownAtPanle(eeprom_buffer.params.ClimbRate_panel)) {
-    //length of the arrow
-    int arrlen = 6;
-    //Crude moving average filter
     float average_climb = 0.0f;
-    for (int i = 9; i >= 1; i--)
-    {
-      osd_climb_ma[i] = osd_climb_ma[i - 1];
+    osd_climb_ma[osd_climb_ma_index] = osd_climb;
+    osd_climb_ma_index = (osd_climb_ma_index + 1) % 25;
+    for (int i = 0; i < 10; i++) {
       average_climb = average_climb + osd_climb_ma[i];
     }
-    osd_climb_ma[0] = osd_climb;
-    average_climb = average_climb / 10;
+    average_climb = roundf(10 * (average_climb / 10)) / 10.0f;
 
     x = eeprom_buffer.params.ClimbRate_posX;
     y = eeprom_buffer.params.ClimbRate_posY;
-    sprintf(tmp_str, "%0.1f", (double) fabs(average_climb));
+    sprintf(tmp_str, "%0.1f", fabs(average_climb));
     write_string(tmp_str, x + 5, y, 0, 0, TEXT_VA_MIDDLE, TEXT_HA_LEFT, 0,
                  SIZE_TO_FONT[eeprom_buffer.params.ClimbRate_fontsize]);
-    if (eeprom_buffer.params.ClimbRate_fontsize != 0)
-      arrlen += 2;
 
-    if (average_climb > 0.0f)     //ascent
-    {
-      write_vline_lm(x, y - arrlen, y + arrlen, 1, 1);
-      write_line_outlined(x - 3, y - arrlen + 3, x, y - arrlen, 2, 2, 0, 1);
-      write_line_outlined(x + 3, y - arrlen + 3, x, y - arrlen, 2, 2, 0, 1);
-    } else if (average_climb < 0.0f)     //descent
-    {
-      write_vline_lm(x, y - arrlen, y + arrlen, 1, 1);
-      write_line_outlined(x - 3, y + arrlen - 3, x, y + arrlen, 2, 2, 0, 1);
-      write_line_outlined(x + 3, y + arrlen - 3, x, y + arrlen, 2, 2, 0, 1);
+    int arrowLength = 6;
+    if (eeprom_buffer.params.ClimbRate_fontsize != 0) {
+      arrowLength += 2;
+    }
+
+    if (average_climb > 0.0f) {
+      write_vline_lm(x, y - arrowLength, y + arrowLength, 1, 1);
+      write_line_outlined(x - 3, y - arrowLength + 3, x, y - arrowLength, 2, 2, 0, 1);
+      write_line_outlined(x + 3, y - arrowLength + 3, x, y - arrowLength, 2, 2, 0, 1);
+    } else if (average_climb < 0.0f) {
+      write_vline_lm(x, y - arrowLength, y + arrowLength, 1, 1);
+      write_line_outlined(x - 3, y + arrowLength - 3, x, y + arrowLength, 2, 2, 0, 1);
+      write_line_outlined(x + 3, y + arrowLength - 3, x, y + arrowLength, 2, 2, 0, 1);
     }
   }
 

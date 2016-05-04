@@ -48,6 +48,7 @@ extern float osd_alt;                    // altitude
 extern float osd_rel_alt;                // relative altitude	//  jmmods
 extern float osd_climb;
 extern float osd_climb_ma[10];
+extern int osd_climb_ma_index;
 extern float osd_total_trip_dist; //total trip distance since startup, calculated in meter
 
 extern float nav_roll; // Current desired roll in degrees
