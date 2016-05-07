@@ -1383,7 +1383,7 @@ void hud_draw_warnning(void) {
 
   bool haswarn = false;
   const static int warn_cnt = 6;
-  uint8_t warning[] = { 0, 0, 0, 0, 0, 0 };
+  uint8_t warning[] = { 0, 0, 0, 0, 0, 0, 0 };
 
   //no GPS fix!
   if (eeprom_buffer.params.Alarm_GPS_status_en == 1 && (osd_fix_type < GPS_OK_FIX_3D)) {
@@ -1431,39 +1431,50 @@ void hud_draw_warnning(void) {
     warning[5] = 1;
   }
 
+  // no home yet
+  if (osd_got_home == 0) {
+    haswarn = true;
+    warning[6] = 1;
+  }
+
   if (haswarn) {
     last_warn_time = GetSystimeMS();
     if (last_warn_type > (warn_cnt - 1)) last_warn_type = 0;
 
-    if ((last_warn_type == 0) && (warning[0] == 1)) {
+    if (last_warn_type == 0 && (warning[0] == 1)) {
       warn_str = "NO GPS FIX";
       last_warn_type++;
       return;
     }
 
-    if ((last_warn_type == 1) && (warning[1] == 1)) {
+    if (last_warn_type == 1 && (warning[1] == 1)) {
       warn_str = "LOW BATTERY";
       last_warn_type++;
       return;
     }
 
-    if ((last_warn_type == 2) && (warning[2] == 1)) {
+    if (last_warn_type == 2 && (warning[2] == 1)) {
       warn_str = "SPEED LOW";
       last_warn_type++;
       return;
     }
-    if ((last_warn_type == 3) && (warning[3] == 1)) {
+    if (last_warn_type == 3 && (warning[3] == 1)) {
       warn_str = "OVER SPEED";
       last_warn_type++;
       return;
     }
-    if ((last_warn_type == 4) && (warning[4] == 1)) {
+    if (last_warn_type == 4 && (warning[4] == 1)) {
       warn_str = "LOW ALT";
       last_warn_type++;
       return;
     }
-    if ((last_warn_type == 5) && (warning[5] == 1)) {
+    if (last_warn_type == 5 && (warning[5] == 1)) {
       warn_str = "HIGH ALT";
+      last_warn_type++;
+      return;
+    }
+    if (last_warn_type == 6 && warning[6] == 1) {
+      warn_str = "NO HOME POSITION SET";
       last_warn_type++;
       return;
     }
