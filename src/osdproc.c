@@ -505,7 +505,7 @@ void RenderScreen(void) {
   if (eeprom_buffer.params.ClimbRate_en == 1 && bShownAtPanle(eeprom_buffer.params.ClimbRate_panel)) {
     float average_climb = 0.0f;
     osd_climb_ma[osd_climb_ma_index] = osd_climb;
-    osd_climb_ma_index = (osd_climb_ma_index + 1) % 25;
+    osd_climb_ma_index = (osd_climb_ma_index + 1) % 10;
     for (int i = 0; i < 10; i++) {
       average_climb = average_climb + osd_climb_ma[i];
     }
