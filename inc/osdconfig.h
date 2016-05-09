@@ -69,7 +69,7 @@ typedef union {
     uint16_t GpsHDOP_align;
 
     uint16_t GpsLat_en;
-    uint16_t GpsLat_panle;
+    uint16_t GpsLat_panel;
     uint16_t GpsLat_posX;
     uint16_t GpsLat_posY;
     uint16_t GpsLat_fontsize;
@@ -124,7 +124,7 @@ typedef union {
     uint16_t TALT_fontsize;
     uint16_t TALT_align;
     uint16_t Alt_Scale_en;
-    uint16_t Alt_Scale_panle;
+    uint16_t Alt_Scale_panel;
     uint16_t Alt_Scale_posX;
     uint16_t Alt_Scale_align;
     uint16_t Alt_Scale_source;
