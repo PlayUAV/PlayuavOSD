@@ -152,10 +152,15 @@ bool bShownAtPanle(uint16_t itemPanel) {
   return ((itemPanel & (1 << (current_panel - 1))) != 0);
 }
 
+bool enabledAndShownOnPanel(uint16_t enabled, uint16_t panel) {
+  return enabled == 1 && bShownAtPanle(panel);
+}
+
 void vTaskOSD(void *pvParameters) {
   uav3D_init();
   uav2D_init();
   simple_attitude_init();
+  home_direction_init();
 
   osdVideoSetXOffset(osd_offset_X);
   osdVideoSetYOffset(osd_offset_Y);
@@ -340,6 +345,8 @@ void RenderScreen(void) {
                  eeprom_buffer.params.Air_Speed_align, 0,
                  SIZE_TO_FONT[eeprom_buffer.params.Air_Speed_fontsize]);
   }
+
+  draw_home_direction();
 
   //uav attitude
   if (eeprom_buffer.params.Atti_3D_en == 1 && bShownAtPanle(eeprom_buffer.params.Atti_3D_panel)) {
@@ -799,10 +806,10 @@ void hud_draw_simple_attitude() {
     pitch = -max_pitch;
   }
 
-  write_circle_outlined(x, y, radius, 0, 1, 0, 1);
   write_line_outlined(x - radius - 1, y, x - 2 * radius - 1, y, 0, 0, 0, 1);
   write_line_outlined(x + radius - 1, y, x + 2 * radius + 1, y, 0, 0, 0, 1);
   write_line_outlined(x, y - radius - 1, x, y - 2 * radius, 0, 0, 0, 1);
+  write_circle_outlined(x, y, radius, 0, 1, 0, 1);
 
   Transform_Polygon2D(&simple_attitude, -osd_roll, 0, pitch);
   VECTOR4D v;
@@ -867,6 +874,38 @@ void hud_draw_uav2d() {
   write_line_outlined(x - 4, y + 8, x + 4, y + 8, 2, 2, 0, 1);
   sprintf(tmp_str, "%d", (int)osd_roll);
   write_string(tmp_str, x, y - 3, 0, 0, TEXT_VA_BOTTOM, TEXT_HA_CENTER, 0, SIZE_TO_FONT[0]);
+}
+
+void draw_home_direction() {
+  if (!enabledAndShownOnPanel(eeprom_buffer.params.HomeDirection_enabled,
+                              eeprom_buffer.params.HomeDirection_panel)) {
+    return;
+  }
+  float bearing = osd_home_bearing - osd_heading;
+  Reset_Polygon2D(&home_direction);
+  Reset_Polygon2D(&home_direction_outline);
+  Rotate_Polygon2D(&home_direction, bearing);
+  Rotate_Polygon2D(&home_direction_outline, bearing);
+
+  const int x = home_direction.x0;
+  const int y = home_direction.y0;
+
+
+  for (int i = 0; i < home_direction.num_verts; i += 2) {
+    write_line_lm(home_direction.vlist_trans[i].x + x,
+                  home_direction.vlist_trans[i].y + y,
+                  home_direction.vlist_trans[i + 1].x + x,
+                  home_direction.vlist_trans[i + 1].y + y,
+                  1, 1);
+  }
+
+  for (int i = 0; i < home_direction.num_verts; i += 2) {
+    write_line_lm(home_direction_outline.vlist_trans[i].x + x,
+                  home_direction_outline.vlist_trans[i].y + y,
+                  home_direction_outline.vlist_trans[i + 1].x + x,
+                  home_direction_outline.vlist_trans[i + 1].y + y,
+                  1, 0);
+  }
 }
 
 void hud_draw_throttle(void) {

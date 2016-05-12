@@ -20,6 +20,7 @@ void RenderScreen(void);
 void hud_draw_uav3d(void);
 void hud_draw_uav2d(void);
 void hud_draw_simple_attitude(void);
+void draw_home_direction(void);
 
 void cal_vars(void);
 

@@ -35,6 +35,8 @@ OBJECT4DV1 uav3D;
 POLYGON2D uav2D;
 POLYGON2D rollscale2D;
 POLYGON2D simple_attitude;
+POLYGON2D home_direction;
+POLYGON2D home_direction_outline;
 
 void cam3D_init(void) {
   // initialize the camera with 90 FOV, normalized coordinates
@@ -138,6 +140,54 @@ void simple_attitude_init(void) {
     i++;
   }
   Scale_Polygon2D(&simple_attitude, atti_mp_scale, atti_mp_scale);
+}
+
+void home_direction_init(void) {
+  home_direction.state     = 1;
+  home_direction.num_verts = 24;
+  home_direction.x0        = eeprom_buffer.params.HomeDirection_posX + 10;
+  home_direction.y0        = eeprom_buffer.params.HomeDirection_posY + 10;
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[0]), -2, -2);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[1]), -2, 8);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[2]), -1, -2);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[3]), -1, 8);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[4]), 0, -2);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[5]), 0, 8);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[6]), 1, -2);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[7]), 1, 8);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[8]), 2, -2);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[9]), 2, 8);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[10]), -5, -3);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[11]), 5, -3);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[12]), -4, -4);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[13]), 4, -4);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[14]), -3, -5);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[15]), 3, -5);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[16]), -2, -6);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[17]), 2, -6);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[18]), -1, -7);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[19]), 1, -7);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[20]), 0, -8);
+  VECTOR2D_INITXYZ(&(home_direction.vlist_local[21]), 0, -8);
+
+  home_direction_outline.state     = 1;
+  home_direction_outline.num_verts = 14;
+  home_direction_outline.x0        = eeprom_buffer.params.HomeDirection_posX;
+  home_direction_outline.y0        = eeprom_buffer.params.HomeDirection_posY;
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[0]), -7, -2);
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[1]), 0, -9);
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[2]), 0, -9);
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[3]), 7, -2);
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[4]), 7, -2);
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[5]), 3, -2);
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[6]), -7, -2);
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[7]), -3, -2);
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[8]), 3, -2);
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[9]), 3, 9);
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[10]), -3, -2);
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[11]), -3, 9);
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[12]), -3, 9);
+  VECTOR2D_INITXYZ(&(home_direction_outline.vlist_local[13]), 3, 9);
 }
 
 
