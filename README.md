@@ -14,8 +14,8 @@ Build
 
 - Commit messages should follow the [angular commit message format](https://gist.github.com/stephenparish/9941e89d80e2bc58a153#format-of-the-commit-message)
 - Pull requests will be automatically built on circle ci
-- Run uncrustify against your changes `uncrustify -c .uncrustify.cfg --check src/* inc/* > /dev/null`  
-  if there are conflicts run `uncrustify -c .uncrustify.cfg --no-backup src/*` to fix them
+- Run uncrustify against your changes `uncrustify -c .uncrustify.cfg --check src/* inc/* > /dev/null`
+  if there are conflicts run `uncrustify -c .uncrustify.cfg --no-backup src/* inc/*` to fix them
 
 ## getting uncrustify
 you need at least 0.61
