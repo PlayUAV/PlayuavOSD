@@ -203,6 +203,8 @@ void RenderScreen(void) {
   draw_uav3d();
   draw_uav2d();
   draw_throttle();
+  draw_home_latitude();
+  draw_home_longitude();
   draw_gps_status();
   draw_gps_hdop();
   draw_gps_latitude();
@@ -471,6 +473,32 @@ void draw_throttle(void) {
     sprintf(tmp_str, "THR %d%%", (int32_t)osd_throttle);
     write_string(tmp_str, posX, posY, 0, 0, TEXT_VA_TOP, TEXT_HA_RIGHT, 0, SIZE_TO_FONT[0]);
   }
+}
+
+void draw_home_latitude() {
+  if (!enabledAndShownOnPanel(eeprom_buffer.params.HomeLatitude_enabled,
+                              eeprom_buffer.params.HomeLatitude_panel)) {
+    return;
+  }
+
+  sprintf(tmp_str, "H %0.5f", (double) osd_lat / 10000000.0f);
+  write_string(tmp_str, eeprom_buffer.params.HomeLatitude_posX,
+               eeprom_buffer.params.HomeLatitude_posY, 0, 0, TEXT_VA_TOP,
+               eeprom_buffer.params.HomeLatitude_align, 0,
+               SIZE_TO_FONT[eeprom_buffer.params.HomeLatitude_fontsize]);
+}
+
+void draw_home_longitude() {
+  if (!enabledAndShownOnPanel(eeprom_buffer.params.HomeLongitude_enabled,
+                              eeprom_buffer.params.HomeLongitude_panel)) {
+    return;
+  }
+
+  sprintf(tmp_str, "H %0.5f", (double) osd_lon / 10000000.0f);
+  write_string(tmp_str, eeprom_buffer.params.HomeLongitude_posX,
+               eeprom_buffer.params.HomeLongitude_posY, 0, 0, TEXT_VA_TOP,
+               eeprom_buffer.params.HomeLongitude_align, 0,
+               SIZE_TO_FONT[eeprom_buffer.params.HomeLongitude_fontsize]);
 }
 
 void draw_gps_status() {

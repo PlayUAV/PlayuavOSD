@@ -333,6 +333,20 @@ typedef union {
     uint16_t HomeDirection_posX;
     uint16_t HomeDirection_posY;
 
+    uint16_t HomeLatitude_enabled;
+    uint16_t HomeLatitude_panel;
+    uint16_t HomeLatitude_posX;
+    uint16_t HomeLatitude_posY;
+    uint16_t HomeLatitude_fontsize;
+    uint16_t HomeLatitude_align;
+
+    uint16_t HomeLongitude_enabled;
+    uint16_t HomeLongitude_panel;
+    uint16_t HomeLongitude_posX;
+    uint16_t HomeLongitude_posY;
+    uint16_t HomeLongitude_fontsize;
+    uint16_t HomeLongitude_align;
+
 //		//below is unused. if add a param, reduce one item here
 //		uint16_t unused[EERROM_SIZE/2 - 104];
   }params;

@@ -35,6 +35,8 @@ void draw_relative_altitude(void);
 void draw_speed_scale(void);
 void draw_ground_speed(void);
 void draw_air_speed(void);
+void draw_home_latitude(void);
+void draw_home_longitude(void);
 void draw_gps_status(void);
 void draw_gps_hdop(void);
 void draw_gps_latitude(void);
